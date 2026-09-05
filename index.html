@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Neon Crusher</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header id="topbar">
+      <div class="brand">NEON<span>CRUSHER</span></div>
+      <div class="stats">
+        <div class="stat stat--cash">
+          <span class="stat-label">Kasa</span>
+          <span class="stat-value" id="statCash">$0</span>
+        </div>
+        <div class="stat stat--level">
+          <span class="stat-label">Poziom</span>
+          <span class="stat-value" id="statLevel">1</span>
+        </div>
+      </div>
+    </header>
+
+    <main id="gameArea">
+      <canvas id="gameCanvas"></canvas>
+    </main>
+
+    <footer id="shop">
+      <button class="shop-btn" id="btnBuyBall" type="button">
+        <span class="shop-btn__title">Kup nową kulę</span>
+        <span class="shop-btn__desc" id="descBuyBall">Kulki: 1</span>
+        <span class="shop-btn__cost" id="costBuyBall">$10</span>
+      </button>
+
+      <button class="shop-btn" id="btnFireRate" type="button">
+        <span class="shop-btn__title">Szybkość strzału</span>
+        <span class="shop-btn__desc" id="descFireRate">Lvl 1</span>
+        <span class="shop-btn__cost" id="costFireRate">$15</span>
+      </button>
+
+      <button class="shop-btn" id="btnDamage" type="button">
+        <span class="shop-btn__title">Siła uderzenia</span>
+        <span class="shop-btn__desc" id="descDamage">Lvl 1</span>
+        <span class="shop-btn__cost" id="costDamage">$15</span>
+      </button>
+    </footer>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
