@@ -39,7 +39,7 @@ rules change. No SDK, ads or monetization are implemented in this repo yet.
 | Consistent physics at 144/165 Hz | Basic | PASS (simulation: fixed timestep, same seed = identical state at 60/144/165 Hz); real 144/165 Hz monitor NOT RUN | NC-03 closed, `qa/physics.mjs` |
 | English localization; language from SDK locale, fallback English | Basic | PASS: EN default/fallback + PL; language from `?lang=` or the browser (no SDK yet); SDK locale with the SDK | NC-07 closed, `qa/i18n.mjs` |
 | Intuitive controls, smooth, no errors | Basic | PASS (0 console errors); onboarding in gameplay (hint pill asks for the click/tap when the first volley is ready, ~3 s; no text wall, nothing to skip) / intuitiveness with players NOT VERIFIED | — |
-| Original name, assets, content | Basic | NOT VERIFIED: all visuals are canvas shapes and all sounds synthesised in code (no third-party assets); gameplay twist = breach (NC-ORIGINAL-1); name check open | NC-12 |
+| Original name, assets, content | Basic | NOT VERIFIED: all visuals are canvas shapes / inline SVG and all sounds synthesised in code (no third-party assets); gameplay twist = breach (NC-ORIGINAL-1); own visual identity "Fractured Intelligence" (NC-ART-1, `docs/GAME_DESIGN.md`); competitors' visuals not seen (portal not reachable from the build machine); name check open | NC-12 |
 | No custom fullscreen button | Basic | PASS | none in code |
 | No cross-promotion | Basic | PASS | no links |
 | PEGI 12 (audience 13+) | Basic | PASS (abstract shapes, no violence/text content) — QA judgement NOT VERIFIED | — |

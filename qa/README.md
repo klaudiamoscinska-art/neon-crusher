@@ -43,6 +43,15 @@ node qa/pace.mjs --bot active --canvas 907x339 --skip-first  # NC-ORIGINAL-1: ai
 `NC_GAME_JS=<path>` works for every suite too (e.g. to show that a new check
 fails on the base).
 
+Visual changes (NC-ART-1), also tools, not suites:
+
+```bash
+node qa/sim-compare.mjs /tmp/base-game.js        # simulation bit-identical to the base? + draw counters per frame
+node qa/art-shots.mjs --root /tmp/base --out qa/out/art/before   # base folder with index.html/style.css/game.js
+node qa/art-shots.mjs --out qa/out/art/after                     # 13 scenes + frame cost (rAF + forced raster)
+node qa/art-shots.mjs --sheet qa/out/art/before qa/out/art/after --out qa/out/art/sheets
+```
+
 ## Harness (`qa/lib.mjs`)
 
 `loadGame({ width, height, dpr, seed, storage })` loads the **real**
