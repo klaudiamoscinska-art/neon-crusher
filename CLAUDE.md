@@ -37,7 +37,7 @@ Runtime = `index.html`, `style.css`, `game.js` (vanilla JS classes, Canvas
 - **Save:** the key `neonCrusher.save.v1` never changes; never reset, overwrite or downgrade a player's save; contract and fix plan in `docs/SAVE.md`.
 - **No dependencies**, bundler or build step for development; zero external requests from the runtime; no `innerHTML` for text.
 - **Economy and progression** numbers change only with the owner (`docs/GAME_DESIGN.md`, `nc-economy`).
-- **Physics:** exact block bounces, no tunnelling, results independent of refresh rate (target; NC-03 open).
+- **Physics:** exact block bounces, no tunnelling, results independent of refresh rate (fixed 1/240 s step).
 - **Honest play:** no energy, timers or paywalls in front of play.
 - **CrazyGames:** no SDK, ads or monetization before the stage that adds them; no custom fullscreen button; English localization required before submission (`docs/CRAZYGAMES.md`).
 - Neon glow convention for every drawable (`docs/ARCHITECTURE.md`).

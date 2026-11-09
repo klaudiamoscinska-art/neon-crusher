@@ -58,3 +58,5 @@ limited to `main`.
 |---|---|---|---|
 | 2026-09-05 | `47b4790` | MVP | Pages (branch) |
 | 2026-09-05 | `1580a6e` | CLAUDE.md | Pages (branch), game unchanged |
+| 2026-11-09 | `5d8a552` | PR #3 NC-FOUNDATION-1 (skills, docs, QA) | Pages (branch) run #3 success, game unchanged |
+| 2026-11-09 | `4ea8f74` | PR #4 NC-BASIC-1 (EN/PL UI, save validation + backup, user-select, safe areas); merge commit of approved head `5183fdc` | Pages (branch) run #4 success; post-merge: public `index.html`/`game.js`/`style.css` byte-identical to `main`, Chromium en-US → EN, pl-PL → PL, 0 page errors, only own host requested, an existing v1 save (level 3, $4321) loaded and kept after reload, no `.bak` |

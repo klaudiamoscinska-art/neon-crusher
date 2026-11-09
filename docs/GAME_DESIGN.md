@@ -18,7 +18,8 @@ regenerates a harder one. One screen, no menus. Target portal: CrazyGames
 | Element | Status | Rule / numbers |
 |---|---|---|
 | Auto-fire | IMPLEMENTED | each turret fires one ball every `fireInterval` ms while `balls < maxBalls`; ball speed 230–280 px/s, radius 5, spawn 22 px ahead, ±0.5 rad spread |
-| Bounces | IMPLEMENTED (defects NC-01/02/03) | exact reflection on blocks, ±0.12 rad jitter on walls, constant speed |
+| Bounces | IMPLEMENTED | exact reflection on blocks (only when the ball approaches the face), ±0.12 rad jitter on walls, constant speed; a ball caught inside the core (new level, resize) is moved out without a hit |
+| Simulation | IMPLEMENTED (NC-PHYS-1) | fixed 1/240 s steps: the same game at 60/144/165 Hz; below 20 FPS the game slows down |
 | Hit | IMPLEMENTED | +`moneyPerHit` cash, −`damageLevel` HP, spark burst (6), destruction burst (18) |
 | Level-up | IMPLEMENTED | all blocks destroyed → level+1, new core; balls stay |
 | Player input | IMPLEMENTED | only the three shop buttons; no interaction with the field |
@@ -31,7 +32,8 @@ regenerates a harder one. One screen, no menus. Target portal: CrazyGames
 | Odd level → grid N×N, N = min(3 + ⌊(L−1)/2⌋, 7); block size from the canvas' short side, clamped 16–36 px, gap 5 | IMPLEMENTED |
 | Even level → ring(s) of blocks, size 18–28 px; two rings from level 5 | IMPLEMENTED |
 | Block HP = round(10 × 1.5^(L−1)); money per hit = max(1, round(1.5^(L−1))) | IMPLEMENTED |
-| Turrets = min(1 + ⌊(L−1)/3⌋, 4) at N, E, S, W | IMPLEMENTED (NC-14 on small canvases) |
+| Turrets = min(1 + ⌊(L−1)/3⌋, 4) at N, E, S, W, at core extent + 44 px, at most min(w,h)/2 − 20 from the centre | IMPLEMENTED |
+| Core fits the canvas: when turrets would come closer than 20 px to the core (short canvases, higher levels) the whole core is scaled down — same shape, block count and HP; re-fitted on every resize, restored to its generated size when there is room again | IMPLEMENTED (NC-PHYS-1) |
 | Colours cycle cyan / pink / green | IMPLEMENTED |
 
 ## Economy (`qa/economy.mjs`)
