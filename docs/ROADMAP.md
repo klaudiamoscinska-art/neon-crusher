@@ -5,6 +5,23 @@ branch + one PR + GPT review + owner approval (`docs/claude/WORKFLOW.md`).
 The owner can reorder; a stage marked *owner decision* needs her choice before
 implementation. Risk ids: `docs/RISKS.md`.
 
+## Fast track to Basic Launch (owner-approved 2026-11-09, supersedes the order below)
+
+Only what the Basic Launch submission needs. BLOCKER = before submission,
+QUALITY = clearly improves acceptance or the first minute, LATER = after
+submission / Full Launch. Size S/M/L.
+
+| # | Stage | Content | Class | Size |
+|---|---|---|---|---|
+| 1 | NC-BASIC-1 | EN + PL UI, save validation + backup, `user-select`, safe areas, readable text | done (PR) | M |
+| 2 | NC-PHYS-1 | fixed timestep (NC-03, required 144/165 Hz), approach check + push-out (NC-01/02), layout on resize (NC-15), turret clearance (NC-14) | BLOCKER | M |
+| 3 | NC-CORE-1 *(owner picks the concept)* | core scaled to the field (NC-09, NC-17), the chosen twist (NC-12), meaningful fire rate (NC-10), on-field hint, floating +$ and core progress (NC-11) | BLOCKER | M |
+| 4 | NC-ID-1 *(owner)* | name uniqueness check on CrazyGames/web; keep or rename before covers | BLOCKER | S |
+| 5 | NC-AUDIO-1 | a few synthesised SFX (hit, break, buy, level-up) + mute | QUALITY | S |
+| 6 | NC-PERF-1 | glow budget / ball cap; 4 GB Chromebook and a phone (NC-13) | QUALITY | M |
+| 7 | NC-CG-BASIC-1 | 3 covers, description + controls (EN), zip + validator, owner's Preview incl. Edge, Safari/iPhone, Android, tablet | BLOCKER | M |
+| — | later | Pages via Actions (NC-16), multi-tab (NC-06), `schemaVersion`, offline earnings, prestige, SDK, Data Module, ads | LATER | — |
+
 ## Principles of the order
 
 1. Protect players' data first (the game is already public on GitHub Pages).

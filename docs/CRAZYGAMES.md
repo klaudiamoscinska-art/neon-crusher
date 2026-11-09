@@ -33,11 +33,11 @@ rules change. No SDK, ads or monetization are implemented in this repo yet.
 | Smooth on a 4 GB RAM Chromebook (else disabled on ChromeOS) | Basic | NOT VERIFIED | NC-13 |
 | Mouse, keyboard, touch (if mobile supported) | Basic | PARTIAL: buttons only; no keyboard use needed; touch NOT RUN on a device | — |
 | Playable landscape on desktop | Basic | PASS | 10 frames, `qa/browser-smoke.mjs` |
-| `user-select: none` on body (tablets) | Basic | FAIL | NC-08 |
-| Works in the CrazyGames app (safe areas) | Basic | NOT VERIFIED | NC-18 |
-| Readable at DPR 1 in the 10 iframe sizes (907×510, 1216×684, 1077×606, 821×462, 1366×768, 1920×1080, 1536×864, 1280×720, 800×450 mobile, 1080×607 tablet) | Basic | NOT VERIFIED (fits, no scroll; smallest text 10.4 px) | NC-17 |
+| `user-select: none` on body (tablets) | Basic | PASS (Chromium); tablet NOT RUN | NC-08 closed, `qa/browser-smoke.mjs` |
+| Works in the CrazyGames app (safe areas) | Basic | IMPLEMENTED (insets on 4 sides); device NOT VERIFIED | NC-18 |
+| Readable at DPR 1 in the 10 iframe sizes (907×510, 1216×684, 1077×606, 821×462, 1366×768, 1920×1080, 1536×864, 1280×720, 800×450 mobile, 1080×607 tablet) | Basic | PASS automated (fits, no scroll, no overflow, smallest text 11.2 px, EN + PL); human readability judgement NOT VERIFIED; canvas 62 % at 800×450 | NC-17 |
 | Consistent physics at 144/165 Hz | Basic | FAIL (simulation) | NC-03 |
-| English localization; language from SDK locale, fallback English | Basic | FAIL | NC-07 |
+| English localization; language from SDK locale, fallback English | Basic | PASS: EN default/fallback + PL; language from `?lang=` or the browser (no SDK yet); SDK locale with the SDK | NC-07 closed, `qa/i18n.mjs` |
 | Intuitive controls, smooth, no errors | Basic | PASS (0 console errors) / intuitiveness NOT VERIFIED | — |
 | Original name, assets, content | Basic | NOT VERIFIED | NC-12 |
 | No custom fullscreen button | Basic | PASS | none in code |
@@ -100,8 +100,10 @@ incognito; zapisz PASS/FAIL z godziną, przy FAIL zrzut ekranu i konsolę (F12).
 1. Developer Portal → gra → wgraj dokładnie paczkę z raportu etapu (sprawdź
    SHA-256) → zapisz → Preview / QA Tool.
 2. Gra startuje bez błędów w konsoli; od razu widać rozgrywkę (bez menu).
-3. Teksty są po angielsku (po etapie NC-I18N-1); brak polskich napisów dla
-   gracza anglojęzycznego.
+3. Teksty są po angielsku (od NC-BASIC-1; przeglądarka z językiem polskim
+   pokazuje polski — do testu angielskiego dopisz `?lang=en` w adresie albo
+   ustaw angielski w przeglądarce); brak polskich napisów dla gracza
+   anglojęzycznego.
 4. Kup ulepszenie; odśwież stronę (F5) → kasa i poziom zostają.
 5. Zmień rozmiar okna / włącz pełny ekran portalu → gra się dopasowuje, nic
    nie znika, strona się nie przewija.

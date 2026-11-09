@@ -21,18 +21,37 @@ a full-HP core for the saved level and spawns one ball (turrets refill to
 
 Writes: `Game.save()` only — every 5 s of game time, on `visibilitychange`
 (hidden), `pagehide` and `beforeunload`. Reads: `Game.loadSave()` once, in the
-constructor; a field is taken only if `typeof === 'number'`; storage errors and
-JSON errors are caught (`console.warn`) and the game starts on defaults.
+constructor, through the pure `sanitizeSave(data)` (NC-BASIC-1).
+
+## Load validation and backup (NC-BASIC-1, minimal)
+
+- Per field: `cash` = finite number ≥ 0, taken as is; `level`, `maxBalls`,
+  `fireRateLevel`, `damageLevel` = finite number ≥ 1, floored, capped at
+  `SAVE_INT_MAX` (1000, keeps 1.5^n finite; unreachable in play). Anything
+  else falls back to that field's default; the game always starts.
+- **Exact** save = a JSON object with only the five fields, all valid and
+  unchanged by the rules above → loaded as is, nothing else written.
+- Anything else (bad JSON, array/number/null/string, unknown keys such as
+  `schemaVersion`, any rejected or adjusted field) → the raw string is copied
+  to `neonCrusher.save.v1.bak` **before** the game's first write; the valid
+  fields are still loaded. One backup slot: a later unreadable save replaces
+  an older backup.
+- If the backup cannot be written, or the save cannot be read at all
+  (storage throws), the session plays **without saving** (`saveBlocked`), so
+  the original is never overwritten.
+- Not done (deliberately, fast track): `schemaVersion`, migrations, restore
+  UI, multi-tab guard (NC-06), Infinity on save (NC-19). Tests: `qa/save.mjs`,
+  corrupted-save case in `qa/browser-smoke.mjs`.
 
 ## Invariants (never break without an owner decision)
 
 1. The key `neonCrusher.save.v1` never changes (players' progress lives there,
    on GitHub Pages today and on CrazyGames later).
 2. A load never destroys data it cannot read: no automatic reset, no
-   overwrite of an unreadable or newer-format save without keeping a copy.
-   (Today's code violates this: NC-05 — fix before public launch.)
+   overwrite of an unreadable or newer-format save without keeping a copy
+   (enforced since NC-BASIC-1: backup key or no saving).
 3. Every loaded value is validated (finite, integer where needed, in range);
-   invalid values fall back per field, never crash the game (today: NC-04).
+   invalid values fall back per field, never crash the game (NC-BASIC-1).
 4. A format change adds a `schemaVersion` field and a migration that is
    idempotent, tested with fixtures of every older format, and never
    downgrades a newer save.
@@ -40,12 +59,10 @@ JSON errors are caught (`console.warn`) and the game starts on defaults.
 6. Test or dev tooling never writes the player's key (a separate key/slot).
 7. No personal data in the save.
 
-## Planned hardening (stage NC-SAVE-1, needs runtime approval)
+## Later hardening (only when a stage needs it; runtime approval)
 
-- `schemaVersion: 2`, pure `sanitizeSave(raw)` + `migrateSave(raw)`;
-- unreadable raw string copied to `neonCrusher.save.v1.bak` before any write;
-- unknown future version → read-only mode (play without saving), never overwrite;
-- integers ≥ 1 for levels/balls, finite non-negative cash, level ≥ 1;
+- `schemaVersion: 2` + `migrateSave(raw)` with the first format change;
+- unknown future version → read-only mode instead of backup + load;
 - immediate save after a purchase and a level-up (today only the 5 s timer);
 - multi-tab: last-writer-wins documented or guarded (`storage` event) — NC-06.
 
