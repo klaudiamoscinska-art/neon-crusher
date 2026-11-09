@@ -4,6 +4,9 @@ const COLORS = {
   cyan: '#00f3ff',
   pink: '#ff007f',
   green: '#39ff14',
+  // Energy (NC-ORIGINAL-1): relays, the volley meter, aim marks.
+  amber: '#ffc400',
+  white: '#ffffff',
 };
 
 const SAVE_KEY = 'neonCrusher.save.v1';
@@ -42,6 +45,53 @@ const MAX_FLOAT_TEXTS = 10;
 const FLOAT_TEXT_LIFE = 0.8;
 
 // ---------------------------------------------------------------------------
+// Breach system (NC-ORIGINAL-1, docs/GAME_DESIGN.md "Breach"). Every core
+// hides a HEART at its centre under armour blocks; some armour blocks are
+// energy RELAYS. Turrets charge a synchronised VOLLEY: the player clicks/taps
+// (or presses Space) and every turret fires a piercing lance at that point.
+// A lance has a power budget that armour absorbs block by block, so where the
+// player aims decides how deep it drills. A destroyed relay sends a shockwave
+// to its neighbours and recharges the volley at once; a destroyed heart
+// shatters the whole core outward. Idle play stays possible: an unused volley
+// fires by itself (autopilot) at a random armour block after a delay.
+// ---------------------------------------------------------------------------
+// Turrets refill the field to maxBalls one ball per turret every this many ms
+// (fixed; the old fire-rate upgrade now speeds up the volley: NC-10).
+const BALL_REFILL_INTERVAL = 700;
+// Volley charge time (s) = max(VOLLEY_MIN_CHARGE, VOLLEY_BASE_CHARGE x
+// VOLLEY_CHARGE_FACTOR^(chargeLevel-1)); chargeLevel = saved fireRateLevel.
+const VOLLEY_BASE_CHARGE = 11;
+const VOLLEY_CHARGE_FACTOR = 0.9;
+const VOLLEY_MIN_CHARGE = 2;
+// A fresh session starts with this much charge (first volley in ~3 s).
+const VOLLEY_START_CHARGE = 0.7;
+// Seconds a ready volley waits for the player before the autopilot fires it.
+const VOLLEY_AUTO_DELAY = 5;
+// Lance power per turret = LANCE_POWER x ball damage (the Hit power level):
+// a volley concentrates that many ball hits on one line. Linear, like the
+// balls, so block HP (x1.5 per level) still sets the pace (no runaway).
+const LANCE_POWER = 8;
+// Half-width of a lance (world units): wider than half a grid gap, so a lance
+// can never slip between two blocks.
+const LANCE_HALF_WIDTH = 3;
+// Heart HP = HEART_HP x the level's block HP.
+const HEART_HP = 6;
+// Relay shockwave: radius in block steps (block size + gap); damage =
+// SHOCK_DAMAGE x ball damage to every block it reaches.
+const SHOCK_RADIUS_STEPS = 1.6;
+const SHOCK_DAMAGE = 6;
+// Bonus cash, in multiples of the level's money per hit.
+const RELAY_BONUS = 4;
+const HEART_BONUS = 6;
+const SHATTER_PAY = 1;
+// Speed (world units/s) of the shatter wave after the heart breaks.
+const SHATTER_SPEED = 240;
+const MAX_LANCES = 8;
+const MAX_RINGS = 12;
+// Audio preference (not part of the progress save; docs/SAVE.md).
+const AUDIO_PREF_KEY = 'neonCrusher.audio.v1';
+
+// ---------------------------------------------------------------------------
 // Localization: one table, English is the default and the fallback.
 // ---------------------------------------------------------------------------
 
@@ -53,12 +103,21 @@ const STRINGS = {
     level: 'Level',
     buyBall: 'Buy new ball',
     balls: 'Balls: {n}',
-    fireRate: 'Fire rate',
+    fireRate: 'Volley charge',
+    chargeDesc: 'Lvl {n} · {s} s',
     damage: 'Hit power',
     upgradeLevel: 'Lvl {n}',
     core: 'Core',
-    hintStart: 'Every hit on the core pays cash',
+    volley: 'Volley',
+    volleyReady: 'VOLLEY READY',
+    hintStart: 'Hits pay cash · break the heart to shatter the core',
     hintBuy: 'Buy a new ball!',
+    hintVolley: 'Click or tap the core to fire a volley',
+    breached: 'CORE SHATTERED',
+    relay: 'RECHARGED',
+    levelUp: 'LEVEL {n}',
+    soundOn: 'Sound on',
+    soundOff: 'Sound off',
   },
   pl: {
     locale: 'pl-PL',
@@ -66,12 +125,21 @@ const STRINGS = {
     level: 'Poziom',
     buyBall: 'Kup nową kulę',
     balls: 'Kulki: {n}',
-    fireRate: 'Szybkość strzału',
+    fireRate: 'Ładowanie salwy',
+    chargeDesc: 'Lvl {n} · {s} s',
     damage: 'Siła uderzenia',
     upgradeLevel: 'Lvl {n}',
     core: 'Rdzeń',
-    hintStart: 'Każde trafienie w rdzeń to kasa',
+    volley: 'Salwa',
+    volleyReady: 'SALWA GOTOWA',
+    hintStart: 'Trafienia dają kasę · rozbij serce, by skruszyć rdzeń',
     hintBuy: 'Kup nową kulę!',
+    hintVolley: 'Kliknij lub dotknij rdzeń, by oddać salwę',
+    breached: 'RDZEŃ ROZBITY',
+    relay: 'PRZEŁADOWANIE',
+    levelUp: 'POZIOM {n}',
+    soundOn: 'Dźwięk włączony',
+    soundOff: 'Dźwięk wyłączony',
   },
 };
 
@@ -140,6 +208,36 @@ function clamp(value, min, max) {
 
 function randRange(min, max) {
   return min + Math.random() * (max - min);
+}
+
+/** Distance along a ray (unit direction) to where it enters an axis-aligned
+ *  box, 0 if it starts inside, null if it misses (slab method). */
+function rayBoxEnter(ox, oy, dx, dy, x0, y0, x1, y1) {
+  let tmin = -Infinity;
+  let tmax = Infinity;
+  for (const [o, d, lo, hi] of [[ox, dx, x0, x1], [oy, dy, y0, y1]]) {
+    if (Math.abs(d) < 1e-12) {
+      if (o < lo || o > hi) return null;
+    } else {
+      let t0 = (lo - o) / d;
+      let t1 = (hi - o) / d;
+      if (t0 > t1) [t0, t1] = [t1, t0];
+      tmin = Math.max(tmin, t0);
+      tmax = Math.min(tmax, t1);
+    }
+  }
+  if (tmax < Math.max(tmin, 0)) return null;
+  return Math.max(tmin, 0);
+}
+
+/** Distance along a ray from a point inside a box to the box's edge. */
+function rayBoxExit(ox, oy, dx, dy, x0, y0, x1, y1) {
+  let t = Infinity;
+  if (dx > 1e-12) t = Math.min(t, (x1 - ox) / dx);
+  if (dx < -1e-12) t = Math.min(t, (x0 - ox) / dx);
+  if (dy > 1e-12) t = Math.min(t, (y1 - oy) / dy);
+  if (dy < -1e-12) t = Math.min(t, (y0 - oy) / dy);
+  return Number.isFinite(t) ? Math.max(0, t) : 0;
 }
 
 class Particle {
@@ -260,6 +358,171 @@ class FloatText {
   }
 }
 
+/** Expanding neon ring (relay shockwave, core shatter, aim feedback). */
+class Ring {
+  constructor(x, y, radius, color, life, width) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    this.color = color;
+    this.life = life;
+    this.maxLife = life;
+    this.width = width;
+  }
+
+  update(dt) {
+    this.life -= dt;
+  }
+
+  draw(ctx) {
+    const t = clamp(this.life / this.maxLife, 0, 1);
+    ctx.save();
+    ctx.globalAlpha = t;
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = this.width * (0.4 + t * 0.6);
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, Math.max(0.1, this.radius * (1 - t * t)), 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+/** A volley lance: a piercing beam from a turret, fading in 0.35 s. */
+class Lance {
+  constructor(x0, y0, x1, y1, color) {
+    this.x0 = x0;
+    this.y0 = y0;
+    this.x1 = x1;
+    this.y1 = y1;
+    this.color = color;
+    this.life = 0.35;
+  }
+
+  update(dt) {
+    this.life -= dt;
+  }
+
+  draw(ctx) {
+    const t = clamp(this.life / 0.35, 0, 1);
+    ctx.save();
+    ctx.globalAlpha = t;
+    ctx.strokeStyle = this.color;
+    ctx.shadowBlur = 22;
+    ctx.shadowColor = this.color;
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 1 + 5 * t;
+    ctx.beginPath();
+    ctx.moveTo(this.x0, this.y0);
+    ctx.lineTo(this.x1, this.y1);
+    ctx.stroke();
+    ctx.strokeStyle = COLORS.white;
+    ctx.lineWidth = 1.5 * t;
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+/**
+ * Synthesised Web Audio effects (no audio files). The AudioContext is
+ * created on the first user gesture (autoplay rules) and resumed on every
+ * gesture (iOS interruptions). Each sound has a minimum gap, so a field full
+ * of balls cannot flood the mixer. Mute persists under AUDIO_PREF_KEY.
+ * Everything is guarded: no AudioContext (old browser, the QA harness) =
+ * silent game, never an error.
+ */
+class Sound {
+  constructor() {
+    this.ctx = null;
+    this.master = null;
+    this.muted = false;
+    this.lastPlayed = Object.create(null);
+    try {
+      this.muted = localStorage.getItem(AUDIO_PREF_KEY) === 'muted';
+    } catch (err) {
+      // No storage: default (sound on), nothing to remember.
+    }
+  }
+
+  /** Call inside a user gesture handler. */
+  unlock() {
+    if (!this.ctx) {
+      const AC = typeof AudioContext !== 'undefined' ? AudioContext
+        : (typeof webkitAudioContext !== 'undefined' ? webkitAudioContext : null); // eslint-disable-line no-undef
+      if (!AC) return;
+      try {
+        this.ctx = new AC();
+        this.master = this.ctx.createGain();
+        this.master.gain.value = this.muted ? 0 : 0.5;
+        this.master.connect(this.ctx.destination);
+      } catch (err) {
+        this.ctx = null;
+        return;
+      }
+    }
+    if (this.ctx.state !== 'running' && this.ctx.resume) this.ctx.resume().catch(() => {});
+  }
+
+  suspend() {
+    if (this.ctx && this.ctx.state === 'running' && this.ctx.suspend) this.ctx.suspend().catch(() => {});
+  }
+
+  setMuted(muted) {
+    this.muted = muted;
+    if (this.master) this.master.gain.value = muted ? 0 : 0.5;
+    try {
+      localStorage.setItem(AUDIO_PREF_KEY, muted ? 'muted' : 'on');
+    } catch (err) {
+      // Preference not remembered; the game goes on.
+    }
+  }
+
+  /** One tone: oscillator type, start/end frequency, duration, volume. */
+  tone(type, f0, f1, dur, vol, delay = 0) {
+    const ac = this.ctx;
+    const t0 = ac.currentTime + delay;
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(f0, t0);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t0 + dur);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(vol, t0 + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain);
+    gain.connect(this.master);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.02);
+  }
+
+  play(name) {
+    if (this.muted || !this.ctx || this.ctx.state !== 'running') return;
+    const gaps = { hit: 0.07, break: 0.06, volley: 0.1, ready: 0.5, relay: 0.15, shatter: 0.5, buy: 0.05, deny: 0.25, level: 0.5 };
+    const now = this.ctx.currentTime;
+    if (now - (this.lastPlayed[name] || -1) < (gaps[name] || 0.05)) return;
+    this.lastPlayed[name] = now;
+    try {
+      switch (name) {
+        // Pitch from the clock, not Math.random (the simulation's RNG must
+        // not depend on whether sound is on).
+        case 'hit': this.tone('sine', 620 + ((now * 7919) % 1) * 280, 420, 0.05, 0.05); break;
+        case 'break': this.tone('square', 260, 70, 0.12, 0.06); break;
+        case 'volley': this.tone('sawtooth', 1100, 160, 0.28, 0.09); this.tone('sine', 220, 60, 0.3, 0.12); break;
+        case 'ready': this.tone('triangle', 660, 660, 0.08, 0.08); this.tone('triangle', 990, 990, 0.12, 0.08, 0.09); break;
+        case 'relay': this.tone('triangle', 300, 1400, 0.22, 0.1); break;
+        case 'shatter': this.tone('sine', 140, 35, 0.7, 0.22); this.tone('sawtooth', 600, 80, 0.5, 0.06); break;
+        case 'buy': this.tone('square', 520, 520, 0.06, 0.05); this.tone('square', 780, 780, 0.09, 0.05, 0.06); break;
+        case 'deny': this.tone('sine', 180, 140, 0.08, 0.05); break;
+        case 'level': [523, 659, 784, 1047].forEach((f, i) => this.tone('triangle', f, f, 0.12, 0.07, i * 0.07)); break;
+        default: break;
+      }
+    } catch (err) {
+      // A failing node must never stop the game.
+    }
+  }
+}
+
 class Block {
   constructor(offsetX, offsetY, size, maxHp, moneyPerHit, color) {
     this.offsetX = offsetX;
@@ -277,7 +540,14 @@ class Block {
     this.x = 0;
     this.y = 0;
     this.hitFlash = 0;
+    // 'armor' | 'relay' | 'heart' (NC-ORIGINAL-1).
+    this.kind = 'armor';
+    // Seconds until the shatter wave breaks this block (null = not shattering).
+    this.shatter = null;
   }
+
+  get cx() { return this.x + this.size / 2; }
+  get cy() { return this.y + this.size / 2; }
 
   applyCenter(cx, cy) {
     this.x = cx + this.offsetX - this.size / 2;
@@ -304,7 +574,8 @@ class Block {
     if (this.hitFlash > 0) this.hitFlash = Math.max(0, this.hitFlash - dt * 4);
   }
 
-  draw(ctx) {
+  draw(ctx, time) {
+    if (this.alive && this.kind === 'heart') { this.drawHeart(ctx, time); return; }
     ctx.save();
     if (!this.alive) {
       ctx.globalAlpha = this.hitFlash * 0.4;
@@ -325,7 +596,57 @@ class Block {
     ctx.lineWidth = 2;
     ctx.fillRect(this.x, this.y, this.size, this.size);
     ctx.globalAlpha = 1;
+    if (this.shatter !== null) ctx.strokeStyle = COLORS.white;
     ctx.strokeRect(this.x, this.y, this.size, this.size);
+    if (this.kind === 'relay') {
+      // Energy relay: a bright diamond inside the block.
+      const c = this.size / 2;
+      const r = this.size * (0.28 + 0.06 * Math.sin(time * 6));
+      ctx.fillStyle = COLORS.white;
+      ctx.shadowColor = COLORS.amber;
+      ctx.beginPath();
+      ctx.moveTo(this.x + c, this.y + c - r);
+      ctx.lineTo(this.x + c + r, this.y + c);
+      ctx.lineTo(this.x + c, this.y + c + r);
+      ctx.lineTo(this.x + c - r, this.y + c);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /** The heart: a hollow white-framed reactor (armour is solid) with a
+   *  bright core that shrinks with its HP and a rotating pink ring. */
+  drawHeart(ctx, time) {
+    const hpRatio = clamp(this.hp / this.maxHp, 0, 1);
+    const c = this.size / 2;
+    const cx = this.x + c;
+    const cy = this.y + c;
+    const pulse = 0.5 + 0.5 * Math.sin(time * 4);
+    ctx.save();
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 18 + pulse * 10 + this.hitFlash * 25;
+    ctx.fillStyle = this.color;
+    ctx.globalAlpha = 0.18;
+    ctx.fillRect(this.x, this.y, this.size, this.size);
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = COLORS.white;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(this.x + 1, this.y + 1, this.size - 2, this.size - 2);
+    // Rotating ring: two arcs.
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = Math.max(1.5, this.size * 0.07);
+    const spin = time * 2.2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, c * 0.72, spin, spin + 2.2);
+    ctx.moveTo(cx + Math.cos(spin + Math.PI) * c * 0.72, cy + Math.sin(spin + Math.PI) * c * 0.72);
+    ctx.arc(cx, cy, c * 0.72, spin + Math.PI, spin + Math.PI + 2.2);
+    ctx.stroke();
+    // Core light.
+    ctx.fillStyle = COLORS.white;
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.max(1, c * (0.15 + 0.35 * hpRatio) * (0.9 + 0.1 * pulse)), 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 }
@@ -340,6 +661,7 @@ class Ball {
     this.radius = radius;
     this.color = color;
     this.trailTimer = 0;
+    this.flash = 0;
   }
 
   normalizeSpeed() {
@@ -433,12 +755,13 @@ class Ball {
   update(dt) {
     this.x += this.vx * dt;
     this.y += this.vy * dt;
+    if (this.flash > 0) this.flash = Math.max(0, this.flash - dt * 2);
   }
 
   draw(ctx) {
     ctx.save();
-    ctx.fillStyle = this.color;
-    ctx.shadowBlur = 15;
+    ctx.fillStyle = this.flash > 0 ? COLORS.white : this.color;
+    ctx.shadowBlur = 15 + this.flash * 20;
     ctx.shadowColor = this.color;
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
@@ -479,12 +802,25 @@ class Turret {
     }
   }
 
-  draw(ctx) {
+  /** `charge` 0..1 = the volley meter: the turret glows brighter while it
+   *  charges and pulses white when the volley is ready. */
+  draw(ctx, charge, time) {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angle);
+    if (charge >= 1) {
+      ctx.strokeStyle = COLORS.white;
+      ctx.globalAlpha = 0.5 + 0.5 * Math.sin(time * 8);
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = COLORS.white;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, 16, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
     ctx.fillStyle = this.color;
-    ctx.shadowBlur = 15 + this.flash * 15;
+    ctx.shadowBlur = 10 + charge * 12 + this.flash * 15;
     ctx.shadowColor = this.color;
     ctx.beginPath();
     ctx.moveTo(14, 0);
@@ -524,9 +860,32 @@ class Game {
     this.floatTexts = [];
     // Total HP of the level's core as generated (progress bar).
     this.coreTotalHp = 0;
+    // The level's armour block HP, money per hit and grid step (breach maths).
+    this.blockHp = 10;
+    this.blockMoney = 1;
+    this.blockStep = 0;
 
-    this.baseFireInterval = 2200;
-    this.fireInterval = this.baseFireInterval;
+    // Ball refill interval (fixed) and volley charge time (charge upgrade).
+    this.fireInterval = BALL_REFILL_INTERVAL;
+    this.chargeTime = VOLLEY_BASE_CHARGE;
+
+    // Volley state (session only, never saved).
+    this.volleyCharge = VOLLEY_START_CHARGE;
+    this.volleyReadyFor = 0;
+    this.pendingVolley = null;
+    this.manualVolleys = 0;
+    this.autoVolleys = 0;
+    this.coresShattered = 0;
+    this.lances = [];
+    this.rings = [];
+    this.aim = null;
+    this.banner = null;
+    this.time = 0;
+    this.screenFlash = 0;
+    this.shake = 0;
+    this.reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.sound = new Sound();
 
     this.uiTimer = 0;
     this.saveTimer = 0;
@@ -564,12 +923,15 @@ class Game {
       damageDesc: document.getElementById('descDamage'),
       damageCost: document.getElementById('costDamage'),
       hint: document.getElementById('hint'),
+      mute: document.getElementById('btnMute'),
     };
 
     this.applyLanguage();
     this.loadSave();
     this.recalcFireInterval();
     this.bindUpgradeButtons();
+    this.bindFieldInput();
+    this.bindMuteButton();
     this.bindResize();
     this.bindPersistenceHooks();
 
@@ -585,6 +947,15 @@ class Game {
     return this.damageLevel;
   }
 
+  /** Power of one turret's lance (HP it can remove along its line). */
+  get lancePower() {
+    return LANCE_POWER * this.ballDamage;
+  }
+
+  get volleyReady() {
+    return this.volleyCharge >= 1;
+  }
+
   costFor(base, level) {
     return Math.ceil(base * Math.pow(1.5, level - 1));
   }
@@ -593,8 +964,12 @@ class Game {
   get fireRateCost() { return this.costFor(15, this.fireRateLevel); }
   get damageCost() { return this.costFor(15, this.damageLevel); }
 
+  /** The saved `fireRateLevel` is the volley-charge upgrade level (NC-10:
+   *  the old fire rate did nothing once the field was full). Ball refill is
+   *  a fixed BALL_REFILL_INTERVAL. */
   recalcFireInterval() {
-    this.fireInterval = Math.max(300, this.baseFireInterval * Math.pow(0.85, this.fireRateLevel - 1));
+    this.fireInterval = BALL_REFILL_INTERVAL;
+    this.chargeTime = Math.max(VOLLEY_MIN_CHARGE, VOLLEY_BASE_CHARGE * Math.pow(VOLLEY_CHARGE_FACTOR, this.fireRateLevel - 1));
   }
 
   t(key, vars) {
@@ -609,6 +984,7 @@ class Game {
     this.ui.buyBallTitle.textContent = this.t('buyBall');
     this.ui.fireRateTitle.textContent = this.t('fireRate');
     this.ui.damageTitle.textContent = this.t('damage');
+    this.updateMuteButton();
   }
 
   loadSave() {
@@ -661,7 +1037,10 @@ class Game {
 
   bindPersistenceHooks() {
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) this.save();
+      if (document.hidden) {
+        this.save();
+        this.sound.suspend();
+      }
     });
     window.addEventListener('pagehide', () => this.save());
     window.addEventListener('beforeunload', () => this.save());
@@ -780,7 +1159,7 @@ class Game {
         });
       }
     }
-    return { points, size, extent: span / 2 + size };
+    return { points, size, n, extent: span / 2 + size };
   }
 
   circleLayout(level) {
@@ -818,7 +1197,12 @@ class Game {
       const block = new Block(p.x, p.y, layout.size, maxHp, moneyPerHit, color);
       this.blocks.push(block);
     });
-    this.coreTotalHp = this.blocks.length * maxHp;
+    this.blockHp = maxHp;
+    this.blockMoney = moneyPerHit;
+    this.blockStep = layout.size + (useGrid ? 5 : 8);
+    this.placeHeart(layout, useGrid, maxHp, moneyPerHit);
+    this.placeRelays(level);
+    this.coreTotalHp = this.blocks.reduce((sum, b) => sum + b.maxHp, 0);
 
     // Half-size of the core's bounding box, measured from the generated blocks.
     this.coreRadius = 0;
@@ -828,6 +1212,39 @@ class Game {
     this.coreExtent = layout.extent;
     this.placeTurrets(level);
     this.fitCoreToCanvas();
+  }
+
+  /** The heart sits at the core's centre (NC-ORIGINAL-1). Odd grid: it
+   *  replaces the centre block; even grid: it replaces the four central
+   *  blocks with one 2x2 heart; ring: it floats inside the ring(s). */
+  placeHeart(layout, useGrid, maxHp, moneyPerHit) {
+    let size;
+    if (useGrid && layout.n % 2 === 1) {
+      const centre = this.blocks.findIndex((b) => Math.abs(b.offsetX) < 1e-6 && Math.abs(b.offsetY) < 1e-6);
+      this.blocks.splice(centre, 1);
+      size = layout.size;
+    } else if (useGrid) {
+      const half = layout.size;
+      this.blocks = this.blocks.filter((b) => Math.abs(b.offsetX) > half || Math.abs(b.offsetY) > half);
+      size = layout.size * 2 + 5;
+    } else {
+      size = Math.round(layout.size * 1.4);
+    }
+    const heart = new Block(0, 0, size, HEART_HP * maxHp, moneyPerHit, COLORS.pink);
+    heart.kind = 'heart';
+    this.blocks.push(heart);
+  }
+
+  /** Energy relays: min(1 + floor((L-2)/3), 4) random armour blocks from
+   *  level 2 (none on level 1, so the first core teaches the heart alone). */
+  placeRelays(level) {
+    const count = level >= 2 ? Math.min(1 + Math.floor((level - 2) / 3), 4) : 0;
+    const armour = this.blocks.filter((b) => b.kind === 'armor');
+    for (let i = 0; i < count && armour.length; i++) {
+      const pick = armour.splice(Math.floor(Math.random() * armour.length), 1)[0];
+      pick.kind = 'relay';
+      pick.color = COLORS.amber;
+    }
   }
 
   /** Creates the level's turrets (N/E/S/W of the core, aimed at it);
@@ -879,30 +1296,278 @@ class Game {
   }
 
   bindUpgradeButtons() {
-    this.ui.buyBall.addEventListener('click', () => {
-      const cost = this.ballCost;
-      if (this.cash < cost) return;
-      this.cash -= cost;
-      this.maxBalls += 1;
+    const buy = (button, cost, apply) => (event) => {
+      this.sound.unlock();
+      // A mouse click leaves focus on the button; drop it so Space stays the
+      // volley key (keyboard activation keeps focus: event.detail === 0).
+      if (event && event.detail > 0 && button.blur) button.blur();
+      const price = cost();
+      if (this.cash < price) return;
+      this.cash -= price;
+      apply();
+      this.sound.play('buy');
+      // Restart the one-shot purchase flash.
+      button.classList.remove('shop-btn--bought');
+      void button.offsetWidth;
+      button.classList.add('shop-btn--bought');
       this.updateUI();
-    });
+    };
 
-    this.ui.fireRate.addEventListener('click', () => {
-      const cost = this.fireRateCost;
-      if (this.cash < cost) return;
-      this.cash -= cost;
+    this.ui.buyBall.addEventListener('click', buy(this.ui.buyBall, () => this.ballCost, () => {
+      this.maxBalls += 1;
+    }));
+
+    this.ui.fireRate.addEventListener('click', buy(this.ui.fireRate, () => this.fireRateCost, () => {
       this.fireRateLevel += 1;
       this.recalcFireInterval();
-      this.updateUI();
-    });
+    }));
 
-    this.ui.damage.addEventListener('click', () => {
-      const cost = this.damageCost;
-      if (this.cash < cost) return;
-      this.cash -= cost;
+    this.ui.damage.addEventListener('click', buy(this.ui.damage, () => this.damageCost, () => {
       this.damageLevel += 1;
-      this.updateUI();
+      for (const ball of this.balls) ball.flash = 1;
+    }));
+  }
+
+  /** Field input: a click/tap aims the volley (mouse, pen, touch through
+   *  Pointer Events); Space fires it at the heart; M toggles sound. Hovering
+   *  with a mouse shows the lance lines while the volley is ready. */
+  bindFieldInput() {
+    const canvas = this.canvas;
+    if (!canvas.addEventListener) return;
+    canvas.addEventListener('pointerdown', (e) => {
+      if (e.button !== undefined && e.button !== 0) return;
+      if (e.preventDefault) e.preventDefault();
+      this.sound.unlock();
+      const p = this.screenToWorld(e.clientX, e.clientY);
+      this.requestVolley(p.x, p.y);
     });
+    canvas.addEventListener('pointermove', (e) => {
+      this.aim = e.pointerType === 'mouse' ? this.screenToWorld(e.clientX, e.clientY) : null;
+    });
+    canvas.addEventListener('pointerleave', () => { this.aim = null; });
+    window.addEventListener('keydown', (e) => {
+      const onButton = e.target && e.target.tagName === 'BUTTON';
+      if (e.code === 'Space' && !onButton) {
+        e.preventDefault();
+        this.sound.unlock();
+        if (!e.repeat) this.requestVolley(this.width / 2, this.height / 2);
+      } else if (e.code === 'KeyM' && !e.repeat) {
+        this.sound.unlock();
+        this.toggleMute();
+      }
+    });
+  }
+
+  bindMuteButton() {
+    if (!this.ui.mute) return;
+    this.ui.mute.addEventListener('click', (event) => {
+      this.sound.unlock();
+      if (event && event.detail > 0 && this.ui.mute.blur) this.ui.mute.blur();
+      this.toggleMute();
+    });
+  }
+
+  toggleMute() {
+    this.sound.setMuted(!this.sound.muted);
+    this.updateMuteButton();
+  }
+
+  updateMuteButton() {
+    const btn = this.ui.mute;
+    if (!btn) return;
+    const label = this.t(this.sound.muted ? 'soundOff' : 'soundOn');
+    btn.textContent = this.sound.muted ? '\u266A\u0338' : '\u266A';
+    btn.title = label;
+    if (btn.setAttribute) {
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('aria-pressed', this.sound.muted ? 'true' : 'false');
+    }
+    btn.classList.toggle('icon-btn--off', this.sound.muted);
+  }
+
+  screenToWorld(clientX, clientY) {
+    const rect = this.wrapper.getBoundingClientRect();
+    return {
+      x: clamp((clientX - rect.left) / this.viewScale, 0, this.width),
+      y: clamp((clientY - rect.top) / this.viewScale, 0, this.height),
+    };
+  }
+
+  /** Queues a volley at a world point; it fires on the next fixed step, so
+   *  input never runs outside the simulation (NC-03). A click while the
+   *  volley is charging only shows a small "not yet" ring. */
+  requestVolley(x, y) {
+    if (!this.volleyReady) {
+      this.addRing(x, y, 10, COLORS.white, 0.25, 1.5);
+      this.sound.play('deny');
+      return false;
+    }
+    this.pendingVolley = { x, y, manual: true };
+    return true;
+  }
+
+  /** Every turret fires a lance through (x, y). Returns false if not ready. */
+  fireVolley(x, y, manual) {
+    if (!this.volleyReady) return false;
+    this.volleyCharge = 0;
+    this.volleyReadyFor = 0;
+    if (manual) this.manualVolleys += 1;
+    else this.autoVolleys += 1;
+    for (const turret of this.turrets) {
+      this.castLance(turret, x, y);
+      turret.flash = 1;
+    }
+    this.addRing(x, y, 14, COLORS.white, 0.3, 2);
+    this.shake = Math.max(this.shake, 0.12);
+    this.sound.play('volley');
+    return true;
+  }
+
+  /** Autopilot target for an unused volley: a random armour block (not the
+   *  heart, not a relay), so aiming by hand is clearly better. */
+  autoTarget() {
+    const armour = this.blocks.filter((b) => b.alive && b.kind === 'armor');
+    const pool = armour.length ? armour : this.blocks.filter((b) => b.alive);
+    if (!pool.length) return { x: this.width / 2, y: this.height / 2 };
+    const b = pool[Math.floor(Math.random() * pool.length)];
+    return { x: b.cx, y: b.cy };
+  }
+
+  /** A lance from the turret through (tx, ty) to the edge of the field. Every
+   *  block it crosses (block box grown by LANCE_HALF_WIDTH) absorbs damage up
+   *  to its HP from the lance's power budget, nearest first; the lance stops
+   *  where the budget runs out. */
+  castLance(turret, tx, ty) {
+    let dx = tx - turret.x;
+    let dy = ty - turret.y;
+    let len = Math.hypot(dx, dy);
+    if (len < 1) { dx = this.width / 2 - turret.x; dy = this.height / 2 - turret.y; len = Math.hypot(dx, dy) || 1; }
+    dx /= len;
+    dy /= len;
+    const maxT = rayBoxExit(turret.x, turret.y, dx, dy, 0, 0, this.width, this.height);
+    const w = LANCE_HALF_WIDTH;
+    const crossed = [];
+    for (const b of this.blocks) {
+      if (!b.alive) continue;
+      const t = rayBoxEnter(turret.x, turret.y, dx, dy, b.x - w, b.y - w, b.x + b.size + w, b.y + b.size + w);
+      if (t !== null && t <= maxT) crossed.push({ b, t });
+    }
+    crossed.sort((a, b) => a.t - b.t);
+    let power = this.lancePower;
+    let endT = maxT;
+    for (const { b, t } of crossed) {
+      if (power <= 0) break;
+      if (!b.alive) continue; // broken by a relay shockwave from this lance
+      const dmg = Math.min(power, b.hp);
+      power -= dmg;
+      this.hitBlock(b, dmg, turret.x + dx * t, turret.y + dy * t, 'lance');
+      if (power <= 0) endT = t + b.size * 0.5;
+    }
+    if (this.lances.length < MAX_LANCES) {
+      this.lances.push(new Lance(turret.x, turret.y, turret.x + dx * endT, turret.y + dy * endT, turret.color));
+    }
+  }
+
+  addRing(x, y, radius, color, life, width) {
+    if (this.rings.length < MAX_RINGS) this.rings.push(new Ring(x, y, radius, color, life, width));
+  }
+
+  /** One hit on a block from any source: pays the block's money per hit,
+   *  deals damage, shows feedback and resolves a destruction. */
+  hitBlock(block, damage, x, y, source) {
+    this.cash += block.moneyPerHit;
+    this.addFloatText(x, y, block.moneyPerHit, block.color);
+    this.particles.burst(x, y, block.color, source === 'ball' ? 6 : 10, {
+      minSpeed: 40, maxSpeed: 150, minLife: 0.25, maxLife: 0.5,
+    });
+    if (source === 'ball') this.sound.play('hit');
+    if (block.takeHit(damage)) this.onBlockDestroyed(block);
+  }
+
+  onBlockDestroyed(block) {
+    this.particles.burst(block.cx, block.cy, block.color, 18, {
+      minSpeed: 60, maxSpeed: 220, minLife: 0.4, maxLife: 0.9, minRadius: 2, maxRadius: 4,
+    });
+    this.sound.play('break');
+    if (block.kind === 'relay') this.triggerRelay(block);
+    else if (block.kind === 'heart') this.shatterCore(block);
+  }
+
+  /** Relay: bonus cash, full volley charge and a shockwave that damages every
+   *  block within SHOCK_RADIUS_STEPS (chains through other relays). */
+  triggerRelay(relay) {
+    const bonus = RELAY_BONUS * relay.moneyPerHit;
+    this.cash += bonus;
+    this.addBigText(relay.cx, relay.cy - 10, `${this.t('relay')} +${formatMoney(bonus, this.lang)}`, COLORS.amber);
+    if (this.volleyCharge < 1) {
+      this.volleyCharge = 1;
+      this.volleyReadyFor = 0;
+    }
+    const radius = SHOCK_RADIUS_STEPS * this.blockStep * this.coreScale;
+    this.addRing(relay.cx, relay.cy, radius, COLORS.amber, 0.45, 3);
+    this.sound.play('relay');
+    const damage = SHOCK_DAMAGE * this.ballDamage;
+    for (const b of this.blocks) {
+      if (!b.alive || b === relay) continue;
+      if (Math.hypot(b.cx - relay.cx, b.cy - relay.cy) <= radius) this.hitBlock(b, damage, b.cx, b.cy, 'shock');
+    }
+  }
+
+  /** Heart destroyed: the rest of the core breaks in a wave from the centre;
+   *  each block pays SHATTER_PAY x money per hit, the heart HEART_BONUS x. */
+  shatterCore(heart) {
+    const bonus = HEART_BONUS * heart.moneyPerHit;
+    this.cash += bonus;
+    this.coresShattered += 1;
+    this.addBigText(heart.cx, heart.cy - 14, `${this.t('breached')} +${formatMoney(bonus, this.lang)}`, COLORS.white);
+    for (const b of this.blocks) {
+      if (b.alive && b.shatter === null) b.shatter = Math.hypot(b.cx - heart.cx, b.cy - heart.cy) / SHATTER_SPEED;
+    }
+    this.addRing(heart.cx, heart.cy, Math.max(this.width, this.height) * 0.6, COLORS.pink, 0.7, 5);
+    this.addRing(heart.cx, heart.cy, this.coreRadius * this.coreScale * 1.2, COLORS.white, 0.45, 3);
+    this.screenFlash = 1;
+    this.shake = Math.max(this.shake, 0.35);
+    this.volleyCharge = 1;
+    this.volleyReadyFor = 0;
+    this.sound.play('shatter');
+  }
+
+  /** Advances the shatter wave: due blocks break and pay. */
+  updateShatter(dt) {
+    for (const b of this.blocks) {
+      if (!b.alive || b.shatter === null) continue;
+      b.shatter -= dt;
+      if (b.shatter > 0) continue;
+      const pay = SHATTER_PAY * b.moneyPerHit;
+      this.cash += pay;
+      this.addFloatText(b.cx, b.cy, pay, b.color);
+      b.alive = false;
+      b.hitFlash = 1;
+      this.particles.burst(b.cx, b.cy, b.color, 10, {
+        minSpeed: 80, maxSpeed: 260, minLife: 0.4, maxLife: 0.9, minRadius: 2, maxRadius: 4,
+      });
+    }
+  }
+
+  updateVolley(dt) {
+    if (this.pendingVolley) {
+      const v = this.pendingVolley;
+      this.pendingVolley = null;
+      this.fireVolley(v.x, v.y, v.manual);
+    }
+    if (this.volleyCharge < 1) {
+      this.volleyCharge = Math.min(1, this.volleyCharge + dt / this.chargeTime);
+      if (this.volleyCharge >= 1) {
+        this.volleyReadyFor = 0;
+        this.sound.play('ready');
+      }
+    } else {
+      this.volleyReadyFor += dt;
+      if (this.volleyReadyFor >= VOLLEY_AUTO_DELAY) {
+        const p = this.autoTarget();
+        this.fireVolley(p.x, p.y, false);
+      }
+    }
   }
 
   updateUI() {
@@ -913,7 +1578,8 @@ class Game {
     this.ui.buyBallCost.textContent = formatMoney(this.ballCost, this.lang);
     this.ui.buyBall.disabled = this.cash < this.ballCost;
 
-    this.ui.fireRateDesc.textContent = this.t('upgradeLevel', { n: this.fireRateLevel });
+    const seconds = this.chargeTime.toLocaleString((STRINGS[this.lang] || STRINGS[DEFAULT_LANGUAGE]).locale, { maximumFractionDigits: 1 });
+    this.ui.fireRateDesc.textContent = this.t('chargeDesc', { n: this.fireRateLevel, s: seconds });
     this.ui.fireRateCost.textContent = formatMoney(this.fireRateCost, this.lang);
     this.ui.fireRate.disabled = this.cash < this.fireRateCost;
 
@@ -922,6 +1588,7 @@ class Game {
     this.ui.damage.disabled = this.cash < this.damageCost;
 
     this.updateHint();
+    if (this.canvas.style) this.canvas.style.cursor = this.volleyReady ? 'crosshair' : 'default';
   }
 
   /** True until the player's first purchase on a fresh save (derived from the
@@ -931,18 +1598,23 @@ class Game {
     return this.level === 1 && this.maxBalls === 1 && this.fireRateLevel === 1 && this.damageLevel === 1;
   }
 
-  /** Non-blocking first-minute hint over the field (pointer-events: none):
-   *  explains where cash comes from, then points at the first purchase. */
+  /** Non-blocking hint over the field (pointer-events: none). For every
+   *  player, until the first hand-aimed volley of the session: how to fire
+   *  (shown while the volley is ready). For a new player: where cash comes
+   *  from and the goal, then the first purchase. Nothing is stored. */
   updateHint() {
     const hint = this.ui.hint;
-    const show = this.isNewPlayer;
-    const canBuy = show && this.cash >= this.ballCost;
+    const volleyHint = this.manualVolleys === 0 && this.volleyReady;
+    const newPlayer = this.isNewPlayer;
+    const canBuy = newPlayer && this.cash >= this.ballCost;
+    const show = volleyHint || newPlayer;
     hint.hidden = !show;
     if (show) {
-      const text = this.t(canBuy ? 'hintBuy' : 'hintStart');
+      const text = this.t(volleyHint ? 'hintVolley' : (canBuy ? 'hintBuy' : 'hintStart'));
       if (hint.textContent !== text) hint.textContent = text;
     }
-    this.ui.buyBall.classList.toggle('shop-btn--suggested', canBuy);
+    hint.classList.toggle('hint--action', volleyHint);
+    this.ui.buyBall.classList.toggle('shop-btn--suggested', canBuy && !volleyHint);
   }
 
   handleBallBlockCollisions() {
@@ -958,23 +1630,7 @@ class Game {
         if (!block.alive) continue;
         const contact = ball.collideBlock(block);
         if (!contact) continue;
-
-        this.cash += block.moneyPerHit;
-        this.addFloatText(contact.x, contact.y, block.moneyPerHit, block.color);
-        this.particles.burst(contact.x, contact.y, block.color, 6, {
-          minSpeed: 40, maxSpeed: 150, minLife: 0.25, maxLife: 0.5,
-        });
-
-        const destroyed = block.takeHit(this.ballDamage);
-        if (destroyed) {
-          this.particles.burst(
-            block.x + block.size / 2,
-            block.y + block.size / 2,
-            block.color,
-            18,
-            { minSpeed: 60, maxSpeed: 220, minLife: 0.4, maxLife: 0.9, minRadius: 2, maxRadius: 4 }
-          );
-        }
+        this.hitBlock(block, this.ballDamage, contact.x, contact.y, 'ball');
         break;
       }
     }
@@ -987,6 +1643,16 @@ class Game {
     this.floatTexts.push(new FloatText(x, y - 8, '+' + formatMoney(amount, this.lang), color, screenPx / this.viewScale));
   }
 
+  /** Larger event label (relay, shatter); always shown, replaces the oldest
+   *  label when the cap is reached. */
+  addBigText(x, y, text, color) {
+    if (this.floatTexts.length >= MAX_FLOAT_TEXTS) this.floatTexts.shift();
+    const screenPx = 15 * Math.min(1.5, this.viewScale);
+    const label = new FloatText(x, y, text, color, screenPx / this.viewScale);
+    label.life = FLOAT_TEXT_LIFE * 1.6;
+    this.floatTexts.push(label);
+  }
+
   /** Share of the current core's HP already destroyed, 0..1. */
   get coreProgress() {
     if (this.coreTotalHp <= 0) return 0;
@@ -996,6 +1662,8 @@ class Game {
   }
 
   update(dt) {
+    this.time += dt;
+    this.updateVolley(dt);
     for (const turret of this.turrets) turret.update(dt, this);
 
     for (const ball of this.balls) {
@@ -1005,6 +1673,7 @@ class Game {
 
     this.handleBallBlockCollisions();
 
+    this.updateShatter(dt);
     for (const block of this.blocks) block.update(dt);
     const aliveRemaining = this.blocks.some((b) => b.alive);
     this.blocks = this.blocks.filter((b) => b.alive || b.hitFlash > 0);
@@ -1012,11 +1681,23 @@ class Game {
     if (!aliveRemaining) {
       this.level += 1;
       this.generateCore(this.level);
+      this.banner = { text: this.t('levelUp', { n: this.level }), life: 1.4 };
+      this.sound.play('level');
     }
 
     this.particles.update(dt);
     for (const f of this.floatTexts) f.update(dt);
-    if (this.floatTexts.length && this.floatTexts[0].life <= 0) this.floatTexts = this.floatTexts.filter((f) => f.life > 0);
+    if (this.floatTexts.length && this.floatTexts.some((f) => f.life <= 0)) this.floatTexts = this.floatTexts.filter((f) => f.life > 0);
+    for (const l of this.lances) l.update(dt);
+    if (this.lances.length && this.lances[0].life <= 0) this.lances = this.lances.filter((l) => l.life > 0);
+    for (const ring of this.rings) ring.update(dt);
+    if (this.rings.length && this.rings.some((ring) => ring.life <= 0)) this.rings = this.rings.filter((ring) => ring.life > 0);
+    if (this.screenFlash > 0) this.screenFlash = Math.max(0, this.screenFlash - dt * 3);
+    if (this.shake > 0) this.shake = Math.max(0, this.shake - dt);
+    if (this.banner) {
+      this.banner.life -= dt;
+      if (this.banner.life <= 0) this.banner = null;
+    }
 
     this.uiTimer += dt;
     if (this.uiTimer >= 0.15) {
@@ -1037,12 +1718,107 @@ class Game {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, this.width, this.height);
 
-    for (const block of this.blocks) block.draw(ctx);
-    for (const turret of this.turrets) turret.draw(ctx);
+    const shaking = this.shake > 0 && !this.reducedMotion;
+    if (shaking) {
+      ctx.save();
+      // Deterministic wobble: draw() must never consume Math.random, or the
+      // simulation would depend on the number of frames drawn (NC-03).
+      const a = this.shake * 10;
+      ctx.translate(Math.sin(this.time * 91) * a, Math.cos(this.time * 77) * a);
+    }
+    this.drawAimPreview(ctx);
+    for (const block of this.blocks) block.draw(ctx, this.time);
+    for (const turret of this.turrets) turret.draw(ctx, this.volleyCharge, this.time);
+    for (const l of this.lances) l.draw(ctx);
+    for (const ring of this.rings) ring.draw(ctx);
     this.particles.draw(ctx);
     for (const ball of this.balls) ball.draw(ctx);
     for (const f of this.floatTexts) f.draw(ctx);
+    if (shaking) ctx.restore();
+
+    if (this.screenFlash > 0) {
+      ctx.save();
+      ctx.globalAlpha = this.screenFlash * (this.reducedMotion ? 0.1 : 0.3);
+      ctx.fillStyle = COLORS.white;
+      ctx.fillRect(0, 0, this.width, this.height);
+      ctx.restore();
+    }
     this.drawCoreProgress(ctx);
+    this.drawVolleyMeter(ctx);
+    this.drawBanner(ctx);
+  }
+
+  /** With a mouse over the field and the volley ready: dashed lines from
+   *  every turret through the cursor, and a crosshair (where lances go). */
+  drawAimPreview(ctx) {
+    if (!this.aim || !this.volleyReady) return;
+    ctx.save();
+    ctx.strokeStyle = COLORS.white;
+    ctx.globalAlpha = 0.45;
+    ctx.lineWidth = 1;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = COLORS.white;
+    if (ctx.setLineDash) ctx.setLineDash([4, 5]);
+    ctx.beginPath();
+    for (const t of this.turrets) {
+      ctx.moveTo(t.x, t.y);
+      ctx.lineTo(this.aim.x, this.aim.y);
+    }
+    ctx.stroke();
+    if (ctx.setLineDash) ctx.setLineDash([]);
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath();
+    ctx.arc(this.aim.x, this.aim.y, 7, 0, Math.PI * 2);
+    ctx.moveTo(this.aim.x - 11, this.aim.y);
+    ctx.lineTo(this.aim.x + 11, this.aim.y);
+    ctx.moveTo(this.aim.x, this.aim.y - 11);
+    ctx.lineTo(this.aim.x, this.aim.y + 11);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /** Volley charge meter in the field's top-right corner (screen pixels). */
+  drawVolleyMeter(ctx) {
+    const fieldW = this.width * this.viewScale;
+    const w = Math.min(120, fieldW * 0.3);
+    const x = fieldW - 10 - w;
+    const y = 10;
+    const ready = this.volleyReady;
+    const label = ready ? this.t('volleyReady') : `${this.t('volley')} ${Math.floor(this.volleyCharge * 100)}%`;
+    ctx.save();
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.font = 'bold 12px "Segoe UI", Arial, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    const color = ready ? COLORS.white : COLORS.amber;
+    ctx.fillStyle = color;
+    ctx.shadowColor = ready ? COLORS.amber : color;
+    ctx.shadowBlur = ready ? 10 + 8 * (0.5 + 0.5 * Math.sin(this.time * 8)) : 8;
+    ctx.fillText(label, x + w, y);
+    ctx.fillStyle = COLORS.amber;
+    ctx.globalAlpha = 0.25;
+    ctx.fillRect(x, y + 15, w, 5);
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 12;
+    ctx.fillRect(x, y + 15, w * this.volleyCharge, 5);
+    ctx.restore();
+  }
+
+  /** "LEVEL n" banner after a level-up, centred, screen pixels. */
+  drawBanner(ctx) {
+    if (!this.banner) return;
+    const t = clamp(this.banner.life / 1.4, 0, 1);
+    ctx.save();
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.globalAlpha = Math.min(1, t * 2);
+    ctx.font = `bold ${Math.round(22 * Math.min(1.6, this.viewScale))}px "Segoe UI", Arial, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = COLORS.white;
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = COLORS.pink;
+    ctx.fillText(this.banner.text, (this.width * this.viewScale) / 2, (this.height * this.viewScale) * 0.18);
+    ctx.restore();
   }
 
   /** Core destruction bar in the top-left corner of the field, drawn in

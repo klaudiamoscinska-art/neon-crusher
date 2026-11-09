@@ -32,8 +32,8 @@ export function run() {
     r.check('save writes exactly cash, level, maxBalls, fireRateLevel, damageLevel', raw !== null && JSON.stringify(Object.keys(raw).sort()) === JSON.stringify(['cash', 'damageLevel', 'fireRateLevel', 'level', 'maxBalls']));
     const g2 = loadGame({ storage }).newGame();
     r.check('round trip restores all five fields', g2.cash === 12345 && g2.level === 7 && g2.maxBalls === 9 && g2.fireRateLevel === 4 && g2.damageLevel === 6);
-    r.check('loaded level 7 regenerates its core (6x6 grid, HP 10 x 1.5^6)', g2.blocks.length === 36 && g2.blocks[0].maxHp === Math.round(10 * 1.5 ** 6));
-    r.check('fire interval recomputed from the loaded level', Math.abs(g2.fireInterval - 2200 * 0.85 ** 3) < 1e-9);
+    r.check('loaded level 7 regenerates its core (6x6 grid with a 2x2 heart = 33 blocks, HP 10 x 1.5^6)', g2.blocks.length === 33 && g2.blocks[0].maxHp === Math.round(10 * 1.5 ** 6));
+    r.check('volley charge time recomputed from the loaded fireRateLevel (the saved field keeps its name)', Math.abs(g2.chargeTime - 11 * 0.9 ** 3) < 1e-9);
   }
 
   // --- Autosave + lifecycle hooks.

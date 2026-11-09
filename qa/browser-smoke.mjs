@@ -112,6 +112,44 @@ export async function run() {
     r.check('[NC-18] stylesheet pads all four safe-area insets (env(safe-area-inset-*))', safeArea && safeArea.length === 4, `found: ${safeArea}`);
     r.notRun('[NC-18] safe areas on a notched phone / in the CrazyGames app', 'Chromium cannot emulate env(safe-area-inset-*); needs a device or CrazyGames Preview (owner)');
 
+    // Breach controls (NC-ORIGINAL-1) in a real browser, observed through the
+    // DOM only (no debug hooks in the runtime): when the first volley is ready
+    // the hint asks for a click/tap; a click (mouse) or a tap (touch) on the
+    // core fires it, which ends that hint at once. Sound toggle persists.
+    for (const [label, opts, act] of [
+      ['mouse', { viewport: { width: 907, height: 510 } }, async (pg, x, y) => { await pg.mouse.click(x, y); }],
+      ['touch', { viewport: { width: 800, height: 450 }, hasTouch: true, isMobile: true, locale: 'pl-PL' }, async (pg, x, y) => { await pg.touchscreen.tap(x, y); }],
+    ]) {
+      const vctx = await browser.newContext({ deviceScaleFactor: 1, ...opts });
+      const vp = await vctx.newPage();
+      const verrs = [];
+      vp.on('pageerror', (e) => verrs.push(e.message));
+      vp.on('console', (m) => { if (m.type() === 'error') verrs.push(m.text()); });
+      await vp.goto(base + 'index.html');
+      const hintNow = () => vp.evaluate(() => ({ text: document.getElementById('hint').textContent, action: document.getElementById('hint').classList.contains('hint--action'), cash: document.getElementById('statCash').textContent }));
+      let before = null;
+      for (let i = 0; i < 40; i++) { await vp.waitForTimeout(250); before = await hintNow(); if (before.action) break; }
+      const box = await vp.locator('#gameCanvas').boundingBox();
+      await act(vp, box.x + box.width / 2, box.y + box.height / 2);
+      await vp.waitForTimeout(250);
+      const after = await hintNow();
+      // Proof it was the player's volley, not the autopilot's: the volley
+      // hint lasts until the first hand-aimed volley, so it must not return
+      // when the next volley is ready (11 s charge + 5 s autopilot window).
+      let returned = false;
+      for (let i = 0; i < 13; i++) { await vp.waitForTimeout(1000); if ((await hintNow()).action) { returned = true; break; } }
+      if (label === 'mouse') {
+        await vp.click('#btnMute');
+        const m1 = await vp.evaluate(() => ({ pressed: document.getElementById('btnMute').getAttribute('aria-pressed'), pref: localStorage.getItem('neonCrusher.audio.v1') }));
+        await vp.reload(); await vp.waitForTimeout(300);
+        const m2 = await vp.evaluate(() => document.getElementById('btnMute').getAttribute('aria-pressed'));
+        r.check('sound toggle: aria-pressed true, preference stored under neonCrusher.audio.v1, still muted after a reload', m1.pressed === 'true' && m1.pref === 'muted' && m2 === 'true', JSON.stringify({ ...m1, afterReload: m2 }));
+        await vp.screenshot({ path: path.join(shots, 'breach-mouse-907x510.png') });
+      }
+      r.check(`volley by ${label}: ready hint shown within 10 s, ${label === 'mouse' ? 'a click' : 'a tap'} on the core fires it (hint ends and does not return at the next charge), no errors`, before && before.action && !after.action && !returned && verrs.length === 0, JSON.stringify({ before, after, returned, verrs }));
+      await vctx.close();
+    }
+
     // Save restored on load, and the running game's own save survives a reload.
     // (Writing localStorage from outside and reloading would be overwritten by
     // the game's beforeunload save, so the save is injected before game.js runs.)

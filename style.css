@@ -80,7 +80,39 @@ body {
 
 .stats {
   display: flex;
+  align-items: center;
   gap: 20px;
+}
+
+/* Sound toggle (NC-ORIGINAL-1): small, never taller than the stats. */
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(0, 243, 255, 0.6);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cyan);
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  text-shadow: 0 0 6px var(--cyan);
+  box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
+}
+
+.icon-btn--off {
+  color: var(--text-dim);
+  border-color: var(--panel-border);
+  text-shadow: none;
+  box-shadow: none;
+}
+
+.icon-btn:focus-visible,
+.shop-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 .stat {
@@ -159,6 +191,19 @@ body {
   display: none;
 }
 
+/* The volley hint asks for an action on the field: amber, gently pulsing. */
+.hint--action {
+  border-color: rgba(255, 196, 0, 0.8);
+  text-shadow: 0 0 6px rgba(255, 196, 0, 0.9);
+  box-shadow: 0 0 12px rgba(255, 196, 0, 0.45);
+  animation: hint-pulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes hint-pulse {
+  from { box-shadow: 0 0 6px rgba(255, 196, 0, 0.3); }
+  to { box-shadow: 0 0 18px rgba(255, 196, 0, 0.8); }
+}
+
 /* ---------- Shop / upgrades ---------- */
 
 #shop {
@@ -217,6 +262,16 @@ body {
   transform: translateY(0) scale(0.97);
 }
 
+/* One-shot flash after a purchase (NC-ORIGINAL-1). */
+.shop-btn--bought {
+  animation: shop-bought 0.35s ease-out;
+}
+
+@keyframes shop-bought {
+  from { filter: brightness(2.2); }
+  to { filter: brightness(1); }
+}
+
 /* The purchase the first-minute hint points at. */
 .shop-btn--suggested:not(:disabled) {
   animation: shop-pulse 1s ease-in-out infinite alternate;
@@ -228,6 +283,11 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hint--action,
+  .shop-btn--bought {
+    animation: none;
+  }
+
   .shop-btn--suggested:not(:disabled) {
     animation: none;
     box-shadow: 0 0 22px rgba(0, 243, 255, 0.9), inset 0 0 14px rgba(0, 243, 255, 0.25);
@@ -275,6 +335,10 @@ body {
 
   .stat {
     min-width: 70px;
+  }
+
+  .stats {
+    gap: 12px;
   }
 
   #shop {

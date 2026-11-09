@@ -20,26 +20,40 @@ export function run() {
   {
     const h = loadGame({ width: 900, height: 600 }); const g = h.newGame();
     let shapeOk = true; let hpOk = true; let moneyOk = true; let turretOk = true; let gridCountOk = true; let ringsOk = true;
+    let heartOk = true; let relayOk = true; const relayRows = [];
     for (let L = 1; L <= 20; L++) {
       g.generateCore(L);
-      const ys = new Set(g.blocks.map((b) => Math.round(b.offsetY * 1000)));
-      const isGrid = ys.size * ys.size === g.blocks.length || ys.size <= 7 && g.blocks.length === ys.size ** 2;
+      const hearts = g.blocks.filter((b) => b.kind === 'heart');
+      const shell = g.blocks.filter((b) => b.kind !== 'heart');
+      const ys = new Set(shell.map((b) => Math.round(b.offsetY * 1000)));
+      const radii = new Set(shell.map((b) => Math.round(Math.hypot(b.offsetX, b.offsetY))));
+      const xs = new Set(shell.map((b) => Math.round(b.offsetX * 1000)));
+      const isGrid = xs.size === ys.size && ys.size <= 7;
       if ((L % 2 === 1) !== isGrid) shapeOk = false;
-      if (L % 2 === 1) { const n = Math.min(3 + Math.floor((L - 1) / 2), 7); if (g.blocks.length !== n * n) gridCountOk = false; }
-      else {
-        const radii = new Set(g.blocks.map((b) => Math.round(Math.hypot(b.offsetX, b.offsetY))));
-        if (radii.size !== (L >= 5 ? 2 : 1)) ringsOk = false;
-      }
+      const n = Math.min(3 + Math.floor((L - 1) / 2), 7);
+      if (L % 2 === 1) {
+        // Heart replaces the centre block (odd N) or the four central blocks (even N).
+        if (g.blocks.length !== (n % 2 === 1 ? n * n : n * n - 3) || ys.size !== n) gridCountOk = false;
+      } else if (radii.size !== (L >= 5 ? 2 : 1)) ringsOk = false;
       const expHp = Math.max(1, Math.round(10 * 1.5 ** (L - 1)));
       const expMoney = Math.max(1, Math.round(1.5 ** (L - 1)));
-      if (!g.blocks.every((b) => b.maxHp === expHp && b.hp === expHp)) hpOk = false;
+      if (!shell.every((b) => b.maxHp === expHp && b.hp === expHp)) hpOk = false;
+      const hs = hearts[0];
+      const expHeartSize = L % 2 === 0 ? null : (n % 2 === 1 ? shell[0].size : 2 * shell[0].size + 5);
+      if (hearts.length !== 1 || hs.offsetX !== 0 || hs.offsetY !== 0 || hs.maxHp !== 6 * expHp || (expHeartSize !== null && Math.abs(hs.size - expHeartSize) > 1e-9)
+        || shell.some((b) => b.x < hs.x + hs.size && b.x + b.size > hs.x && b.y < hs.y + hs.size && b.y + b.size > hs.y)) heartOk = false;
+      const relays = shell.filter((b) => b.kind === 'relay').length;
+      if (relays !== (L >= 2 ? Math.min(1 + Math.floor((L - 2) / 3), 4) : 0)) relayOk = false;
+      relayRows.push(`L${L}:${relays}`);
       if (!g.blocks.every((b) => b.moneyPerHit === expMoney)) moneyOk = false;
       if (g.turrets.length !== Math.min(1 + Math.floor((L - 1) / 3), 4)) turretOk = false;
     }
     r.check('odd levels = grid, even levels = circle (L1-20)', shapeOk);
-    r.check('grid is NxN with N = min(3 + floor((L-1)/2), 7)', gridCountOk);
-    r.check('circle: one ring, two rings from level 5 (even levels)', ringsOk);
-    r.check('block HP = round(10 x 1.5^(L-1)) (+50% per level)', hpOk);
+    r.check('grid is NxN with N = min(3 + floor((L-1)/2), 7), the heart replacing the centre block (odd N) or the 4 central blocks (even N)', gridCountOk);
+    r.check('circle: one ring, two rings from level 5 (even levels), heart inside', ringsOk);
+    r.check('armour block HP = round(10 x 1.5^(L-1)) (+50% per level)', hpOk);
+    r.check('one heart per core at the centre, HP 6 x block HP, size 1 cell (odd N) / 2x2 cells (even N), overlapping no block', heartOk);
+    r.check('relays = 0 on level 1, then min(1 + floor((L-2)/3), 4)', relayOk, relayRows.join(' '));
     r.check('money per hit = max(1, round(1.5^(L-1)))', moneyOk);
     r.check('turrets = min(1 + floor((L-1)/3), 4)', turretOk);
   }
@@ -50,7 +64,7 @@ export function run() {
     for (const b of g.blocks) b.takeHit(1e9);
     h.run(0.1, 60); // a few fixed simulation steps
     // Turrets aim at the core, so a ball may already have chipped a new block.
-    r.check('all blocks destroyed -> level 2 and a fresh core', g.level === 2 && g.blocks.length > 0 && g.blocks.every((b) => b.alive && b.maxHp === 15 && b.hp >= 15 - 2));
+    r.check('all blocks destroyed -> level 2 and a fresh core', g.level === 2 && g.blocks.length > 0 && g.blocks.every((b) => b.alive && b.maxHp === (b.kind === 'heart' ? 90 : 15) && b.hp >= b.maxHp - 2));
     const before = g.level; g.blocks[0].takeHit(1e9); h.run(0.1, 60);
     r.check('one block left alive -> no level-up', g.level === before);
   }
@@ -167,7 +181,7 @@ export function run() {
     const h = loadGame({ width: 907, height: 339 }); const g = h.newGame();
     if (g.coreProgress === undefined) { r.check('core progress: 0 on a fresh core, destroyed HP / total HP, 1 when cleared', false, 'no coreProgress'); return r; }
     const p0 = g.coreProgress;
-    const total = g.blocks.length * g.blocks[0].maxHp;
+    const total = g.blocks.reduce((sum, b) => sum + b.maxHp, 0);
     g.blocks[0].takeHit(3);
     const p1 = g.coreProgress;
     for (const b of g.blocks.slice(1)) b.takeHit(1e9);
