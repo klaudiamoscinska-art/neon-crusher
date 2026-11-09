@@ -1,36 +1,38 @@
-## Opis zmian
+## Podsumowanie
 
-<!-- Krótki opis tego, co zmienia ten PR i dlaczego. -->
+<!-- Etap, cel, co się zmieniło (2–5 punktów). Baza: origin/main <SHA>. -->
 
-## Powiązane issue
+## Zakres i pliki runtime
 
-Closes #
+- [ ] Ten PR **nie zmienia** `index.html` / `style.css` / `game.js` (`node qa/integrity.mjs --base origin/main --no-runtime-change`)
+- [ ] albo: zmienia je w zakresie zatwierdzonym w prompcie etapu (wymień pliki i funkcje)
+- [ ] Zapis: klucz `neonCrusher.save.v1` bez zmian; zmiana formatu tylko zgodnie z `docs/SAVE.md`
 
-## Rodzaj zmiany
+## Testy (PASS / FAIL / NOT RUN / NOT VERIFIED)
 
-- [ ] Nowa funkcjonalność (gameplay, ulepszenia, mechaniki)
-- [ ] Poprawka błędu
-- [ ] Zmiana wizualna / UI / stylizacja
-- [ ] Refaktoryzacja / porządki w kodzie
-- [ ] Inne (opisz powyżej)
+<!-- Baza vs kandydat na tej samej maszynie. KNOWN = znany defekt z docs/RISKS.md, nigdy PASS. -->
 
-## Checklist testów manualnych
+- [ ] `node qa/run-all.mjs` — wynik per zestaw, nowe FAIL-e wymienione z nazwy
+- [ ] `node qa/browser-smoke.mjs` (Chromium, 10 ramek CrazyGames) — albo NOT RUN z powodem
+- [ ] Ręcznie w przeglądarce (co dokładnie) — albo NOT RUN
+- [ ] Urządzenia / CrazyGames Preview — wynik od właścicielki albo NOT RUN
 
-- [ ] `index.html` uruchamia się bezpośrednio w przeglądarce (bez błędów w konsoli)
-- [ ] Rdzeń generuje się poprawnie na starcie gry
-- [ ] Wieżyczka strzela kulkami w regularnych odstępach
-- [ ] Kulki poprawnie odbijają się od ścian i klocków
-- [ ] Uderzenia zadają obrażenia, generują cząsteczki i dodają kasę
-- [ ] Zniszczenie całego rdzenia poprawnie zwiększa poziom i generuje trudniejszy kształt
-- [ ] Przyciski ulepszeń działają i blokują się, gdy brak środków
-- [ ] Postęp zapisuje się i wczytuje poprawnie (localStorage / odświeżenie strony)
-- [ ] Responsywność: przetestowano na desktopie
-- [ ] Responsywność: przetestowano na widoku mobilnym (DevTools lub urządzenie)
+## Dokumentacja
 
-## Zrzuty ekranu / GIF
+- [ ] `docs/GAME_DESIGN.md` zaktualizowany przy zmianie rozgrywki/balansu/tekstów
+- [ ] `docs/RISKS.md` zaktualizowany (zamknięte / nowe ryzyka)
+- [ ] `node qa/instructions.mjs` PASS przy zmianie instrukcji, skilli lub dokumentów
 
-<!-- Opcjonalnie: wklej zrzut ekranu lub nagranie działania zmiany. -->
+## Publikacja
 
-## Dodatkowe uwagi
+Każdy merge do `main` przebudowuje GitHub Pages (`docs/RELEASE.md`). Opisz, co zostanie opublikowane: <!-- gra bez zmian / nowa wersja gry -->
 
-<!-- Cokolwiek innego, co reviewer powinien wiedzieć. -->
+## Odbiór i merge
+
+- [ ] Niezależny odbiór GPT
+- [ ] Wyraźna zgoda właścicielki na merge tego PR (scala właścicielka; Claude tylko przy jawnej autoryzacji w prompcie)
+- [ ] Po merge: przebieg Pages dla commita merge zielony, gra działa (jeśli zmieniono runtime)
+
+## HANDOFF
+
+<!-- docs/claude/WORKFLOW.md „HANDOFF” -->

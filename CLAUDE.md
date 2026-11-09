@@ -1,49 +1,77 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Loaded into every session: only rules that always apply, plus pointers. A
+detail moved to a referenced file is not optional — read that file before
+working in its area.
+
+## Owner's standing rules (every session)
+
+- **Polish** for every reply, report and HANDOFF to the owner; code, comments,
+  commit messages and these instruction files stay in English.
+- **One-click copy:** every final report, HANDOFF and test summary is ONE Markdown code block with nothing before or after it (format: `docs/claude/WORKFLOW.md`). Progress notes may be plain text.
+- **Roles:** Owner = final decisions, approvals, merges, device tests, the
+  CrazyGames portal. GPT = coordination, planning, independent review of every
+  PR, risk analysis. Claude = implementation, tests, docs, PR, report.
+- **Production = `main` of `klaudiamoscinska-art/neon-crusher`; every merge to `main` publishes on GitHub Pages.** Never commit or push to `main`, never merge a PR, never run a deployment or change Pages settings — unless the current prompt explicitly authorizes merging that specific PR after GPT's review and the owner's approval. Work on a stage branch; open a PR only when asked.
+- **Preflight before work:** `git fetch`, repo, branch, HEAD, `origin/main`, `git status`, `git worktree list`; resume an existing stage branch/PR/HANDOFF instead of restarting.
+- **No destructive git** (`reset --hard`, `clean`, `stash`, force-push, history rewrites), no `git add -A` without checking the list. Unexpected state or a conflict → stop and report; never overwrite earlier work.
+- Don't publish, upload to portals, sign or accept terms, spend money, or change global Claude settings without explicit consent.
+- **Evidence:** a check that executed nothing is `NOT RUN`, never `PASS`; code review alone is never `PASS`; compare with the base on the same machine; name every new failure. Statuses: `PASS / FAIL / NOT RUN / NOT VERIFIED`, features `IMPLEMENTED / PARTIAL / NOT IMPLEMENTED / NOT VERIFIED`.
+- **HANDOFF is mandatory** after every significant stage and whenever work passes to a new session (`docs/claude/WORKFLOW.md`).
+- **Token hygiene:** `docs/claude/TOKENS.md`.
 
 ## Project
 
-Neon Crusher — a physics-sandbox idle game. Cyberpunk-neon Breakout-style core: turrets auto-fire balls that bounce around a canvas and grind down a destructible block structure, paying out cash per hit; cash buys idle upgrades; clearing the structure levels up and regenerates a harder one.
+**Neon Crusher** — physics-sandbox idle game, cyberpunk neon, Breakout-style
+core: turrets auto-fire balls that bounce around a canvas and grind down a
+destructible block core; every hit pays cash; cash buys upgrades; clearing
+the core levels up and regenerates a harder one. Target portal: CrazyGames
+(Basic Launch first, then Full Launch). Polish UI today; English required.
+
+Runtime = `index.html`, `style.css`, `game.js` (vanilla JS classes, Canvas
+2D, no dependencies, no build). Everything else is dev-only.
+
+## Invariants (change only with an owner decision)
+
+- **Runtime scope:** `game.js`, `index.html`, `style.css` change only when the stage prompt allows it.
+- **Save:** the key `neonCrusher.save.v1` never changes; never reset, overwrite or downgrade a player's save; contract and fix plan in `docs/SAVE.md`.
+- **No dependencies**, bundler or build step for development; zero external requests from the runtime; no `innerHTML` for text.
+- **Economy and progression** numbers change only with the owner (`docs/GAME_DESIGN.md`, `nc-economy`).
+- **Physics:** exact block bounces, no tunnelling, results independent of refresh rate (target; NC-03 open).
+- **Honest play:** no energy, timers or paywalls in front of play.
+- **CrazyGames:** no SDK, ads or monetization before the stage that adds them; no custom fullscreen button; English localization required before submission (`docs/CRAZYGAMES.md`).
+- Neon glow convention for every drawable (`docs/ARCHITECTURE.md`).
 
 ## Commands
 
-There is no build system, package manager, linter, or test suite in this repo — it's plain HTML/CSS/JS with no dependencies.
+No package manager, build or linter. Serve the folder (`python3 -m http.server 8080`) or open `index.html`.
 
-- **Run the game**: open `index.html` directly in a browser, or serve the directory statically (e.g. `npx http-server -p 8080` or `python3 -m http.server 8080`) and visit it. No build step, no `npm install`.
-- **Verify a change**: reload the page and watch it play for a few seconds (cash should climb as the ball hits blocks; the panel buttons should light up once cash covers their cost). There's no automated test harness, so manual/browser verification is the only check.
+```bash
+node qa/run-all.mjs            # all suites, exit 1 on FAIL (KNOWN = registered open defect)
+node qa/integrity.mjs --base origin/main --no-runtime-change   # stage must not touch runtime
+node qa/instructions.mjs       # CLAUDE.md, skills, docs consistency
+```
 
-## Architecture
+Suites, harness and statuses: `qa/README.md`.
 
-Three files, kept deliberately separate (no bundler): `index.html` (canvas + shop/stat DOM), `style.css` (neon dark theme), `game.js` (all logic, vanilla ES classes, no dependencies).
+## Where to read (on demand)
 
-### Class structure in `game.js`
+| Task | Read first |
+|---|---|
+| Code structure, conventions, test seams | `docs/ARCHITECTURE.md` |
+| Gameplay, balance, text (the spec) | `docs/GAME_DESIGN.md` |
+| Saves | `docs/SAVE.md` |
+| Known defects, audit, priorities | `docs/RISKS.md` |
+| Next stages | `docs/ROADMAP.md` |
+| CrazyGames requirements, Preview | `docs/CRAZYGAMES.md` |
+| Pages, CI, packages, rollback | `docs/RELEASE.md` |
+| Stage flow, git, review, reports, HANDOFF | `docs/claude/WORKFLOW.md` |
+| Skills and their selection | `docs/claude/SKILLS.md` |
 
-- `Game` — owns the canvas, all game state, the `requestAnimationFrame` loop (`update(dt)` / `draw()`), the DOM-bound upgrade shop, and persistence. Everything else is driven by it.
-- `Block` — one cell of the core. Stores `offsetX/offsetY` relative to the core's center (not absolute coordinates) plus `size`, `hp`/`maxHp`, `moneyPerHit`, `color`. `applyCenter(cx, cy)` converts the stored offset into absolute `x/y`; this is what makes resize/relayout cheap (see below).
-- `Turret` — same offset-from-center pattern as `Block`. Fires by spawning a `Ball` into `Game` on a cooldown (`game.fireInterval`), but only refills up to `game.maxBalls` — it does not have its own ball supply.
-- `Ball` — position + velocity. `collideBlock(block)` does circle-vs-AABB collision (closest-point method) and reflects velocity with `v' = v - 2(v·n)n`, then renormalizes to the ball's fixed `speed` so balls never gain/lose energy over many bounces. `bounceWalls` reflects off canvas edges and adds a small random angle jitter on wall bounces only (kept off block bounces, where reflection must stay exact).
-- `Particle` / `ParticlePool` — object-pooled particle system (hit sparks + destruction bursts) capped at `MAX_PARTICLES`; pooling avoids GC churn since this game intentionally throws a lot of glowing particles per hit.
+## Skills
 
-### Core/level generation
-
-`Game.generateCore(level)` rebuilds `this.blocks` and `this.turrets` from scratch every level-up:
-- Shape alternates by level parity: odd levels → `gridLayout()` (NxN grid, N grows with level, capped), even levels → `circleLayout()` (one ring, two rings from level 5+).
-- Both layout functions return points as **offsets from the core center**, not absolute coordinates — `repositionCoreAndTurrets()` (called after every layout and after every resize) applies the current canvas center to them. This is the mechanism that makes the canvas resize-safe without regenerating the level or losing HP state.
-- Block HP and money-per-hit scale as `base * 1.5^(level-1)` (10 HP / $1 base) — this is the "+50% HP, +50% money per level" rule from the design.
-- `placeTurrets()` adds one turret per 3 levels (compass points N/E/S/W, capped at 4), positioned at `core extent + margin` from center.
-- The level-up check in `Game.update()` computes `aliveRemaining` from `this.blocks` **before** filtering out fully-faded dead blocks — get this order wrong and the level-complete condition silently never fires (this bit us once already; see git history).
-
-### Upgrades & economy
-
-Three upgrade tracks (`maxBalls`, `fireRateLevel`, `damageLevel`), each with cost `Math.ceil(base * 1.5^(currentLevel-1))` — pure function of the current level, recomputed on demand via the `ballCost`/`fireRateCost`/`damageCost` getters, not stored. `ballDamage` is read live from `damageLevel` by every hit (not cached per-ball), so a damage upgrade retroactively boosts balls already in flight. `maxBalls` is a cap, not a spawn count — turrets top up toward it opportunistically, they don't own ball ownership individually.
-
-### Persistence & responsiveness
-
-- `localStorage` under `neonCrusher.save.v1` stores only the economic state (`cash`, `level`, `maxBalls`, `fireRateLevel`, `damageLevel`) — balls/blocks/turrets are always regenerated fresh from `level` on load, never serialized. Autosaves every 5s plus on `visibilitychange`/`pagehide`/`beforeunload`.
-- Canvas backing store is sized to `devicePixelRatio` and `ctx.setTransform(dpr,0,0,dpr,0,0)` is reapplied on every resize; all drawing code still works in CSS-pixel (logical) coordinates.
-- On resize, ball positions are scaled by the old/new width-height ratio (not clamped to the same offset), while core/turret positions are recomputed from their stored center-offsets — two different strategies for two different data shapes, both landing in `Game.resize()`.
-
-### Neon rendering convention
-
-Every drawn shape (blocks, balls, turrets, particles) sets `ctx.shadowBlur` (~15, boosted temporarily on hit/fire flashes) and `ctx.shadowColor` matching its fill before drawing, then `ctx.save()`/`ctx.restore()` around it — this is the entire "neon glow" effect and is expected on any new drawable added to the game.
+12 project skills `.claude/skills/nc-*`. Use 1–3 skills per task: the one
+whose description fits the area, helpers only when the task really reaches
+their area (table in `docs/claude/SKILLS.md`); docs-only work needs none.
+Skills hold procedures, not rules — rules live here and in the docs above.
+After editing skills or docs run `node qa/instructions.mjs`.
