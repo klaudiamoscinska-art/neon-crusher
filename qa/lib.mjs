@@ -177,6 +177,9 @@ function makeElement(id) {
       toggle(c, force) { const on = force === undefined ? !this._el.classes.has(c) : !!force; if (on) this._el.classes.add(c); else this._el.classes.delete(c); return on; },
     },
     addEventListener(type, fn) { (handlers[type] ||= []).push(fn); },
+    attributes: {},
+    setAttribute(k, v) { this.attributes[k] = String(v); },
+    blur() {},
     /** Mirrors a real click: a disabled <button> dispatches nothing. */
     click() { if (this.disabled) return false; for (const fn of handlers.click || []) fn({ type: 'click' }); return true; },
     /** Calls the handler even when disabled (tests the code's own guard). */
@@ -240,7 +243,8 @@ export function loadGame({ width = 900, height = 600, dpr = 1, seed = 1, storage
 
   const wrapper = { getBoundingClientRect: () => ({ width: size.width, height: size.height, top: 0, left: 0 }) };
   const ctx = makeContext();
-  const canvas = { width: 0, height: 0, style: {}, parentElement: wrapper, getContext: () => ctx };
+  const canvasHandlers = {};
+  const canvas = { width: 0, height: 0, style: {}, parentElement: wrapper, getContext: () => ctx, addEventListener(type, fn) { (canvasHandlers[type] ||= []).push(fn); } };
 
   const document = {
     hidden: false,
@@ -272,7 +276,7 @@ export function loadGame({ width = 900, height = 600, dpr = 1, seed = 1, storage
   // context's global lexical scope; a second script in the same context sees them.
   // Names added in NC-BASIC-1 / NC-PHYS-1 are optional so the same suites can run against an
   // older base game.js (base-vs-candidate comparison on one machine).
-  const optionalNames = ['SAVE_BACKUP_KEY', 'SAVE_INT_MAX', 'STRINGS', 'DEFAULT_LANGUAGE', 'detectLanguage', 'translate', 'formatMoney', 'sanitizeSave', 'SIM_STEP', 'MAX_FRAME_DT', 'TURRET_CLEARANCE'];
+  const optionalNames = ['SAVE_BACKUP_KEY', 'SAVE_INT_MAX', 'STRINGS', 'DEFAULT_LANGUAGE', 'detectLanguage', 'translate', 'formatMoney', 'sanitizeSave', 'SIM_STEP', 'MAX_FRAME_DT', 'TURRET_CLEARANCE', 'Sound', 'AUDIO_PREF_KEY', 'rayBoxEnter'];
   const api = vm.runInContext(`({ COLORS, SAVE_KEY, MAX_PARTICLES, clamp, randRange, Particle, ParticlePool, Block, Ball, Turret, Game, ${optionalNames.map((n) => `${n}: typeof ${n} === 'undefined' ? undefined : ${n}`).join(', ')} })`, context);
 
   let now = 0;
@@ -284,6 +288,11 @@ export function loadGame({ width = 900, height = 600, dpr = 1, seed = 1, storage
     /** Fires window/document events the game listens to. */
     fireWindow(type) { for (const fn of winHandlers[type] || []) fn({ type }); },
     fireDocument(type) { for (const fn of docHandlers[type] || []) fn({ type }); },
+    /** Pointer event on the canvas at CSS pixel (x, y) of the field
+     *  (NC-ORIGINAL-1: a click/tap aims the volley). */
+    pointer(type, x, y, extra = {}) { for (const fn of canvasHandlers[type] || []) fn({ type, clientX: x, clientY: y, button: 0, pointerType: 'mouse', preventDefault() {}, ...extra }); },
+    /** Key press on the window (e.g. 'Space', 'KeyM'). */
+    key(code, extra = {}) { let prevented = false; for (const fn of winHandlers.keydown || []) fn({ type: 'keydown', code, repeat: false, target: { tagName: 'BODY' }, preventDefault() { prevented = true; }, ...extra }); return prevented; },
     resizeTo(w, hgt) { size.width = w; size.height = hgt; h.fireWindow('resize'); },
     /** Pumps requestAnimationFrame callbacks at `hz` for `seconds` of game time,
      *  through Game.loop (so the real dt clamp applies). Returns frame count. */

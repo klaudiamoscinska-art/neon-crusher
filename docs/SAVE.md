@@ -12,12 +12,18 @@ here. Tests: `qa/save.mjs` (+ save checks in `qa/browser-smoke.mjs`).
 | `cash` | number | 0 | current cash |
 | `level` | number | 1 | current level (core regenerated from it) |
 | `maxBalls` | number | 1 | ball cap |
-| `fireRateLevel` | number | 1 | fire-rate upgrade level |
+| `fireRateLevel` | number | 1 | Volley-charge upgrade level (was "fire rate" until NC-ORIGINAL-1; name kept so v1 saves load unchanged) |
 | `damageLevel` | number | 1 | damage upgrade level |
 
 Balls, blocks, block HP and turrets are **never** saved: a reload regenerates
 a full-HP core for the saved level and spawns one ball (turrets refill to
-`maxBalls`).
+`maxBalls`). Volley charge, the heart, relays and the session's hint state
+(NC-ORIGINAL-1) are not saved either: a reload starts at 70 % charge.
+
+Separate preference (not progress): `localStorage["neonCrusher.audio.v1"]` =
+`"muted"` or `"on"`, written only when the player toggles sound; unreadable
+storage = sound on, nothing remembered. It never touches the save key and is
+not validated/backed up like the save (a wrong value just means sound on).
 
 Writes: `Game.save()` only — every 5 s of game time, on `visibilitychange`
 (hidden), `pagehide` and `beforeunload`. Reads: `Game.loadSave()` once, in the
