@@ -72,6 +72,37 @@ export function run({ quick = false } = {}) {
     r.known('NC-10', 'fire-rate upgrade has no effect once maxBalls are on the field (balls never despawn)', a === b, `cash after 60 s: fire rate 1 = ${a}, fire rate 25 = ${b}`);
   }
 
+  // --- First-minute hint (NC-CORE-1A): shown on a fresh save only, points at
+  //     the first purchase once it is affordable, gone after it; never stored.
+  {
+    const h = loadGame({ width: 907, height: 339 }); const g = h.newGame();
+    const hint = h.el('hint'); const buy = h.el('btnBuyBall');
+    const s0 = !hint.hidden && hint.textContent === g.t('hintStart') && g.t('hintStart') !== 'hintStart' && !buy.classList.contains('shop-btn--suggested');
+    g.cash = 10; g.updateUI();
+    const s1 = !hint.hidden && hint.textContent === g.t('hintBuy') && buy.classList.contains('shop-btn--suggested');
+    buy.click();
+    const s2 = hint.hidden && !buy.classList.contains('shop-btn--suggested');
+    g.save();
+    const saved = JSON.parse(h.storage.getItem('neonCrusher.save.v1'));
+    r.check('hint: fresh save explains cash, then points at "buy ball" when affordable, hidden after the first purchase', s0 && s1 && s2, `start=${s0} affordable=${s1} afterBuy=${s2}`);
+    r.check('hint state is not saved (save keeps exactly its five fields)', Object.keys(saved).sort().join() === 'cash,damageLevel,fireRateLevel,level,maxBalls');
+    const st = { 'neonCrusher.save.v1': JSON.stringify({ cash: 3, level: 2, maxBalls: 1, fireRateLevel: 1, damageLevel: 1 }) };
+    const h2 = loadGame({ storage: new (h.storage.constructor)(st) }); h2.newGame();
+    r.check('hint never shown to a returning player with progress', h2.el('hint').hidden === true);
+  }
+
+  // --- Cash labels on hits: one "+$n" per hit, capped (NC-13 cost).
+  {
+    const h = loadGame({ width: 907, height: 339, seed: 4 }); const g = h.newGame();
+    let seen = 0; let max = 0; let text = '';
+    const ft = (gg) => gg.floatTexts || [];
+    h.run(30, 60, (i, gg) => { if (ft(gg).length) { seen++; text = ft(gg)[0].text; } max = Math.max(max, ft(gg).length); });
+    const h2 = loadGame({ width: 907, height: 339, seed: 4 }); const g2 = h2.newGame();
+    g2.maxBalls = 80; g2.fireRateLevel = 40; g2.recalcFireInterval();
+    let max2 = 0; h2.run(20, 60, (i, gg) => { max2 = Math.max(max2, ft(gg).length); });
+    r.check('hits show a "+$n" label in the money format; at most 10 at once with 80 balls', seen > 0 && text === '+$1' && max2 <= 10 && max2 > 0, `label "${text}", max 1 ball ${max}, max 80 balls ${max2}`);
+  }
+
   // --- Early pace (NC-09): fresh save, time to the first $10 and to clear
   //     level 1, on canvases measured in Chromium at CrazyGames iframe sizes
   //     (800x450 mobile, 907x510 desktop, 1216x684 desktop, 1920x1080 full).
@@ -91,8 +122,9 @@ export function run({ quick = false } = {}) {
       medians.push([`${w}x${hh}`, med]);
       r.info(`first purchase ($10), canvas ${w}x${hh}`, `median ${med > 300 ? '>300' : med} s, runs: ${ts.map((t) => (t > 300 ? '>300' : t)).join(',')}`);
     }
-    const slow = medians.filter(([, m]) => m > 60);
-    r.known('NC-09', 'median time to the first purchase exceeds 60 s on at least one CrazyGames canvas (conversion = 1 min of play)', slow.length > 0, slow.map(([k, m]) => `${k}: ${m > 300 ? '>300' : m} s`).join(', '));
+    // NC-09 (closed in NC-CORE-1A): conversion = 1 min of play; design target 20-45 s.
+    r.check('[NC-09] median time to the first purchase <= 60 s on every CrazyGames canvas', medians.every(([, m]) => m <= 60), medians.map(([k, m]) => `${k}: ${m > 300 ? '>300' : m} s`).join(', '));
+    if (!quick) r.check('[NC-09] median time to the first purchase within the 20-45 s design target on every canvas (8 seeds)', medians.every(([, m]) => m >= 20 && m <= 45), medians.map(([k, m]) => `${k}: ${m} s`).join(', '));
   }
   if (!quick) {
     for (const [w, hh] of [[907, 339], [1920, 909]]) {

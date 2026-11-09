@@ -1,6 +1,8 @@
 // Level generation: shape alternation, block count, HP/money scaling, turret
 // count and placement, turret clearance (NC-14), geometry inside the canvas,
-// level-up, resize and core fitting (NC-15).
+// level-up, resize and core fitting (NC-15), world scale (NC-09).
+// Positions are in world units: the canvas shows the world (g.width x
+// g.height) magnified by g.viewScale.
 // Expected values = the spec in docs/GAME_DESIGN.md ("Levels").
 // Usage: node qa/levels.mjs
 import { loadGame, Reporter, isMain } from './lib.mjs';
@@ -47,21 +49,25 @@ export function run() {
     const h = loadGame(); const g = h.newGame();
     for (const b of g.blocks) b.takeHit(1e9);
     h.run(0.1, 60); // a few fixed simulation steps
-    r.check('all blocks destroyed -> level 2 and a fresh core', g.level === 2 && g.blocks.some((b) => b.alive) && g.blocks.every((b) => b.alive && b.hp === 15));
+    // Turrets aim at the core, so a ball may already have chipped a new block.
+    r.check('all blocks destroyed -> level 2 and a fresh core', g.level === 2 && g.blocks.length > 0 && g.blocks.every((b) => b.alive && b.maxHp === 15 && b.hp >= 15 - 2));
     const before = g.level; g.blocks[0].takeHit(1e9); h.run(0.1, 60);
     r.check('one block left alive -> no level-up', g.level === before);
   }
 
   // --- Geometry on canvas sizes from phone to full HD.
   {
-    const outside = []; const turretOut = []; const turretOverlap = []; const scaled = [];
+    const outside = []; const turretOut = []; const turretOverlap = []; const scaled = []; const minBlockPx = new Map();
     for (const [w, hh] of CANVAS_SIZES) {
       const h = loadGame({ width: w, height: hh }); const g = h.newGame();
+      const W = g.width; const H = g.height;
       for (let L = 1; L <= 30; L++) {
         g.generateCore(L);
         if (g.blocks.some((b) => b.baseSize !== undefined && b.size !== b.baseSize)) scaled.push(`${w}x${hh} L${L} x${(g.blocks[0].size / g.blocks[0].baseSize).toFixed(2)}`);
-        for (const b of g.blocks) if (b.x < 0 || b.y < 0 || b.x + b.size > w || b.y + b.size > hh) { outside.push(`${w}x${hh} L${L}`); break; }
-        for (const t of g.turrets) if (t.x < 0 || t.y < 0 || t.x > w || t.y > hh) { turretOut.push(`${w}x${hh} L${L}`); break; }
+        const onScreen = Math.min(...g.blocks.map((b) => b.size)) * (g.viewScale ?? 1);
+        minBlockPx.set(`${w}x${hh}`, Math.min(minBlockPx.get(`${w}x${hh}`) ?? Infinity, onScreen));
+        for (const b of g.blocks) if (b.x < 0 || b.y < 0 || b.x + b.size > W || b.y + b.size > H) { outside.push(`${w}x${hh} L${L}`); break; }
+        for (const t of g.turrets) if (t.x < 0 || t.y < 0 || t.x > W || t.y > H) { turretOut.push(`${w}x${hh} L${L}`); break; }
         for (const t of g.turrets) {
           // Turret triangle reaches ~14 px; a ball spawns 22 px ahead of it.
           const hit = g.blocks.some((b) => t.x > b.x - 14 && t.x < b.x + b.size + 14 && t.y > b.y - 14 && t.y < b.y + b.size + 14);
@@ -72,8 +78,9 @@ export function run() {
     r.check('every block inside the canvas (8 sizes x 30 levels)', outside.length === 0, outside.slice(0, 6).join(', '));
     r.check('every turret inside the canvas', turretOut.length === 0, turretOut.slice(0, 6).join(', '));
     r.check('[NC-14] no turret within 14 px of the core (8 sizes x 30 levels)', turretOverlap.length === 0, turretOverlap.length ? `${turretOverlap.length} cases, e.g. ${turretOverlap.slice(0, 4).join(', ')}` : '');
-    const big = scaled.filter((k) => /^(1920x909|1216x513) /.test(k));
-    r.check('core keeps its generated size on desktop canvases (1920x909, 1216x513, 30 levels)', big.length === 0, big.slice(0, 4).join(', '));
+    // Readability (CrazyGames: legible at DPR 1): every block is drawn at
+    // least 11 px on screen (the UI text floor) on every canvas and level.
+    r.check('every block drawn >= 11 px on screen (8 canvases x 30 levels)', [...minBlockPx].every(([, px]) => px >= 11), [...minBlockPx].map(([k, px]) => `${k}: ${px.toFixed(1)} px`).join(', '));
     r.info('core scaled down to fit (canvas, level, scale)', scaled.length ? `${scaled.length} of ${CANVAS_SIZES.length * 30}: ${scaled.join(', ')}` : 'none');
   }
 
@@ -82,7 +89,7 @@ export function run() {
     const h = loadGame({ width: 900, height: 600 }); const g = h.newGame();
     g.blocks[0].takeHit(3);
     h.resizeTo(600, 900);
-    const cx = 300; const cy = 450;
+    const cx = g.width / 2; const cy = g.height / 2; // world centre
     const centred = g.blocks.every((b) => Math.abs(b.x + b.size / 2 - (cx + b.offsetX)) < 1e-9 && Math.abs(b.y + b.size / 2 - (cy + b.offsetY)) < 1e-9);
     r.check('resize re-centres the core from stored offsets', centred);
     r.check('resize keeps block HP (no regeneration)', g.blocks[0].hp === 7 && g.level === 1);
@@ -94,7 +101,7 @@ export function run() {
     const offCanvas = (gg, w, hh) => gg.blocks.some((b) => b.x < 0 || b.x + b.size > w || b.y < 0 || b.y + b.size > hh) || gg.turrets.some((t) => t.x < 0 || t.x > w || t.y < 0 || t.y > hh);
     const tooClose = (gg) => gg.turrets.some((t) => gg.blocks.some((b) => t.x > b.x - 14 && t.x < b.x + b.size + 14 && t.y > b.y - 14 && t.y < b.y + b.size + 14));
     h2.resizeTo(375, 480);
-    r.check('[NC-15] big resize (1920x900 -> 375x480, level 16): core and turrets inside the canvas', !offCanvas(g2, 375, 480));
+    r.check('[NC-15] big resize (1920x900 -> 375x480, level 16): core and turrets inside the canvas', !offCanvas(g2, g2.width, g2.height));
     r.check('[NC-15] after the resize turrets keep clear of the core', !tooClose(g2));
     r.check('[NC-15] resize keeps the level, block count and HP', g2.level === 1 && g2.blocks.length > 0 && g2.blocks[3].hp === g2.blocks[3].maxHp - 5);
     h2.resizeTo(1920, 900);
@@ -109,12 +116,63 @@ export function run() {
     const seq = [[375, 480], [480, 375], [1920, 909], [320, 380], [800, 279], [667, 230], [1216, 513], [907, 339]];
     for (const [w, hh] of seq) {
       h3.resizeTo(w, hh);
-      const ballOut = g3.balls.some((b) => b.x < b.radius - 1e-9 || b.x > w - b.radius + 1e-9 || b.y < b.radius - 1e-9 || b.y > hh - b.radius + 1e-9);
+      const W = g3.width; const H = g3.height;
+      const ballOut = g3.balls.some((b) => b.x < b.radius - 1e-9 || b.x > W - b.radius + 1e-9 || b.y < b.radius - 1e-9 || b.y > H - b.radius + 1e-9);
       const ballIn = g3.balls.some((b) => g3.blocks.some((k) => k.alive && b.x > k.x && b.x < k.x + k.size && b.y > k.y && b.y < k.y + k.size));
-      if (offCanvas(g3, w, hh) || ballOut || ballIn || tooClose(g3)) bad.push(`${w}x${hh}${ballOut ? ' ball-out' : ''}${ballIn ? ' ball-in-block' : ''}`);
+      if (offCanvas(g3, W, H) || ballOut || ballIn || tooClose(g3)) bad.push(`${w}x${hh}${ballOut ? ' ball-out' : ''}${ballIn ? ' ball-in-block' : ''}`);
       h3.run(1, 60);
     }
     r.check('[NC-15] resize sequence with 15 balls in play: core, turrets and balls inside, no ball inside a block, turrets clear', bad.length === 0, bad.join(', '));
+  }
+
+  // --- World scale (NC-09, docs/GAME_DESIGN.md "Levels"): a canvas whose
+  //     short side exceeds 250 px shows a 250-unit-high world enlarged
+  //     (same aspect); smaller canvases are drawn 1:1.
+  {
+    const rows = []; let ok = true;
+    for (const [w, hh, dpr] of [[1920, 909, 1], [907, 339, 2], [800, 279, 1], [667, 230, 1], [375, 480, 3]]) {
+      const h = loadGame({ width: w, height: hh, dpr }); const g = h.newGame();
+      const expScale = Math.max(1, Math.min(w, hh) / 250);
+      const good = Math.abs(g.viewScale - expScale) < 1e-9 && Math.abs(g.width * g.viewScale - w) < 1e-6 && Math.abs(g.height * g.viewScale - hh) < 1e-6
+        && h.canvas.width === Math.floor(w * dpr) && h.canvas.height === Math.floor(hh * dpr);
+      if (!good) ok = false;
+      rows.push(`${w}x${hh}: x${Number(g.viewScale).toFixed(2)} world ${g.width.toFixed(0)}x${g.height.toFixed(0)}`);
+    }
+    r.check('world scale = max(1, short side / 250); world x scale = canvas; backing store = CSS x DPR', ok, rows.join(', '));
+  }
+
+  // --- Turrets aim at the core (NC-CORE-1A): a new ball starts outside the
+  //     core and its first flight ends on the core.
+  {
+    const rows = []; let ok = true;
+    for (const [w, hh] of CANVAS_SIZES) {
+      for (const L of [1, 4, 7, 10, 16, 30]) {
+        const h = loadGame({ width: w, height: hh, seed: L }); const g = h.newGame();
+        g.level = L; g.generateCore(L); g.balls = [];
+        for (const t of g.turrets) {
+          const toCore = Math.atan2(g.height / 2 - t.y, g.width / 2 - t.x);
+          const aimErr = Math.abs(Math.atan2(Math.sin(t.angle - toCore), Math.cos(t.angle - toCore)));
+          g.spawnBallFromTurret(t);
+          const b = g.balls[g.balls.length - 1];
+          const inside = g.blocks.some((k) => b.x + b.radius > k.x && b.x - b.radius < k.x + k.size && b.y + b.radius > k.y && b.y - b.radius < k.y + k.size);
+          if (aimErr > 1e-9 || inside) { ok = false; rows.push(`${w}x${hh} L${L}${inside ? ' spawn-in-core' : ' aim'}`); }
+        }
+      }
+    }
+    r.check('every turret aims at the core centre; a new ball spawns clear of every block (8 sizes x 6 levels)', ok, rows.slice(0, 6).join(', '));
+  }
+
+  // --- Core progress bar value.
+  {
+    const h = loadGame({ width: 907, height: 339 }); const g = h.newGame();
+    if (g.coreProgress === undefined) { r.check('core progress: 0 on a fresh core, destroyed HP / total HP, 1 when cleared', false, 'no coreProgress'); return r; }
+    const p0 = g.coreProgress;
+    const total = g.blocks.length * g.blocks[0].maxHp;
+    g.blocks[0].takeHit(3);
+    const p1 = g.coreProgress;
+    for (const b of g.blocks.slice(1)) b.takeHit(1e9);
+    g.blocks[0].takeHit(1e9);
+    r.check('core progress: 0 on a fresh core, destroyed HP / total HP, 1 when cleared', p0 === 0 && Math.abs(p1 - 3 / total) < 1e-12 && g.coreProgress === 1, `p0=${p0} p1=${p1.toFixed(4)} end=${g.coreProgress}`);
   }
   return r;
 }

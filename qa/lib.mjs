@@ -163,17 +163,27 @@ export function mulberry32(seed) {
 
 function makeElement(id) {
   const handlers = {};
-  return {
+  const el = {
     id,
     textContent: '',
     disabled: false,
     style: {},
+    hidden: false,
+    classes: new Set(),
+    classList: {
+      add(c) { this._el.classes.add(c); },
+      remove(c) { this._el.classes.delete(c); },
+      contains(c) { return this._el.classes.has(c); },
+      toggle(c, force) { const on = force === undefined ? !this._el.classes.has(c) : !!force; if (on) this._el.classes.add(c); else this._el.classes.delete(c); return on; },
+    },
     addEventListener(type, fn) { (handlers[type] ||= []).push(fn); },
     /** Mirrors a real click: a disabled <button> dispatches nothing. */
     click() { if (this.disabled) return false; for (const fn of handlers.click || []) fn({ type: 'click' }); return true; },
     /** Calls the handler even when disabled (tests the code's own guard). */
     forceClick() { for (const fn of handlers.click || []) fn({ type: 'click' }); },
   };
+  el.classList._el = el;
+  return el;
 }
 
 /** Canvas 2D context stub: every method is a no-op, every property settable.
