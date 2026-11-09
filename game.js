@@ -17,6 +17,20 @@ const SAVE_INT_MAX = 1000;
 const SAVE_INT_FIELDS = ['level', 'maxBalls', 'fireRateLevel', 'damageLevel'];
 const MAX_PARTICLES = 400;
 
+// Fixed simulation step (NC-03): the game advances in equal 1/240 s steps
+// whatever the display refresh rate (60/144/165 Hz all run the same steps),
+// so hits, income and RNG use do not depend on the monitor. A frame longer
+// than MAX_FRAME_DT (tab switch, hitch) is clamped: the game slows down
+// instead of running a burst of steps.
+const SIM_STEP = 1 / 240;
+const MAX_FRAME_DT = 0.05;
+// Minimum gap between a turret centre and the core's bounding box (NC-14).
+const TURRET_CLEARANCE = 20;
+// Turrets sit this far beyond the core extent when the canvas allows it.
+const TURRET_MARGIN = 44;
+// Turrets stay this far inside the canvas edge on the short axis.
+const TURRET_EDGE_INSET = 20;
+
 // ---------------------------------------------------------------------------
 // Localization: one table, English is the default and the fallback.
 // ---------------------------------------------------------------------------
@@ -134,7 +148,8 @@ class Particle {
     this.vy += 420 * dt;
     this.x += this.vx * dt;
     this.y += this.vy * dt;
-    this.vx *= 0.985;
+    // 0.985 per 1/60 s (the original per-frame drag at 60 Hz), now per time.
+    this.vx *= Math.pow(0.985, dt * 60);
     this.life -= dt;
     if (this.life <= 0) this.active = false;
   }
@@ -202,6 +217,10 @@ class Block {
     this.offsetX = offsetX;
     this.offsetY = offsetY;
     this.size = size;
+    // Geometry as generated for the level; resize scales from these (NC-15).
+    this.baseOffsetX = offsetX;
+    this.baseOffsetY = offsetY;
+    this.baseSize = size;
     this.maxHp = maxHp;
     this.hp = maxHp;
     this.moneyPerHit = moneyPerHit;
@@ -215,6 +234,12 @@ class Block {
   applyCenter(cx, cy) {
     this.x = cx + this.offsetX - this.size / 2;
     this.y = cy + this.offsetY - this.size / 2;
+  }
+
+  applyScale(scale) {
+    this.offsetX = this.baseOffsetX * scale;
+    this.offsetY = this.baseOffsetY * scale;
+    this.size = this.baseSize * scale;
   }
 
   takeHit(damage) {
@@ -316,12 +341,15 @@ class Ball {
     const distSq = dx * dx + dy * dy;
     if (distSq >= this.radius * this.radius) return null;
 
-    let nx, ny;
+    let nx, ny, push;
     const dist = Math.sqrt(distSq);
     if (dist > 0.0001) {
       nx = dx / dist;
       ny = dy / dist;
+      push = this.radius - dist;
     } else {
+      // Centre inside the block (level regenerated or resized on top of the
+      // ball): leave through the nearest face, fully (NC-02).
       const overlapLeft = this.x - block.x;
       const overlapRight = block.x + block.size - this.x;
       const overlapTop = this.y - block.y;
@@ -331,16 +359,25 @@ class Ball {
       else if (minOverlap === overlapRight) { nx = 1; ny = 0; }
       else if (minOverlap === overlapTop) { nx = 0; ny = -1; }
       else { nx = 0; ny = 1; }
+      push = minOverlap + this.radius;
+      this.x += nx * (push + 0.5);
+      this.y += ny * (push + 0.5);
+      push = null; // already resolved
     }
 
     const dot = this.vx * nx + this.vy * ny;
+    // Only an approaching ball bounces and scores (NC-01); one already moving
+    // away keeps its velocity and simply leaves the contact.
+    if (dot >= 0) return null;
+
     this.vx = this.vx - 2 * dot * nx;
     this.vy = this.vy - 2 * dot * ny;
     this.normalizeSpeed();
 
-    const overlap = this.radius - dist;
-    this.x += nx * (overlap + 0.5);
-    this.y += ny * (overlap + 0.5);
+    if (push !== null) {
+      this.x += nx * (push + 0.5);
+      this.y += ny * (push + 0.5);
+    }
 
     return { x: closestX, y: closestY };
   }
@@ -368,6 +405,9 @@ class Turret {
     this.offsetY = offsetY;
     this.angle = angle;
     this.color = color;
+    // Unit direction from the core centre (set by placeTurrets).
+    this.dirX = 0;
+    this.dirY = 0;
     this.x = 0;
     this.y = 0;
     this.cooldown = 0;
@@ -438,6 +478,13 @@ class Game {
     this.saveTimer = 0;
 
     this.lastTime = 0;
+    this.accumulator = 0;
+    this.simSteps = 0; // fixed steps run so far (test seam, not saved)
+
+    // Unscaled core geometry of the current level (fitCoreToCanvas).
+    this.coreExtent = 0;
+    this.coreRadius = 0;
+    this.coreScale = 1;
 
     this.saveBlocked = false;
     this.lang = detectLanguage(
@@ -601,7 +648,53 @@ class Game {
       }
     }
 
+    this.fitCoreToCanvas();
+  }
+
+  /** Scales the level's core down (never up past its generated size) so that
+   *  blocks and turrets fit the canvas with TURRET_CLEARANCE between them,
+   *  then places the turrets and re-centres everything. Called after every
+   *  level generation and every resize; block HP and state are untouched
+   *  (NC-14, NC-15). On canvases where the core already fits, scale = 1 and
+   *  the geometry is exactly the generated one. */
+  fitCoreToCanvas() {
+    const half = Math.min(this.width, this.height) / 2;
+    const room = half - TURRET_EDGE_INSET - TURRET_CLEARANCE;
+    const scale = this.coreRadius > 0 ? clamp(room / this.coreRadius, 0.2, 1) : 1;
+    this.coreScale = scale;
+    for (const block of this.blocks) block.applyScale(scale);
+    const dist = Math.min(this.coreExtent * scale + TURRET_MARGIN, half - TURRET_EDGE_INSET);
+    for (const turret of this.turrets) {
+      turret.offsetX = turret.dirX * dist;
+      turret.offsetY = turret.dirY * dist;
+    }
     this.repositionCoreAndTurrets();
+    for (const ball of this.balls) this.ejectFromCore(ball);
+  }
+
+  /** A ball whose centre is inside a block (the level was generated or the
+   *  core resized on top of it) is moved straight away from the core centre
+   *  until it touches no block: no hit, no bounce (NC-02). Pushing it out of
+   *  one block alone is not enough: grid gaps (5 px) are narrower than a ball. */
+  ejectFromCore(ball) {
+    const alive = this.blocks.filter((b) => b.alive);
+    const embedded = (b) => ball.x > b.x && ball.x < b.x + b.size && ball.y > b.y && ball.y < b.y + b.size;
+    if (!alive.some(embedded)) return;
+    const touching = (b) => {
+      const dx = ball.x - clamp(ball.x, b.x, b.x + b.size);
+      const dy = ball.y - clamp(ball.y, b.y, b.y + b.size);
+      return dx * dx + dy * dy < ball.radius * ball.radius;
+    };
+    let dx = ball.x - this.width / 2;
+    let dy = ball.y - this.height / 2;
+    if (Math.hypot(dx, dy) < 1e-6) { dx = ball.vx; dy = ball.vy; }
+    const len = Math.hypot(dx, dy) || 1;
+    for (let i = 0; i < 500 && alive.some(touching); i++) {
+      ball.x += (dx / len) * 2;
+      ball.y += (dy / len) * 2;
+    }
+    ball.x = clamp(ball.x, ball.radius, this.width - ball.radius);
+    ball.y = clamp(ball.y, ball.radius, this.height - ball.radius);
   }
 
   repositionCoreAndTurrets() {
@@ -666,14 +759,20 @@ class Game {
       this.blocks.push(block);
     });
 
-    this.placeTurrets(level, layout.extent);
-    this.repositionCoreAndTurrets();
+    // Half-size of the core's bounding box, measured from the generated blocks.
+    this.coreRadius = 0;
+    for (const b of this.blocks) {
+      this.coreRadius = Math.max(this.coreRadius, Math.abs(b.baseOffsetX) + b.baseSize / 2, Math.abs(b.baseOffsetY) + b.baseSize / 2);
+    }
+    this.coreExtent = layout.extent;
+    this.placeTurrets(level);
+    this.fitCoreToCanvas();
   }
 
-  placeTurrets(level, extent) {
+  /** Creates the level's turrets (N/E/S/W, outward); fitCoreToCanvas sets
+   *  their distance from the core. */
+  placeTurrets(level) {
     const count = Math.min(1 + Math.floor((level - 1) / 3), 4);
-    const margin = 44;
-    const dist = Math.min(extent + margin, Math.min(this.width, this.height) / 2 - 20);
     const compass = [
       { dx: 0, dy: -1 },
       { dx: 1, dy: 0 },
@@ -685,10 +784,10 @@ class Game {
     this.turrets = [];
     for (let i = 0; i < count; i++) {
       const dir = compass[i];
-      const offsetX = dir.dx * dist;
-      const offsetY = dir.dy * dist;
-      const angle = Math.atan2(dir.dy, dir.dx);
-      this.turrets.push(new Turret(offsetX, offsetY, angle, colors[i]));
+      const turret = new Turret(0, 0, Math.atan2(dir.dy, dir.dx), colors[i]);
+      turret.dirX = dir.dx;
+      turret.dirY = dir.dy;
+      this.turrets.push(turret);
     }
   }
 
@@ -759,7 +858,14 @@ class Game {
   }
 
   handleBallBlockCollisions() {
+    // Broad phase: every block lies inside the core's bounding box, so a ball
+    // that does not reach that box cannot touch any block (exact, no effect
+    // on results; keeps the fixed-step cost low while balls fly elsewhere).
+    const cx = this.width / 2;
+    const cy = this.height / 2;
+    const reach = this.coreRadius * this.coreScale;
     for (const ball of this.balls) {
+      if (Math.abs(ball.x - cx) > reach + ball.radius || Math.abs(ball.y - cy) > reach + ball.radius) continue;
       for (const block of this.blocks) {
         if (!block.alive) continue;
         const contact = ball.collideBlock(block);
@@ -833,11 +939,17 @@ class Game {
 
   loop(timestamp) {
     if (!this.lastTime) this.lastTime = timestamp;
-    let dt = (timestamp - this.lastTime) / 1000;
-    dt = clamp(dt, 0, 0.05);
+    const frameDt = clamp((timestamp - this.lastTime) / 1000, 0, MAX_FRAME_DT);
     this.lastTime = timestamp;
 
-    this.update(dt);
+    // Fixed-timestep accumulator (NC-03): the same SIM_STEP updates in the
+    // same order at any refresh rate; draw() shows the latest state.
+    this.accumulator += frameDt;
+    while (this.accumulator >= SIM_STEP) {
+      this.update(SIM_STEP);
+      this.accumulator -= SIM_STEP;
+      this.simSteps += 1;
+    }
     this.draw();
 
     requestAnimationFrame((t) => this.loop(t));

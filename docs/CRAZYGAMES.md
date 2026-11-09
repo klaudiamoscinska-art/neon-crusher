@@ -36,7 +36,7 @@ rules change. No SDK, ads or monetization are implemented in this repo yet.
 | `user-select: none` on body (tablets) | Basic | PASS (Chromium); tablet NOT RUN | NC-08 closed, `qa/browser-smoke.mjs` |
 | Works in the CrazyGames app (safe areas) | Basic | IMPLEMENTED (insets on 4 sides); device NOT VERIFIED | NC-18 |
 | Readable at DPR 1 in the 10 iframe sizes (907×510, 1216×684, 1077×606, 821×462, 1366×768, 1920×1080, 1536×864, 1280×720, 800×450 mobile, 1080×607 tablet) | Basic | PASS automated (fits, no scroll, no overflow, smallest text 11.2 px, EN + PL); human readability judgement NOT VERIFIED; canvas 62 % at 800×450 | NC-17 |
-| Consistent physics at 144/165 Hz | Basic | FAIL (simulation) | NC-03 |
+| Consistent physics at 144/165 Hz | Basic | PASS (simulation: fixed timestep, same seed = identical state at 60/144/165 Hz); real 144/165 Hz monitor NOT RUN | NC-03 closed, `qa/physics.mjs` |
 | English localization; language from SDK locale, fallback English | Basic | PASS: EN default/fallback + PL; language from `?lang=` or the browser (no SDK yet); SDK locale with the SDK | NC-07 closed, `qa/i18n.mjs` |
 | Intuitive controls, smooth, no errors | Basic | PASS (0 console errors) / intuitiveness NOT VERIFIED | — |
 | Original name, assets, content | Basic | NOT VERIFIED | NC-12 |

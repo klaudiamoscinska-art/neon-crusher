@@ -204,7 +204,9 @@ export class FakeStorage {
   clear() { this.map.clear(); }
 }
 
-const GAME_SRC_PATH = path.join(ROOT, 'game.js');
+// NC_GAME_JS=<path> runs the suites against another game.js (e.g. the base
+// version extracted with `git show origin/main:game.js`) on the same machine.
+const GAME_SRC_PATH = process.env.NC_GAME_JS ? path.resolve(process.env.NC_GAME_JS) : path.join(ROOT, 'game.js');
 
 /**
  * Loads the real game.js into a fresh vm context.
@@ -258,9 +260,9 @@ export function loadGame({ width = 900, height = 600, dpr = 1, seed = 1, storage
   vm.runInContext(src, context, { filename: 'game.js' });
   // Top-level class/const declarations of a classic script live in the
   // context's global lexical scope; a second script in the same context sees them.
-  // Names added in NC-BASIC-1 are optional so the same suites can run against an
+  // Names added in NC-BASIC-1 / NC-PHYS-1 are optional so the same suites can run against an
   // older base game.js (base-vs-candidate comparison on one machine).
-  const optionalNames = ['SAVE_BACKUP_KEY', 'SAVE_INT_MAX', 'STRINGS', 'DEFAULT_LANGUAGE', 'detectLanguage', 'translate', 'formatMoney', 'sanitizeSave'];
+  const optionalNames = ['SAVE_BACKUP_KEY', 'SAVE_INT_MAX', 'STRINGS', 'DEFAULT_LANGUAGE', 'detectLanguage', 'translate', 'formatMoney', 'sanitizeSave', 'SIM_STEP', 'MAX_FRAME_DT', 'TURRET_CLEARANCE'];
   const api = vm.runInContext(`({ COLORS, SAVE_KEY, MAX_PARTICLES, clamp, randRange, Particle, ParticlePool, Block, Ball, Turret, Game, ${optionalNames.map((n) => `${n}: typeof ${n} === 'undefined' ? undefined : ${n}`).join(', ')} })`, context);
 
   let now = 0;

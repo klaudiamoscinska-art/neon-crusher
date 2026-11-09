@@ -1,5 +1,6 @@
 // Physics: Ball vs walls, Ball vs Block (circle-AABB), energy conservation,
-// tunnelling bound, refresh-rate consistency. Runs the real game.js (qa/lib.mjs).
+// approach check (NC-01), push-out of embedded balls (NC-02), tunnelling bound,
+// refresh-rate consistency at 60/144/165 Hz (NC-03). Runs the real game.js (qa/lib.mjs).
 // Usage: node qa/physics.mjs [--quick]
 import { loadGame, Reporter, isMain } from './lib.mjs';
 
@@ -42,17 +43,45 @@ export function run({ quick = false } = {}) {
     r.check('collideBlock corner: diagonal approach reflected back', near(b.vx, -s, 1e-6) && near(b.vy, -s, 1e-6));
   }
 
-  // --- Known defects (docs/RISKS.md).
+  // --- NC-01: only an approaching ball bounces and scores.
   {
     const b = new Ball(0, 0, 0, 250, 5, '#fff'); b.x = 113; b.y = 100; b.vx = 250; b.vy = 0; // overlapping the right face, already moving away
-    b.collideBlock(block());
-    r.known('NC-01', 'collideBlock reflects a ball that is already moving away (no approach check) -- sends it back into the block', b.vx < 0, `vx after=${b.vx}`);
+    const hit = b.collideBlock(block());
+    r.check('[NC-01] ball overlapping a face but moving away: no bounce, no hit (velocity kept)', hit === null && b.vx === 250 && b.vy === 0, `hit=${!!hit}, vx after=${b.vx}`);
+    const c = new Ball(0, 0, 0, 250, 5, '#fff'); c.x = 113; c.y = 100; c.vx = 0; c.vy = 250; // grazing: tangential motion only
+    r.check('[NC-01] tangential motion along a face (v.n = 0): no bounce, no hit', c.collideBlock(block()) === null && c.vy === 250);
   }
+
+  // --- NC-02: a ball whose centre is inside a block leaves it at once and
+  //     cannot score again while embedded.
   {
+    const overlaps = (b, blk) => {
+      const cx = Math.min(Math.max(b.x, blk.x), blk.x + blk.size); const cy = Math.min(Math.max(b.y, blk.y), blk.y + blk.size);
+      return (b.x - cx) ** 2 + (b.y - cy) ** 2 < b.radius ** 2;
+    };
+    const blk = block();
     const b = new Ball(0, 0, 0, 250, 5, '#fff'); b.x = 100; b.y = 100; b.vx = 0; b.vy = 250; // centre inside the block
-    b.collideBlock(block());
-    const inside = b.x > 90 && b.x < 110 && b.y > 90 && b.y < 110;
-    r.known('NC-02', 'ball whose centre is inside a block is pushed only radius+0.5 and stays inside (repeat hits)', inside, `pos=(${b.x},${b.y})`);
+    b.collideBlock(blk);
+    r.check('[NC-02] centre inside a block: pushed fully out through the nearest face (no overlap left)', !overlaps(b, blk), `pos=(${b.x},${b.y})`);
+    r.check('[NC-02] after the push-out a second resolve finds no contact (no repeat hit)', b.collideBlock(blk) === null);
+    const d = new Ball(0, 0, 0, 250, 5, '#fff'); d.x = 93; d.y = 101; d.vx = 250; d.vy = 0; // inside near the left face, moving deeper
+    const hit = d.collideBlock(blk);
+    r.check('[NC-02] centre inside, moving deeper: one bounce out of the nearest face, outside afterwards', !!hit && d.vx < 0 && !overlaps(d, blk), `v=(${d.vx},${d.vy}) pos=(${d.x},${d.y})`);
+
+    // Integration: a ball on the centre of every block, then the level is
+    // generated again on top of them (what a level-up does to balls in the
+    // core). Resolving collisions 10 times without moving the balls = a stuck
+    // ball; it may score at most once.
+    const hx = loadGame({ seed: 4 }); const g = hx.newGame();
+    g.balls = [];
+    for (const blkx of g.blocks) { const bb = new Ball(blkx.x + blkx.size / 2, blkx.y + blkx.size / 2, (g.balls.length * 2.4) % (2 * Math.PI), 250, 5, '#fff'); g.balls.push(bb); }
+    g.generateCore(g.level);
+    g.damageLevel = 1e-9; const cash0 = g.cash;
+    for (let i = 0; i < 10; i++) g.handleBallBlockCollisions();
+    const hits = g.cash - cash0;
+    const stillInside = g.balls.filter((bb) => g.blocks.some((blkx) => bb.x > blkx.x && bb.x < blkx.x + blkx.size && bb.y > blkx.y && bb.y < blkx.y + blkx.size)).length;
+    r.check('[NC-02] level generated on top of balls: at most one hit per ball over 10 resolves', hits <= g.balls.length, `${hits} hits for ${g.balls.length} balls`);
+    r.check('[NC-02] no ball centre left inside a block after resolving', stillInside === 0, `${stillInside} inside`);
   }
 
   // --- Walls: stays inside, speed preserved after jitter.
@@ -69,30 +98,59 @@ export function run({ quick = false } = {}) {
     r.check('bounceWalls: speed preserved after jittered bounces', speedOk);
   }
 
-  // --- Tunnelling bound: the largest step per frame (max speed x dt clamp)
-  //     must be smaller than the thinnest obstacle the centre can cross
-  //     (min block size + 2 x radius). Spec values: speed <= 280, dt <= 0.05,
-  //     block size >= 16, radius 5 (docs/GAME_DESIGN.md).
+  // --- Tunnelling bound: the largest step per simulation step (max speed x
+  //     SIM_STEP; on a base without a fixed step: x the 0.05 s dt clamp) must
+  //     be smaller than the thinnest obstacle the centre can cross (min block
+  //     size + 2 x radius). Spec values: speed <= 280, radius 5
+  //     (docs/GAME_DESIGN.md); blocks may be scaled down on small canvases.
   {
     const g = h.newGame();
     let maxSpeed = 0;
     for (let i = 0; i < 500; i++) { g.spawnBallFromTurret(g.turrets[0]); }
     for (const b of g.balls) maxSpeed = Math.max(maxSpeed, b.speed);
     const radius = g.balls[0].radius;
-    const step = maxSpeed * 0.05;
+    const dtMax = h.SIM_STEP ?? 0.05;
+    const step = maxSpeed * dtMax;
     let minSize = Infinity;
     for (const [w, hh] of [[320, 200], [800, 300], [1920, 900]]) {
       const hx = loadGame({ width: w, height: hh, seed: 3 }); const gx = hx.newGame();
       for (let lvl = 1; lvl <= 30; lvl++) { gx.generateCore(lvl); for (const b of gx.blocks) minSize = Math.min(minSize, b.size); }
     }
-    r.check('no tunnelling: max step per frame < min block size + ball diameter', step < minSize + 2 * radius, `step=${step.toFixed(1)}px, block>=${minSize}px, radius=${radius}`);
-    r.info('tunnelling margin', `max speed ${maxSpeed.toFixed(1)} px/s, dt clamp 0.05 s -> ${step.toFixed(1)} px/frame vs ${minSize + 2 * radius} px`);
+    r.check('no tunnelling: max step per simulation step < min block size + ball diameter', step < minSize + 2 * radius, `step=${step.toFixed(2)}px, block>=${minSize.toFixed(1)}px, radius=${radius}`);
+    r.info('tunnelling margin', `max speed ${maxSpeed.toFixed(1)} px/s, step ${dtMax.toFixed(4)} s -> ${step.toFixed(2)} px/step vs ${(minSize + 2 * radius).toFixed(1)} px`);
   }
 
-  // --- Refresh-rate consistency (CrazyGames "Consistent Physics"): hit rate at
-  //     60 Hz vs 144 Hz over many seeds, blocks made indestructible so the
-  //     layout stays fixed. Measured as cash/s (1 cash per hit at level 1).
+  // --- Refresh-rate consistency (CrazyGames "Consistent Physics", NC-03).
+  //     (a) Exact: the same seed gives the same game state at 60/144/165 Hz
+  //         after the same number of fixed steps (cash, level, ball positions).
+  //     (b) Statistical: hit rate over many seeds, blocks indestructible so the
+  //         layout stays fixed (1 cash per hit at level 1), 30 s of game time
+  //         after a 10 s warm-up, at 60, 144 and 165 Hz.
   {
+    const HZ = [60, 144, 165];
+    const snapshot = (g) => `${g.cash}|${g.level}|${g.balls.length}|${g.balls.map((b) => `${b.x.toFixed(9)},${b.y.toFixed(9)}`).join(';')}`;
+    const trace = (hz, seed) => {
+      const hx = loadGame({ seed }); const g = hx.newGame();
+      g.maxBalls = 12; g.fireRateLevel = 12; g.recalcFireInterval();
+      const at = new Map();
+      hx.run(20, hz, (i, gg) => { if (gg.simSteps !== undefined) at.set(gg.simSteps, snapshot(gg)); });
+      return at;
+    };
+    let compared = 0; let mismatch = null;
+    const exactSeeds = quick ? [1, 2] : [1, 2, 3, 4, 5, 6];
+    for (const seed of exactSeeds) {
+      const traces = HZ.map((hz) => trace(hz, seed));
+      for (const [steps, snap] of traces[0]) {
+        if (steps === 0) continue;
+        for (let k = 1; k < traces.length; k++) {
+          if (!traces[k].has(steps)) continue;
+          compared++;
+          if (traces[k].get(steps) !== snap && !mismatch) mismatch = `seed ${seed}, step ${steps}: 60 Hz vs ${HZ[k]} Hz differ`;
+        }
+      }
+    }
+    r.check('[NC-03] same seed -> identical state (cash, level, every ball position) at 60/144/165 Hz after the same fixed steps', compared > 0 && !mismatch, mismatch || `${compared} comparisons, seeds ${exactSeeds.join(',')}`);
+
     const seeds = quick ? 12 : 48;
     const rate = (hz, seed) => {
       const hx = loadGame({ seed }); const g = hx.newGame();
@@ -105,12 +163,17 @@ export function run({ quick = false } = {}) {
       const sd = Math.sqrt(xs.reduce((a, b) => a + (b - m) ** 2, 0) / (xs.length - 1));
       return { m, se: sd / Math.sqrt(xs.length) };
     };
-    const a = stats(60); const b = stats(144);
-    const z = (a.m - b.m) / Math.sqrt(a.se ** 2 + b.se ** 2);
-    const rel = (a.m - b.m) / a.m;
-    r.info('hit rate 60 Hz vs 144 Hz', `${a.m.toFixed(3)}+-${a.se.toFixed(3)} vs ${b.m.toFixed(3)}+-${b.se.toFixed(3)} hits/s, diff ${(rel * 100).toFixed(1)}%, z=${z.toFixed(2)}, seeds=${seeds}`);
-    if (quick) r.notRun('[NC-03] refresh-rate dependence verdict', '--quick uses 12 seeds: too few for a verdict (full run: node qa/physics.mjs)');
-    else r.known('NC-03', 'hit rate depends on refresh rate (60 vs 144 Hz differ by > 3 standard errors)', Math.abs(z) > 3, `diff ${(rel * 100).toFixed(1)}%, z=${z.toFixed(2)}`);
+    const st = Object.fromEntries(HZ.map((hz) => [hz, stats(hz)]));
+    let worstZ = 0; let worstRel = 0;
+    for (const hz of [144, 165]) {
+      const a = st[60]; const b = st[hz];
+      const z = (a.m - b.m) / (Math.sqrt(a.se ** 2 + b.se ** 2) || 1);
+      const rel = (a.m - b.m) / a.m;
+      worstZ = Math.max(worstZ, Math.abs(z)); worstRel = Math.max(worstRel, Math.abs(rel));
+      r.info(`hit rate 60 Hz vs ${hz} Hz`, `${a.m.toFixed(3)}+-${a.se.toFixed(3)} vs ${b.m.toFixed(3)}+-${b.se.toFixed(3)} hits/s, diff ${(rel * 100).toFixed(1)}%, z=${z.toFixed(2)}, seeds=${seeds}`);
+    }
+    if (quick) r.notRun('[NC-03] refresh-rate statistical verdict (48 seeds)', '--quick uses 12 seeds (full run: node qa/physics.mjs); the exact same-seed check above still ran');
+    else r.check('[NC-03] hit rate at 144 and 165 Hz within 2 standard errors and 2 % of 60 Hz (48 seeds)', worstZ < 2 && worstRel < 0.02, `worst |z|=${worstZ.toFixed(2)}, worst diff ${(worstRel * 100).toFixed(1)}%`);
   }
 
   return r;

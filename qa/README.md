@@ -18,12 +18,29 @@ node qa/<suite>.mjs                      # one suite
 | `qa/integrity.mjs` | `node --check` on all JS; runtime file set from `index.html`; relative paths; zero external URLs; save-key literal; no `eval`/`innerHTML`; no Liquid tags in published Markdown (Pages/Jekyll); `--base <ref>` runtime diff, `--no-runtime-change` makes it a gate | no |
 | `qa/instructions.mjs` | `CLAUDE.md` budget + required rules; skill format/name/description budget; skill map sync; dead paths; duplicated lines; doc sizes; KNOWN ids registered in `docs/RISKS.md` | no |
 | `qa/runner.mjs` | self-test of the runner: a mandatory suite with zero checks, only NOT RUN rows or only KNOWN rows blocks; a FAIL or crash always blocks (also in an optional suite); only the optional browser-smoke may be NOT RUN, and only for an unavailable environment; real CLI exit codes (`NC_QA_NO_BROWSER=1` simulates a machine without a browser) | no |
-| `qa/physics.mjs` | reflections per face/corner/oblique, push-out, walls, speed conservation, tunnelling bound, refresh-rate consistency (60 vs 144 Hz, 48 seeds; `--quick` = 12 seeds, verdict NOT RUN) | no |
-| `qa/levels.mjs` | grid/circle alternation, N×N, rings, HP and money scaling, turret count, level-up, geometry on 8 canvas sizes × 30 levels, resize | no |
+| `qa/physics.mjs` | reflections per face/corner/oblique, push-out, approach check (NC-01), embedded balls leave without repeat hits (NC-02), walls, speed conservation, tunnelling bound per fixed step, refresh rate (NC-03): same seed = identical state at 60/144/165 Hz, hit rate within 2 SE / 2 % (48 seeds; `--quick` = 12 seeds, statistical verdict NOT RUN) | no |
+| `qa/levels.mjs` | grid/circle alternation, N×N, rings, HP and money scaling, turret count, level-up, geometry on 8 canvas sizes × 30 levels, turret clearance (NC-14), core kept at full size on desktop canvases, resize: fit inside, restore, HP kept, resize storm with balls (NC-15) | no |
 | `qa/economy.mjs` | cost curves, purchases through the real buttons, fire interval floor, live damage, income per hit, maxBalls cap, fire-rate value, time to first purchase, greedy bot level-1 time | no |
 | `qa/save.mjs` | key, fields, round trip, autosave 5 s, lifecycle saves, storage throwing, valid saves kept unchanged, per-field fallback of invalid numbers, backup of unreadable/unsupported saves before any write, no overwrite when the backup or the read fails | no |
 | `qa/i18n.mjs` | EN/PL tables (same keys, placeholders, no Polish in English), language selection (`?lang=`, browser list, English fallback), every label filled, number formatting | no |
 | `qa/browser-smoke.mjs` | real Chromium at the 10 CrazyGames frames (DPR 1), English and Polish browser: errors, external requests, page scroll, shop visible, text inside buttons, smallest text, canvas share of the height, animation, user-select, safe-area padding, save restore + reload, corrupted save backed up; screenshots `qa/out/shots/` | Playwright if installed, else NOT RUN |
+
+## Measurement tool (not a suite)
+
+`qa/pace.mjs` prints progression-pace numbers (time to the first purchase,
+early income with one ball, greedy-bot income per minute and level after
+10 min) for a runtime change's economy report. Never PASS/FAIL, not in
+`run-all`. Base vs candidate on the same machine:
+
+```bash
+git show origin/main:game.js > /tmp/base-game.js
+NC_GAME_JS=/tmp/base-game.js node qa/pace.mjs --hz 60,144   # base
+node qa/pace.mjs --hz 60,144,165                             # candidate
+node qa/pace.mjs --only early --hz 60                        # early income only
+```
+
+`NC_GAME_JS=<path>` works for every suite too (e.g. to show that a new check
+fails on the base).
 
 ## Harness (`qa/lib.mjs`)
 

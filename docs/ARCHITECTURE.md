@@ -26,33 +26,46 @@ Note: GitHub Pages currently publishes the whole repo root (`docs/RELEASE.md`).
   core's centre (not absolute coordinates) plus `size`, `hp`/`maxHp`,
   `moneyPerHit`, `color`, `alive`, `hitFlash`. `applyCenter(cx, cy)` turns the
   offset into absolute top-left `x/y`; this makes resize/relayout cheap.
-  A destroyed block stays in the list while `hitFlash > 0` (fade-out), then is
+  `baseOffsetX/baseOffsetY/baseSize` keep the geometry as generated;
+  `applyScale(s)` derives the current offsets/size from them. A destroyed block stays in the list while `hitFlash > 0` (fade-out), then is
   filtered out.
 - `Turret` — same offset-from-centre pattern. Fires by spawning a `Ball` into
   `Game` on a cooldown (`game.fireInterval`, ms), but only while
   `game.balls.length < game.maxBalls` — it has no ball supply of its own. It
-  points outward from the core (compass N/E/S/W).
+  points outward from the core (compass N/E/S/W, unit vector `dirX/dirY`).
 - `Ball` — position + velocity + fixed `speed`. `collideBlock(block)` is
   circle-vs-AABB (closest-point); it reflects velocity with
   `v' = v - 2(v·n)n`, renormalises to `speed` (no energy gain/loss over many
-  bounces) and pushes the ball out along `n`. `bounceWalls` reflects off the
-  canvas edges and adds a small random angle jitter (±0.12 rad) on wall bounces
-  only — block bounces stay exact. Known defects: `docs/RISKS.md` NC-01, NC-02.
+  bounces) and pushes the ball out along `n` — only when the ball approaches
+  (`v·n < 0`); a ball already moving away is left alone and scores nothing
+  (NC-01). A centre inside the block leaves through the nearest face, fully
+  (NC-02). `bounceWalls` reflects off the canvas edges and adds a small random
+  angle jitter (±0.12 rad) on wall bounces only — block bounces stay exact.
 - `Particle` / `ParticlePool` — pooled particles (hit sparks, destruction
   bursts) capped at `MAX_PARTICLES` (400) to avoid GC churn.
 
 Top-level helpers: `COLORS` (cyan/pink/green), `SAVE_KEY`, `SAVE_BACKUP_KEY`,
-`MAX_PARTICLES`, `clamp`, `randRange` (uses unseeded `Math.random`);
+`MAX_PARTICLES`, `SIM_STEP`/`MAX_FRAME_DT` (loop), `TURRET_CLEARANCE`/
+`TURRET_MARGIN`/`TURRET_EDGE_INSET` (core fitting), `clamp`, `randRange` (uses unseeded `Math.random`);
 `STRINGS` (en/pl table), `detectLanguage`, `translate`, `formatMoney`
 (localization, `Game.t()`/`applyLanguage()`); `sanitizeSave` (pure save
 validation, `docs/SAVE.md`).
 
 ## Frame loop
 
-`loop(t)`: `dt = clamp((t - lastTime)/1000, 0, 0.05)` (below 20 FPS the game
-slows down instead of taking big steps), then `update(dt)`, `draw()`.
-`update`: turrets → balls move + wall bounce → ball/block collisions (each ball
-resolves at most one block per frame, then `break`) → blocks fade → level-up
+`loop(t)`: fixed timestep (NC-03). `frameDt = clamp((t - lastTime)/1000, 0,
+MAX_FRAME_DT = 0.05)` is added to `accumulator`; while it holds a whole
+`SIM_STEP` (1/240 s) the loop runs `update(SIM_STEP)` and counts `simSteps`;
+then one `draw()`. Every refresh rate runs the same steps in the same order,
+so the same seed gives the same game at 60/144/165 Hz (`qa/physics.mjs`).
+Below 20 FPS the game slows down instead of running a burst of steps. 60 Hz =
+4 steps per frame, 144 Hz ≈ 1.7, 165 Hz ≈ 1.5; draw shows the latest step
+(no interpolation: a ball moves ≤ 1.2 px per step). Anything in `update` must
+use `dt`, never "per call" factors (particle drag is `0.985^(dt·60)`).
+`update`: turrets → balls move + wall bounce → ball/block collisions (broad
+phase: a ball outside the core's bounding box ± radius skips the block loop —
+exact, keeps 4 steps/frame cheaper than the old 1 step; each ball resolves at
+most one hit per step, then `break`) → blocks fade → level-up
 check → particles → UI refresh every 0.15 s → autosave every 5 s.
 
 The level-up check computes `aliveRemaining` from `this.blocks` **before**
@@ -66,13 +79,19 @@ history).
 scratch on every level-up (balls are kept):
 - odd levels → `gridLayout()` (N×N, N grows with level, capped at 7); even
   levels → `circleLayout()` (one ring, two rings from level 5);
-- both return points as **offsets from the core centre**;
-  `repositionCoreAndTurrets()` (after every layout and resize) applies the
-  current canvas centre — this is what makes the canvas resize-safe without
-  regenerating the level or losing HP;
-- block HP and money per hit scale `base × 1.5^(level-1)`;
-- `placeTurrets()` adds one turret per 3 levels (N/E/S/W, max 4) at
-  `core extent + 44 px`, clamped to `min(w,h)/2 - 20` (NC-14).
+- both return points as **offsets from the core centre**; `generateCore`
+  records the unscaled core half-size (`coreRadius`) and `extent`;
+- `placeTurrets()` creates one turret per 3 levels (N/E/S/W, max 4);
+- `fitCoreToCanvas()` (after every generation and every resize) scales the
+  core down — never up past its generated size — so that turrets at
+  `min(extent + 44, min(w,h)/2 − 20)` keep `TURRET_CLEARANCE` (20 px) from it
+  (NC-14), sets the turret offsets, calls `repositionCoreAndTurrets()` (applies
+  the canvas centre) and `ejectFromCore()` for every ball whose centre ended up
+  inside a block (moved straight away from the core centre, no hit; NC-02).
+  Where the core fits (all desktop CrazyGames canvases) scale = 1 and the
+  geometry is exactly the generated one; it shrinks only on short canvases at
+  higher levels (`qa/levels.mjs` INFO lists the cases);
+- block HP and money per hit scale `base × 1.5^(level-1)`.
 
 ## Upgrades and economy (code view)
 
@@ -89,8 +108,11 @@ flight. `maxBalls` is a cap, not a spawn count.
   is re-applied on every resize; all drawing uses CSS-pixel coordinates.
 - Resize sources: `resize`, `orientationchange`, `ResizeObserver` on
   `#gameArea`. On resize, ball positions scale by the old/new size ratio,
-  while core/turrets are re-centred from their offsets — two strategies for two
-  data shapes, both in `Game.resize()`. Layout sizes are not recomputed (NC-15).
+  then `fitCoreToCanvas()` re-fits the core from its generated geometry
+  (shrinks it on a small canvas, restores it on a large one), places the
+  turrets and ejects embedded balls; block HP and state are untouched (NC-15).
+  A core generated on a small canvas stays small after enlarging until the
+  next level.
 
 ## Neon rendering convention
 
@@ -124,8 +146,10 @@ script. Planned hooks (each needs its own approved runtime stage):
 
 - an injectable RNG (`Game` option or `NC_RNG`) — needed only if gameplay
   seeds become a feature (daily layouts);
-- a fixed-timestep simulation (`accumulator`, e.g. 120 Hz substeps) — the fix
-  path for NC-03 and NC-01/02;
+
+Done in NC-PHYS-1: fixed-timestep loop with a `simSteps` counter (the harness
+compares states at equal step counts across refresh rates); `NC_GAME_JS=<path>`
+makes every suite and `qa/pace.mjs` load another `game.js` (base vs candidate).
 
 Done in NC-BASIC-1: pure `sanitizeSave(data)` (NC-04/NC-05) and the i18n
 table `STRINGS.en/pl` (NC-07), both visible to the harness.
