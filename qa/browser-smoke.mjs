@@ -94,7 +94,7 @@ export async function run() {
     await page.goto(base + 'index.html'); await page.waitForTimeout(300);
     const read = () => page.evaluate(() => ({ lvl: document.getElementById('statLevel').textContent, cash: document.getElementById('statCash').textContent, lang: document.documentElement.lang, title: document.querySelector('.shop-btn__title').textContent }));
     const ui = await read();
-    r.check('save in localStorage is restored on load (level 3, cash >= $4321)', ui.lvl === '3' && /4\D?321/.test(ui.cash), JSON.stringify(ui));
+    r.check('save in localStorage is restored on load (level 3, cash >= $4321)', ui.lvl === '3' && Number(ui.cash.replace(/\D/g, '')) >= 4321, JSON.stringify(ui));
     await page.reload(); await page.waitForTimeout(300);
     const ui2 = await read();
     r.check('reload keeps the progress (beforeunload/pagehide save)', ui2.lvl === '3', JSON.stringify(ui2));
