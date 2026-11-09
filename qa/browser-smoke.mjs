@@ -44,7 +44,7 @@ export async function run() {
   const shots = path.join(OUT, 'shots'); fs.mkdirSync(shots, { recursive: true });
 
   const errors = []; const external = []; const scroll = []; const shopOff = []; const still = []; const sizes = []; const fonts = [];
-  const overflow = []; const smallCanvas = []; const langs = {}; const titles = {};
+  const overflow = []; const smallCanvas = []; const langs = {}; const titles = {}; const hintBad = []; const hintTexts = {};
   let userSelect = null; let safeArea = null;
   try {
     for (const locale of ['en-US', 'pl-PL']) {
@@ -69,7 +69,10 @@ export async function run() {
           let css = '';
           for (const sheet of document.styleSheets) for (const rule of sheet.cssRules) css += rule.cssText;
           const insets = ['top', 'bottom', 'left', 'right'].filter((side) => css.includes(`safe-area-inset-${side}`));
-          return { cw: c.width, ch: c.height, shopBottom: shop.bottom, sh: document.documentElement.scrollHeight, sw: document.documentElement.scrollWidth, us: getComputedStyle(document.body).userSelect, minFont, over, lang: document.documentElement.lang, title: document.querySelector('.shop-btn__title').textContent, insets };
+          const hEl = document.getElementById('hint'); const hr = hEl.getBoundingClientRect();
+          const hint = { visible: !hEl.hidden && hr.width > 0, text: hEl.textContent, inside: hr.left >= c.left && hr.right <= c.right && hr.top >= c.top && hr.bottom <= c.bottom,
+            cut: hEl.scrollWidth > hEl.clientWidth + 1, passThrough: getComputedStyle(hEl).pointerEvents === 'none' && document.elementFromPoint(hr.left + hr.width / 2, hr.top + hr.height / 2)?.id === 'gameCanvas' };
+          return { hint, cw: c.width, ch: c.height, shopBottom: shop.bottom, sh: document.documentElement.scrollHeight, sw: document.documentElement.scrollWidth, us: getComputedStyle(document.body).userSelect, minFont, over, lang: document.documentElement.lang, title: document.querySelector('.shop-btn__title').textContent, insets };
         });
         sizes.push(`${w}x${h}->${Math.round(m.cw)}x${Math.round(m.ch)}`);
         fonts.push(m.minFont);
@@ -77,6 +80,8 @@ export async function run() {
         safeArea = m.insets;
         (langs[locale] ||= new Set()).add(m.lang); (titles[locale] ||= new Set()).add(m.title);
         if (m.over.length) overflow.push(`${tag}: ${m.over.join(',')}`);
+        if (!m.hint.visible || !m.hint.inside || m.hint.cut || !m.hint.passThrough) hintBad.push(`${tag}: ${JSON.stringify(m.hint)}`);
+        (hintTexts[locale] ||= new Set()).add(m.hint.text);
         if (m.ch / h < 0.7) smallCanvas.push(`${tag}: ${Math.round((100 * m.ch) / h)}%`);
         if (m.sh > h + 1 || m.sw > w + 1) scroll.push(tag);
         if (m.shopBottom > h + 1) shopOff.push(tag);
@@ -95,10 +100,11 @@ export async function run() {
     r.check('[NC-07] English browser -> English UI (lang="en", "Buy new ball") at every frame', [...langs['en-US']].join() === 'en' && [...titles['en-US']].join() === 'Buy new ball', `lang=${[...langs['en-US']]}, "${[...titles['en-US']]}"`);
     r.check('[NC-07] Polish browser -> Polish UI kept (lang="pl", "Kup nową kulę") at every frame', [...langs['pl-PL']].join() === 'pl' && [...titles['pl-PL']].join() === 'Kup nową kulę', `lang=${[...langs['pl-PL']]}, "${[...titles['pl-PL']]}"`);
     r.check('[NC-17] no text overflows its box in the top bar or the shop (both languages)', overflow.length === 0, overflow.slice(0, 4).join(' | '));
+    r.check('first-minute hint on a fresh save: visible, inside the field, not cut off, taps pass through to the game (both languages)', hintBad.length === 0, hintBad.slice(0, 2).join(' | ') || `en: ${[...hintTexts['en-US']]} | pl: ${[...hintTexts['pl-PL']]}`);
     r.check('[NC-17] smallest text >= 11 px at DPR 1', Math.min(...fonts) >= 11, `${Math.min(...fonts)} px`);
-    // A taller canvas slows the first purchase today (NC-09: a compact layout
-    // measured 43 -> 69.5 s at 800x450), so the canvas sizes are pinned to the
-    // NC-FOUNDATION-1 baseline until the first-minute redesign changes them.
+    // Layout guard: canvas sizes stay pinned to the NC-FOUNDATION-1 baseline;
+    // a layout change (NC-17) is its own decision. Since NC-CORE-1A the world
+    // scale keeps the pace nearly independent of the canvas size (NC-09).
     const BASELINE = '907x510->907x339 1216x684->1216x513 1077x606->1077x435 821x462->821x291 1366x768->1366x597 1920x1080->1920x909 1536x864->1536x693 1280x720->1280x549 800x450->800x279 1080x607->1080x436';
     r.check('canvas size at every frame and language unchanged vs baseline (gameplay pace unaffected)', sizes.join(' ') === `${BASELINE} ${BASELINE}`, sizes.filter((x) => !BASELINE.split(' ').includes(x)).join(' '));
     r.info('[NC-17] canvas share of the iframe height below 70 % (open, see docs/RISKS.md)', smallCanvas.length ? smallCanvas.join(', ') : 'none');

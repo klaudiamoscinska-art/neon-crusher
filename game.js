@@ -30,6 +30,16 @@ const TURRET_CLEARANCE = 20;
 const TURRET_MARGIN = 44;
 // Turrets stay this far inside the canvas edge on the short axis.
 const TURRET_EDGE_INSET = 20;
+// World scale (NC-09, NC-CORE-1A): the game simulates a world whose short
+// side is at most WORLD_SHORT_SIDE units and draws it scaled up to fill the
+// canvas. A bigger screen shows the same field larger instead of a bigger
+// field with the same small core, so the hit rate (and the first purchase)
+// no longer depends on the screen size. Canvases with a short side up to
+// this size are drawn 1:1 exactly as before.
+const WORLD_SHORT_SIDE = 250;
+// Floating "+$n" labels on hits: capped so a full field stays cheap (NC-13).
+const MAX_FLOAT_TEXTS = 10;
+const FLOAT_TEXT_LIFE = 0.8;
 
 // ---------------------------------------------------------------------------
 // Localization: one table, English is the default and the fallback.
@@ -46,6 +56,9 @@ const STRINGS = {
     fireRate: 'Fire rate',
     damage: 'Hit power',
     upgradeLevel: 'Lvl {n}',
+    core: 'Core',
+    hintStart: 'Every hit on the core pays cash',
+    hintBuy: 'Buy a new ball!',
   },
   pl: {
     locale: 'pl-PL',
@@ -56,6 +69,9 @@ const STRINGS = {
     fireRate: 'Szybkość strzału',
     damage: 'Siła uderzenia',
     upgradeLevel: 'Lvl {n}',
+    core: 'Rdzeń',
+    hintStart: 'Każde trafienie w rdzeń to kasa',
+    hintBuy: 'Kup nową kulę!',
   },
 };
 
@@ -209,6 +225,38 @@ class ParticlePool {
 
   draw(ctx) {
     for (const p of this.active) p.draw(ctx);
+  }
+}
+
+/** "+$n" label that rises and fades where a ball hit the core. */
+class FloatText {
+  /** `fontSize` is in world units, chosen by the game so the label keeps a
+   *  readable screen size whatever the world scale. */
+  constructor(x, y, text, color, fontSize) {
+    this.x = x;
+    this.y = y;
+    this.text = text;
+    this.color = color;
+    this.fontSize = fontSize;
+    this.life = FLOAT_TEXT_LIFE;
+  }
+
+  update(dt) {
+    this.y -= 28 * dt;
+    this.life -= dt;
+  }
+
+  draw(ctx) {
+    ctx.save();
+    ctx.globalAlpha = clamp(this.life / FLOAT_TEXT_LIFE, 0, 1);
+    ctx.fillStyle = this.color;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = this.color;
+    ctx.font = `bold ${this.fontSize.toFixed(2)}px "Segoe UI", Arial, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(this.text, this.x, this.y);
+    ctx.restore();
   }
 }
 
@@ -457,8 +505,11 @@ class Game {
     this.ctx = canvas.getContext('2d');
     this.wrapper = canvas.parentElement;
 
+    // World size (units); the canvas shows it scaled by viewScale (>= 1).
     this.width = 0;
     this.height = 0;
+    this.viewScale = 1;
+    this.dpr = 1;
 
     this.cash = 0;
     this.level = 1;
@@ -470,6 +521,9 @@ class Game {
     this.balls = [];
     this.turrets = [];
     this.particles = new ParticlePool(MAX_PARTICLES);
+    this.floatTexts = [];
+    // Total HP of the level's core as generated (progress bar).
+    this.coreTotalHp = 0;
 
     this.baseFireInterval = 2200;
     this.fireInterval = this.baseFireInterval;
@@ -509,6 +563,7 @@ class Game {
       damage: document.getElementById('btnDamage'),
       damageDesc: document.getElementById('descDamage'),
       damageCost: document.getElementById('costDamage'),
+      hint: document.getElementById('hint'),
     };
 
     this.applyLanguage();
@@ -626,6 +681,9 @@ class Game {
     const width = Math.max(1, Math.floor(rect.width));
     const height = Math.max(1, Math.floor(rect.height));
     const dpr = window.devicePixelRatio || 1;
+    // World scale (NC-09): a canvas whose short side exceeds WORLD_SHORT_SIDE
+    // shows the same world enlarged; smaller canvases stay 1:1.
+    const scale = Math.max(1, Math.min(width, height) / WORLD_SHORT_SIDE);
 
     const oldWidth = this.width;
     const oldHeight = this.height;
@@ -634,17 +692,19 @@ class Game {
     this.canvas.height = Math.floor(height * dpr);
     this.canvas.style.width = width + 'px';
     this.canvas.style.height = height + 'px';
-    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
 
-    this.width = width;
-    this.height = height;
+    this.viewScale = scale;
+    this.dpr = dpr;
+    this.width = width / scale;
+    this.height = height / scale;
 
     if (!isInitial && oldWidth > 0 && oldHeight > 0) {
-      const scaleX = width / oldWidth;
-      const scaleY = height / oldHeight;
+      const scaleX = this.width / oldWidth;
+      const scaleY = this.height / oldHeight;
       for (const ball of this.balls) {
-        ball.x = clamp(ball.x * scaleX, ball.radius, width - ball.radius);
-        ball.y = clamp(ball.y * scaleY, ball.radius, height - ball.radius);
+        ball.x = clamp(ball.x * scaleX, ball.radius, this.width - ball.radius);
+        ball.y = clamp(ball.y * scaleY, ball.radius, this.height - ball.radius);
       }
     }
 
@@ -758,6 +818,7 @@ class Game {
       const block = new Block(p.x, p.y, layout.size, maxHp, moneyPerHit, color);
       this.blocks.push(block);
     });
+    this.coreTotalHp = this.blocks.length * maxHp;
 
     // Half-size of the core's bounding box, measured from the generated blocks.
     this.coreRadius = 0;
@@ -769,8 +830,8 @@ class Game {
     this.fitCoreToCanvas();
   }
 
-  /** Creates the level's turrets (N/E/S/W, outward); fitCoreToCanvas sets
-   *  their distance from the core. */
+  /** Creates the level's turrets (N/E/S/W of the core, aimed at it);
+   *  fitCoreToCanvas sets their distance from the core. */
   placeTurrets(level) {
     const count = Math.min(1 + Math.floor((level - 1) / 3), 4);
     const compass = [
@@ -784,7 +845,8 @@ class Game {
     this.turrets = [];
     for (let i = 0; i < count; i++) {
       const dir = compass[i];
-      const turret = new Turret(0, 0, Math.atan2(dir.dy, dir.dx), colors[i]);
+      // Aimed at the core (NC-CORE-1A): every new ball starts with a hit.
+      const turret = new Turret(0, 0, Math.atan2(-dir.dy, -dir.dx), colors[i]);
       turret.dirX = dir.dx;
       turret.dirY = dir.dy;
       this.turrets.push(turret);
@@ -805,7 +867,10 @@ class Game {
     const angle = turret.angle + spread;
     const speed = randRange(230, 280);
     const radius = 5;
-    const spawnDist = 22;
+    // Up to 22 units ahead of the turret, but always outside the core's box
+    // (the turret aims at the core and may sit only TURRET_CLEARANCE away).
+    const gap = Math.hypot(turret.offsetX, turret.offsetY) - this.coreRadius * this.coreScale;
+    const spawnDist = clamp(gap - radius - 2, 0, 22);
     const x = turret.x + Math.cos(turret.angle) * spawnDist;
     const y = turret.y + Math.sin(turret.angle) * spawnDist;
     const colors = [COLORS.cyan, COLORS.pink, COLORS.green];
@@ -855,6 +920,29 @@ class Game {
     this.ui.damageDesc.textContent = this.t('upgradeLevel', { n: this.damageLevel });
     this.ui.damageCost.textContent = formatMoney(this.damageCost, this.lang);
     this.ui.damage.disabled = this.cash < this.damageCost;
+
+    this.updateHint();
+  }
+
+  /** True until the player's first purchase on a fresh save (derived from the
+   *  saved state, so nothing new is stored and returning players never see
+   *  the hint). */
+  get isNewPlayer() {
+    return this.level === 1 && this.maxBalls === 1 && this.fireRateLevel === 1 && this.damageLevel === 1;
+  }
+
+  /** Non-blocking first-minute hint over the field (pointer-events: none):
+   *  explains where cash comes from, then points at the first purchase. */
+  updateHint() {
+    const hint = this.ui.hint;
+    const show = this.isNewPlayer;
+    const canBuy = show && this.cash >= this.ballCost;
+    hint.hidden = !show;
+    if (show) {
+      const text = this.t(canBuy ? 'hintBuy' : 'hintStart');
+      if (hint.textContent !== text) hint.textContent = text;
+    }
+    this.ui.buyBall.classList.toggle('shop-btn--suggested', canBuy);
   }
 
   handleBallBlockCollisions() {
@@ -872,6 +960,7 @@ class Game {
         if (!contact) continue;
 
         this.cash += block.moneyPerHit;
+        this.addFloatText(contact.x, contact.y, block.moneyPerHit, block.color);
         this.particles.burst(contact.x, contact.y, block.color, 6, {
           minSpeed: 40, maxSpeed: 150, minLife: 0.25, maxLife: 0.5,
         });
@@ -889,6 +978,21 @@ class Game {
         break;
       }
     }
+  }
+
+  addFloatText(x, y, amount, color) {
+    if (this.floatTexts.length >= MAX_FLOAT_TEXTS) return;
+    // 12 px on screen, growing gently on big screens (at most 18 px).
+    const screenPx = 12 * Math.min(1.5, this.viewScale);
+    this.floatTexts.push(new FloatText(x, y - 8, '+' + formatMoney(amount, this.lang), color, screenPx / this.viewScale));
+  }
+
+  /** Share of the current core's HP already destroyed, 0..1. */
+  get coreProgress() {
+    if (this.coreTotalHp <= 0) return 0;
+    let left = 0;
+    for (const b of this.blocks) if (b.alive) left += Math.max(0, b.hp);
+    return clamp(1 - left / this.coreTotalHp, 0, 1);
   }
 
   update(dt) {
@@ -911,6 +1015,8 @@ class Game {
     }
 
     this.particles.update(dt);
+    for (const f of this.floatTexts) f.update(dt);
+    if (this.floatTexts.length && this.floatTexts[0].life <= 0) this.floatTexts = this.floatTexts.filter((f) => f.life > 0);
 
     this.uiTimer += dt;
     if (this.uiTimer >= 0.15) {
@@ -935,6 +1041,34 @@ class Game {
     for (const turret of this.turrets) turret.draw(ctx);
     this.particles.draw(ctx);
     for (const ball of this.balls) ball.draw(ctx);
+    for (const f of this.floatTexts) f.draw(ctx);
+    this.drawCoreProgress(ctx);
+  }
+
+  /** Core destruction bar in the top-left corner of the field, drawn in
+   *  screen pixels (a HUD element: same size at any world scale). */
+  drawCoreProgress(ctx) {
+    const x = 10;
+    const y = 10;
+    const w = Math.min(120, this.width * this.viewScale * 0.3);
+    const h = 5;
+    const progress = this.coreProgress;
+    const label = `${this.t('core')} ${Math.floor(progress * 100)}%`;
+    ctx.save();
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.font = 'bold 12px "Segoe UI", Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = COLORS.pink;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = COLORS.pink;
+    ctx.fillText(label, x, y);
+    ctx.globalAlpha = 0.25;
+    ctx.fillRect(x, y + 15, w, h);
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 12;
+    ctx.fillRect(x, y + 15, w * progress, h);
+    ctx.restore();
   }
 
   loop(timestamp) {
