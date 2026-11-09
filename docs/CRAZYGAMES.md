@@ -1,6 +1,6 @@
 # CrazyGames — requirements, readiness and procedures
 
-Read from the official docs on **2026-11-09** (`docs.crazygames.com`:
+Read from the official docs on **2026-11-09** (re-read requirements/gameplay, technical and quality for NC-ORIGINAL-1 the same day; `docs.crazygames.com`:
 requirements/intro, technical, gameplay, ads, quality, game-covers,
 account-integration, resources/basic-launch-metrics, sdk/intro, sdk/data,
 faq). Re-read the pages before every submission and update the date — the
@@ -31,15 +31,15 @@ rules change. No SDK, ads or monetization are implemented in this repo yet.
 | Works in Chrome and Edge | Basic | PASS (Chromium headless) / Edge NOT RUN | `qa/browser-smoke.mjs` |
 | Safari works (else disabled on Safari) | Basic | NOT RUN | needs a device |
 | Smooth on a 4 GB RAM Chromebook (else disabled on ChromeOS) | Basic | NOT VERIFIED | NC-13 |
-| Mouse, keyboard, touch (if mobile supported) | Basic | PARTIAL: buttons only; no keyboard use needed; touch NOT RUN on a device | — |
+| Mouse, keyboard, touch (if mobile supported) | Basic | PASS (Chromium): mouse click and emulated touch tap fire the volley, shop by click/tap/keyboard (focusable buttons), Space = volley, M = sound (no Esc, `KeyboardEvent.code` = layout-independent); real touch device NOT RUN | `qa/browser-smoke.mjs`, `qa/economy.mjs` |
 | Playable landscape on desktop | Basic | PASS | 10 frames, `qa/browser-smoke.mjs` |
 | `user-select: none` on body (tablets) | Basic | PASS (Chromium); tablet NOT RUN | NC-08 closed, `qa/browser-smoke.mjs` |
 | Works in the CrazyGames app (safe areas) | Basic | IMPLEMENTED (insets on 4 sides); device NOT VERIFIED | NC-18 |
 | Readable at DPR 1 in the 10 iframe sizes (907×510, 1216×684, 1077×606, 821×462, 1366×768, 1920×1080, 1536×864, 1280×720, 800×450 mobile, 1080×607 tablet) | Basic | PASS automated (fits, no scroll, no overflow, smallest text 11.2 px, EN + PL); human readability judgement NOT VERIFIED; canvas 62 % at 800×450 | NC-17 |
 | Consistent physics at 144/165 Hz | Basic | PASS (simulation: fixed timestep, same seed = identical state at 60/144/165 Hz); real 144/165 Hz monitor NOT RUN | NC-03 closed, `qa/physics.mjs` |
 | English localization; language from SDK locale, fallback English | Basic | PASS: EN default/fallback + PL; language from `?lang=` or the browser (no SDK yet); SDK locale with the SDK | NC-07 closed, `qa/i18n.mjs` |
-| Intuitive controls, smooth, no errors | Basic | PASS (0 console errors) / intuitiveness NOT VERIFIED | — |
-| Original name, assets, content | Basic | NOT VERIFIED | NC-12 |
+| Intuitive controls, smooth, no errors | Basic | PASS (0 console errors); onboarding in gameplay (hint pill asks for the click/tap when the first volley is ready, ~3 s; no text wall, nothing to skip) / intuitiveness with players NOT VERIFIED | — |
+| Original name, assets, content | Basic | NOT VERIFIED: all visuals are canvas shapes and all sounds synthesised in code (no third-party assets); gameplay twist = breach (NC-ORIGINAL-1); name check open | NC-12 |
 | No custom fullscreen button | Basic | PASS | none in code |
 | No cross-promotion | Basic | PASS | no links |
 | PEGI 12 (audience 13+) | Basic | PASS (abstract shapes, no violence/text content) — QA judgement NOT VERIFIED | — |
@@ -64,7 +64,9 @@ plain screenshot, consistent across the three sizes, no copyrighted visuals.
   only way to progress; midgame frequency is handled by the SDK (max 1 per
   3 min). For this game: a natural midgame point is the level-up transition.
 - Save on CrazyGames = Data Module only (`docs/SAVE.md`).
-- iOS suspends the `AudioContext`: resume it inside a touch/click handler.
+- iOS suspends the `AudioContext`: resume it inside a touch/click handler
+  (done since NC-ORIGINAL-1: `Sound.unlock()` on every pointerdown/click/key;
+  iPhone NOT RUN).
 - Keys: avoid Esc (closes fullscreen); support AZERTY if keys are ever used.
 
 ## Lessons from GLITCH GULP (CRAZYGAMES-BASIC-1, PREFLIGHT-2, CG-DATA-1/2)

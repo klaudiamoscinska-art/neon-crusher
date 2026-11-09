@@ -30,9 +30,10 @@ Note: GitHub Pages currently publishes the whole repo root (`docs/RELEASE.md`).
   `applyScale(s)` derives the current offsets/size from them. A destroyed block stays in the list while `hitFlash > 0` (fade-out), then is
   filtered out.
 - `Turret` — same offset-from-centre pattern. Fires by spawning a `Ball` into
-  `Game` on a cooldown (`game.fireInterval`, ms), but only while
+  `Game` on a cooldown (`game.fireInterval` = fixed `BALL_REFILL_INTERVAL`
+  700 ms since NC-ORIGINAL-1), but only while
   `game.balls.length < game.maxBalls` — it has no ball supply of its own. It
-  points outward from the core (compass N/E/S/W, unit vector `dirX/dirY`).
+  sits N/E/S/W of the core (unit vector `dirX/dirY`) and aims at it.
 - `Ball` — position + velocity + fixed `speed`. `collideBlock(block)` is
   circle-vs-AABB (closest-point); it reflects velocity with
   `v' = v - 2(v·n)n`, renormalises to `speed` (no energy gain/loss over many
@@ -43,6 +44,19 @@ Note: GitHub Pages currently publishes the whole repo root (`docs/RELEASE.md`).
   angle jitter (±0.12 rad) on wall bounces only — block bounces stay exact.
 - `Particle` / `ParticlePool` — pooled particles (hit sparks, destruction
   bursts) capped at `MAX_PARTICLES` (400) to avoid GC churn.
+- Breach (NC-ORIGINAL-1): `Block.kind` = `armor` / `relay` / `heart`,
+  `Block.shatter` (seconds until the shatter wave breaks it, or null);
+  `Game.placeHeart/placeRelays` (in `generateCore`), `requestVolley` (input →
+  `pendingVolley`, resolved in `updateVolley` on the next fixed step),
+  `fireVolley`, `castLance` (ray vs grown block boxes: `rayBoxEnter`,
+  `rayBoxExit`), `hitBlock` (the one place a hit pays and damages, from balls,
+  lances and shockwaves), `onBlockDestroyed` → `triggerRelay` / `shatterCore`,
+  `updateShatter`, `autoTarget`. Effects: `Lance`, `Ring` (capped
+  `MAX_LANCES` 8, `MAX_RINGS` 12), banner, screen flash, shake.
+- `Sound` — synthesised Web Audio (oscillators only), created/resumed in a
+  user gesture, per-sound minimum gap, mute under `AUDIO_PREF_KEY`. Neither
+  `Sound` nor `draw()` may call `Math.random` (the simulation RNG must not
+  depend on frames drawn or on the sound setting — NC-03).
 
 Top-level helpers: `COLORS` (cyan/pink/green), `SAVE_KEY`, `SAVE_BACKUP_KEY`,
 `MAX_PARTICLES`, `SIM_STEP`/`MAX_FRAME_DT` (loop), `TURRET_CLEARANCE`/
@@ -96,7 +110,9 @@ scratch on every level-up (balls are kept):
 ## Upgrades and economy (code view)
 
 Costs `Math.ceil(base × 1.5^(level-1))` are getters (`ballCost`,
-`fireRateCost`, `damageCost`) — recomputed, never stored. `ballDamage` reads
+`fireRateCost`, `damageCost`) — recomputed, never stored. `fireRateCost` /
+`fireRateLevel` keep their names (save compatibility) but drive the volley
+charge (`recalcFireInterval` sets `chargeTime`). `ballDamage` reads
 `damageLevel` live on every hit, so a damage upgrade boosts balls already in
 flight. `maxBalls` is a cap, not a spawn count.
 
@@ -151,6 +167,13 @@ script. Planned hooks (each needs its own approved runtime stage):
 
 - an injectable RNG (`Game` option or `NC_RNG`) — needed only if gameplay
   seeds become a feature (daily layouts);
+
+Done in NC-ORIGINAL-1: the fake canvas takes listeners; `h.pointer(type,
+x, y, extra)` and `h.key(code)` drive the real input handlers; fake elements
+have `setAttribute`/`attributes`/`blur`. `Game.volleyCharge`, `volleyReady`,
+`manualVolleys`, `autoVolleys`, `coresShattered`, `fireVolley`, `hitBlock`
+are readable seams. Browser smoke observes the volley only through the DOM
+(hint state), never through a debug hook.
 
 Done in NC-CORE-1A: the harness's fake elements have `hidden` and a
 `classList` (the hint and the suggested shop button); `Game.viewScale`,

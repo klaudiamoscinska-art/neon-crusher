@@ -10,7 +10,12 @@
 //  - mid-game hit rate: level 5 (5x5 grid), 10 balls, indestructible blocks,
 //    hits per second over 2 minutes after 20 s warm-up, 48 seeds (--only mid);
 //  - greedy bot (buys the cheapest affordable upgrade every second): cash
-//    earned per minute over 10 minutes (spent + kept), level reached.
+//    earned per minute over 10 minutes (spent + kept), level reached, and the
+//    level at 1/3/5/10 min. --bot passive (default: never touches the field;
+//    on NC-ORIGINAL-1 the autopilot fires unused volleys) or --bot active
+//    (NC-ORIGINAL-1: aims every ready volley at the heart within 0.25 s).
+//    --canvas 907x339,1216x513 picks canvases; --skip-first skips the
+//    first-purchase runs.
 import { loadGame, isMain } from './lib.mjs';
 import { greedyBuy } from './economy.mjs';
 
@@ -51,18 +56,23 @@ export function midHitRate({ w, h, hz, seeds, level = 5, balls = 10 }) {
   return { mean: m, se };
 }
 
-export function greedyIncome({ w, h, hz, seeds, minutes = 10 }) {
-  const perMin = []; const levels = [];
+export function greedyIncome({ w, h, hz, seeds, minutes = 10, bot = 'passive' }) {
+  const perMin = []; const levels = []; const at = { 1: [], 3: [], 5: [], 10: [] };
   for (const seed of seeds) {
     const hx = loadGame({ seed, width: w, height: h }); const g = hx.newGame();
     let spent = 0;
     for (let s = 1; s <= minutes * 60; s++) {
-      hx.run(1, hz);
+      for (let q = 0; q < 4; q++) {
+        hx.run(0.25, hz);
+        if (bot === 'active' && g.volleyReady) g.requestVolley(g.width / 2, g.height / 2);
+      }
       for (;;) { const before = g.cash; if (!greedyBuy(hx, g)) break; spent += before - g.cash; }
+      if (at[s / 60]) at[s / 60].push(g.level);
     }
     perMin.push((g.cash + spent) / minutes); levels.push(g.level);
   }
-  return { perMinMean: mean(perMin), perMinMedian: median(perMin), levelMedian: median(levels), perMin, levels };
+  const levelAt = Object.fromEntries(Object.entries(at).filter(([, v]) => v.length).map(([k, v]) => [k, median(v)]));
+  return { perMinMean: mean(perMin), perMinMedian: median(perMin), levelMedian: median(levels), perMin, levels, levelAt };
 }
 
 if (isMain(import.meta.url)) {
@@ -72,8 +82,10 @@ if (isMain(import.meta.url)) {
   const hzs = arg('--hz', '60,144').split(',').map(Number);
   const fpSeeds = Array.from({ length: quick ? 4 : 16 }, (_, i) => i + 1);
   const botSeeds = Array.from({ length: quick ? 2 : 8 }, (_, i) => i + 1);
-  const canvases = [[800, 279], [907, 339], [1216, 513], [1920, 909]];
+  const canvases = arg('--canvas', null) ? arg('--canvas').split(',').map((c) => c.split('x').map(Number)) : [[800, 279], [907, 339], [1216, 513], [1920, 909]];
   const only = arg('--only', null);
+  const bot = arg('--bot', 'passive');
+  const skipFirst = argv.includes('--skip-first');
   const out = { game: process.env.NC_GAME_JS || 'game.js', firstPurchase: {}, early: {}, greedy: {} };
   for (const hz of hzs) {
     if (only === 'early') {
@@ -92,15 +104,15 @@ if (isMain(import.meta.url)) {
       }
       continue;
     }
-    for (const [w, h] of canvases) {
+    for (const [w, h] of skipFirst ? [] : canvases) {
       const r = firstPurchase({ w, h, hz, seeds: fpSeeds });
       out.firstPurchase[`${hz}Hz ${w}x${h}`] = r;
       console.log(`first purchase  ${hz} Hz ${w}x${h}: median ${r.median} s, mean ${r.mean.toFixed(1)} s, runs ${r.runs.join(',')}`);
     }
     for (const [w, h] of canvases.slice(0, 3)) {
-      const r = greedyIncome({ w, h, hz, seeds: botSeeds });
+      const r = greedyIncome({ w, h, hz, seeds: botSeeds, bot });
       out.greedy[`${hz}Hz ${w}x${h}`] = r;
-      console.log(`greedy 10 min   ${hz} Hz ${w}x${h}: earned/min mean ${r.perMinMean.toFixed(1)}, median ${r.perMinMedian.toFixed(1)}, level median ${r.levelMedian} (levels ${r.levels.join(',')})`);
+      console.log(`greedy 10 min ${bot} ${hz} Hz ${w}x${h}: earned/min mean ${r.perMinMean.toFixed(1)}, median ${r.perMinMedian.toFixed(1)}, level median ${r.levelMedian} (levels ${r.levels.join(',')}), level at 1/3/5/10 min ${Object.values(r.levelAt).join('/')}`);
     }
   }
   console.log(JSON.stringify(out));

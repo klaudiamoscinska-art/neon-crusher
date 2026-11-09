@@ -15,10 +15,10 @@ submission / Full Launch. Size S/M/L.
 |---|---|---|---|---|
 | 1 | NC-BASIC-1 | EN + PL UI, save validation + backup, `user-select`, safe areas, readable text | done (merged, PR #4) | M |
 | 2 | NC-PHYS-1 | fixed timestep (NC-03, required 144/165 Hz), approach check + push-out (NC-01/02), layout on resize (NC-15), turret clearance (NC-14) | done (merged, PR #5) | M |
-| 3a | NC-CORE-1A | first minute: world scale (NC-09), turrets aim at the core, on-field hint, floating +$, core progress (NC-11 part) | done (PR) | M |
-| 3b | NC-CORE-1B *(owner picks the concept)* | the chosen active twist (NC-12), meaningful fire rate (NC-10); proposals in the NC-CORE-1A PR | BLOCKER | M |
+| 3a | NC-CORE-1A | first minute: world scale (NC-09), turrets aim at the core, on-field hint, floating +$, core progress (NC-11 part) | done (merged, PR #6) | M |
+| 3b | NC-ORIGINAL-1 (replaces NC-CORE-1B) | breach: heart, relays, aimed multi-turret volley, autopilot, shatter (NC-12 twist); Volley charge (NC-10); audio + mute (was NC-AUDIO-1); feedback | done (PR, review) | L |
 | 4 | NC-ID-1 *(owner)* | name uniqueness check on CrazyGames/web; keep or rename before covers | BLOCKER | S |
-| 5 | NC-AUDIO-1 | a few synthesised SFX (hit, break, buy, level-up) + mute | QUALITY | S |
+| 5 | ~~NC-AUDIO-1~~ | done inside NC-ORIGINAL-1; owner listens on a device | QUALITY | — |
 | 6 | NC-PERF-1 | glow budget / ball cap; 4 GB Chromebook and a phone (NC-13) | QUALITY | M |
 | 7 | NC-CG-BASIC-1 | 3 covers, description + controls (EN), zip + validator, owner's Preview incl. Edge, Safari/iPhone, Android, tablet | BLOCKER | M |
 | — | later | Pages via Actions (NC-16), multi-tab (NC-06), `schemaVersion`, offline earnings, prestige, SDK, Data Module, ads | LATER | — |
