@@ -1420,6 +1420,9 @@ class Game {
     this.addRing(x, y, 14, COLORS.white, 0.3, 2);
     this.shake = Math.max(this.shake, 0.12);
     this.sound.play('volley');
+    // Instant response to the player: hint, cash and cursor now, not at the
+    // next 0.15 s UI tick.
+    if (manual) this.updateUI();
     return true;
   }
 
