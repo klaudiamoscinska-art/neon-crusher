@@ -7,6 +7,8 @@
 //  - time to the first purchase ($10), median over seeds;
 //  - early income: fresh save, no purchases (1 ball), cash per minute over
 //    5 minutes, mean +- standard error over 48 seeds (--only early);
+//  - mid-game hit rate: level 5 (5x5 grid), 10 balls, indestructible blocks,
+//    hits per second over 2 minutes after 20 s warm-up, 48 seeds (--only mid);
 //  - greedy bot (buys the cheapest affordable upgrade every second): cash
 //    earned per minute over 10 minutes (spent + kept), level reached.
 import { loadGame, isMain } from './lib.mjs';
@@ -30,6 +32,19 @@ export function earlyIncome({ w, h, hz, seeds, minutes = 5 }) {
   for (const seed of seeds) {
     const hx = loadGame({ seed, width: w, height: h }); const g = hx.newGame();
     hx.run(minutes * 60, hz); xs.push(g.cash / minutes);
+  }
+  const m = mean(xs);
+  const se = Math.sqrt(xs.reduce((a, b) => a + (b - m) ** 2, 0) / (xs.length - 1) / xs.length);
+  return { mean: m, se };
+}
+
+export function midHitRate({ w, h, hz, seeds, level = 5, balls = 10 }) {
+  const xs = [];
+  for (const seed of seeds) {
+    const hx = loadGame({ seed, width: w, height: h }); const g = hx.newGame();
+    g.level = level; g.generateCore(level); g.maxBalls = balls; g.fireRateLevel = 20; g.recalcFireInterval(); g.damageLevel = 1e-9;
+    const pay = g.blocks[0].moneyPerHit;
+    hx.run(20, hz); const c0 = g.cash; hx.run(120, hz); xs.push((g.cash - c0) / pay / 120);
   }
   const m = mean(xs);
   const se = Math.sqrt(xs.reduce((a, b) => a + (b - m) ** 2, 0) / (xs.length - 1) / xs.length);
@@ -66,6 +81,14 @@ if (isMain(import.meta.url)) {
         const r = earlyIncome({ w, h, hz, seeds: Array.from({ length: quick ? 12 : 48 }, (_, i) => i + 1) });
         out.early[`${hz}Hz ${w}x${h}`] = r;
         console.log(`early income    ${hz} Hz ${w}x${h}: ${r.mean.toFixed(2)} +- ${r.se.toFixed(2)} $/min (1 ball, no purchases)`);
+      }
+      continue;
+    }
+    if (only === 'mid') {
+      for (const [w, h] of canvases.slice(0, 3)) {
+        const r = midHitRate({ w, h, hz, seeds: Array.from({ length: quick ? 12 : 48 }, (_, i) => i + 1) });
+        out.mid = out.mid || {}; out.mid[`${hz}Hz ${w}x${h}`] = r;
+        console.log(`mid-game hits   ${hz} Hz ${w}x${h}: ${r.mean.toFixed(2)} +- ${r.se.toFixed(2)} hits/s (L5 grid, 10 balls)`);
       }
       continue;
     }

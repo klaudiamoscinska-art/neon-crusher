@@ -484,6 +484,7 @@ class Game {
     // Unscaled core geometry of the current level (fitCoreToCanvas).
     this.coreExtent = 0;
     this.coreRadius = 0;
+    this.coreScale = 1;
 
     this.saveBlocked = false;
     this.lang = detectLanguage(
@@ -660,6 +661,7 @@ class Game {
     const half = Math.min(this.width, this.height) / 2;
     const room = half - TURRET_EDGE_INSET - TURRET_CLEARANCE;
     const scale = this.coreRadius > 0 ? clamp(room / this.coreRadius, 0.2, 1) : 1;
+    this.coreScale = scale;
     for (const block of this.blocks) block.applyScale(scale);
     const dist = Math.min(this.coreExtent * scale + TURRET_MARGIN, half - TURRET_EDGE_INSET);
     for (const turret of this.turrets) {
@@ -856,7 +858,14 @@ class Game {
   }
 
   handleBallBlockCollisions() {
+    // Broad phase: every block lies inside the core's bounding box, so a ball
+    // that does not reach that box cannot touch any block (exact, no effect
+    // on results; keeps the fixed-step cost low while balls fly elsewhere).
+    const cx = this.width / 2;
+    const cy = this.height / 2;
+    const reach = this.coreRadius * this.coreScale;
     for (const ball of this.balls) {
+      if (Math.abs(ball.x - cx) > reach + ball.radius || Math.abs(ball.y - cy) > reach + ball.radius) continue;
       for (const block of this.blocks) {
         if (!block.alive) continue;
         const contact = ball.collideBlock(block);

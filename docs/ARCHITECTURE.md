@@ -62,8 +62,10 @@ Below 20 FPS the game slows down instead of running a burst of steps. 60 Hz =
 4 steps per frame, 144 Hz ≈ 1.7, 165 Hz ≈ 1.5; draw shows the latest step
 (no interpolation: a ball moves ≤ 1.2 px per step). Anything in `update` must
 use `dt`, never "per call" factors (particle drag is `0.985^(dt·60)`).
-`update`: turrets → balls move + wall bounce → ball/block collisions (each ball
-resolves at most one hit per step, then `break`) → blocks fade → level-up
+`update`: turrets → balls move + wall bounce → ball/block collisions (broad
+phase: a ball outside the core's bounding box ± radius skips the block loop —
+exact, keeps 4 steps/frame cheaper than the old 1 step; each ball resolves at
+most one hit per step, then `break`) → blocks fade → level-up
 check → particles → UI refresh every 0.15 s → autosave every 5 s.
 
 The level-up check computes `aliveRemaining` from `this.blocks` **before**
