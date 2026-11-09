@@ -1,0 +1,38 @@
+# QA for pull requests. Read-only: it never deploys, never writes to the repo.
+# GitHub Pages publishing is separate (Settings -> Pages, deploy from main;
+# see docs/RELEASE.md) and is not triggered by this workflow.
+name: QA
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run QA suites (quick profile)
+        run: node qa/run-all.mjs --quick --base "origin/${GITHUB_BASE_REF:-main}"
+      - name: Keep QA output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-out
+          path: qa/out/
+          retention-days: 14
