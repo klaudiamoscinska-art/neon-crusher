@@ -52,13 +52,18 @@ Note: GitHub Pages currently publishes the whole repo root (`docs/RELEASE.md`).
   `rayBoxExit`), `hitBlock` (the one place a hit pays and damages, from balls,
   lances and shockwaves), `onBlockDestroyed` → `triggerRelay` / `shatterCore`,
   `updateShatter`, `autoTarget`. Effects: `Lance`, `Ring` (capped
-  `MAX_LANCES` 8, `MAX_RINGS` 12), banner, screen flash, shake.
+  `MAX_LANCES` 8, `MAX_RINGS` 12), banner, screen flash, shake; NC-ART-1:
+  `Arc` (relay surge, `MAX_ARCS` 8), `Game.breach` (finale), core assembly
+  (`coreBornAt`, `CORE_ASSEMBLY_TIME`), `markInnerShield` (cosmetic layer),
+  `buildNetwork` → `links` drawn by `drawNetwork` (neural lattice; pulse
+  phase `netPhase`/`netSpeed`), `syncFlash` (volley sync line).
 - `Sound` — synthesised Web Audio (oscillators only), created/resumed in a
   user gesture, per-sound minimum gap, mute under `AUDIO_PREF_KEY`. Neither
   `Sound` nor `draw()` may call `Math.random` (the simulation RNG must not
   depend on frames drawn or on the sound setting — NC-03).
 
-Top-level helpers: `COLORS` (cyan/pink/green), `SAVE_KEY`, `SAVE_BACKUP_KEY`,
+Top-level helpers: `COLORS` (palette, `docs/GAME_DESIGN.md`), `hash01`,
+`chamferPath`/`polygonPath`/`jaggedPath` (drawing), `SAVE_KEY`, `SAVE_BACKUP_KEY`,
 `MAX_PARTICLES`, `SIM_STEP`/`MAX_FRAME_DT` (loop), `TURRET_CLEARANCE`/
 `TURRET_MARGIN`/`TURRET_EDGE_INSET` (core fitting), `clamp`, `randRange` (uses unseeded `Math.random`);
 `STRINGS` (en/pl table), `detectLanguage`, `translate`, `formatMoney`
@@ -137,11 +142,29 @@ flight. `maxBalls` is a cap, not a spawn count.
 
 ## Neon rendering convention
 
-Every drawn shape (blocks, balls, turrets, particles) sets `ctx.shadowBlur`
-(~15, boosted briefly on hit/fire flashes) and a matching `ctx.shadowColor`
-before drawing, inside `ctx.save()`/`ctx.restore()`. That is the whole neon
-glow and is expected on any new drawable. It is also the main rendering cost
-(NC-13) — any change goes through `nc-performance` with a measurement.
+Every drawable glows in its own colour (look and palette:
+`docs/GAME_DESIGN.md` "Visual identity"). Since NC-ART-1:
+- **Batched passes.** `Block.drawCore` draws the whole core in passes (plate
+  bodies, panel lines, tint + circuits per colour, outline + lit rim per
+  colour and damage stage, cracks, shatter marks, hit flashes), one path per
+  pass and colour; `Ball.drawAll` and `ParticlePool.draw` batch the same way.
+  No `save()/restore()` or shadow per block, ball or particle.
+- **Glow.** `shadowBlur` + matching `shadowColor` for small shapes (turrets,
+  heart, relays, lances, arcs, rings, sparks, HUD). A blurred batch that spans
+  a large area is expensive in software raster (Skia blurs the batch's bounds:
+  60 balls at 1920×1080 cost ~22 ms/frame), so balls use a translucent halo
+  and plate rims a wide translucent underlay stroke on the same path.
+- **Background** is rendered once per canvas size into an offscreen canvas
+  (`renderBackground`) and drawn with one `drawImage`; without
+  `document.createElement` (QA harness) a plain fill is used.
+- **No `Math.random` in drawing** (NC-03): cosmetic variety comes from
+  `hash01(seed)` (block `seed` from its generated offset) and `this.time`.
+  Cosmetic state (`arcs`, `breach`, `coreBornAt`, `links`, `netPhase`,
+  `netSpeed`, `syncFlash`, block `layer`/`seed`/
+  `outCorner`/`variant`, label `big`) never feeds the simulation;
+  `qa/sim-compare.mjs` proves the simulation is bit-identical to a base build.
+- Every glow change goes through `nc-performance` with a measurement
+  (`qa/art-shots.mjs` frame probe, `qa/sim-compare.mjs` draw counters).
 
 ## Coding conventions
 

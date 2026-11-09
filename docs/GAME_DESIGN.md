@@ -19,18 +19,69 @@ screen, no menus. Target portal: CrazyGames (`docs/CRAZYGAMES.md`).
 
 | Element | Status | Rule / numbers |
 |---|---|---|
-| Heart | IMPLEMENTED | one per core at its centre, HP = 6 × the level's block HP; odd grid: replaces the centre block; even grid: one 2×2-cell heart replaces the 4 central blocks; ring levels: a heart 1.4 × block size inside the ring(s). Drawn hollow (white frame, rotating pink ring, a light that shrinks with HP) — armour is solid |
-| Relays | IMPLEMENTED | 0 on level 1, then min(1 + ⌊(L−2)/3⌋, 4) random armour blocks, amber with a white diamond. Destroyed → +4 × money per hit, **volley recharged at once**, shockwave (radius 1.6 block steps) dealing 6 × ball damage to every block it reaches (chains through relays) |
+| Heart | IMPLEMENTED | one per core at its centre, HP = 6 × the level's block HP; odd grid: replaces the centre block; even grid: one 2×2-cell heart replaces the 4 central blocks; ring levels: a heart 1.4 × block size inside the ring(s). Drawn as the fracture sigil ("Visual identity") |
+| Relays | IMPLEMENTED | 0 on level 1, then min(1 + ⌊(L−2)/3⌋, 4) random armour blocks, drawn as amber hexagonal capacitors with a conduit to the heart. Destroyed → +4 × money per hit, **volley recharged at once**, shockwave (radius 1.6 block steps) dealing 6 × ball damage to every block it reaches (chains through relays) |
 | Volley | IMPLEMENTED | charge time = max(2, 11 × 0.9^(lvl−1)) s (upgrade "Volley charge"); a fresh session starts at 70 % (first volley after ~3.3 s). When ready, a click/tap on the field (or Space = core centre) makes **every turret** fire a lance through that point to the field edge. Lance power = 8 × ball damage; blocks along the line (box + 3 units, so no gap is a hole) absorb it nearest first, each damaged block pays one hit; the lance stops where the power runs out. Input is queued and resolved on the next fixed step (refresh-rate independent) |
 | Autopilot | IMPLEMENTED | a ready volley not fired within 5 s fires by itself at a random armour block (never the heart or a relay): idle play progresses, aiming is clearly better |
 | Shatter | IMPLEMENTED | heart destroyed → +6 × money per hit, every other block breaks in a wave from the centre (240 units/s), each paying 1 hit; flash, shake (reduced-motion aware), volley recharged; the level advances when the wave ends |
 | Choices | — | where to aim (the heart's shortest armour line, or a relay for an instant recharge and a shockwave), when to spend a charge, and the upgrade mix (balls = steady chip, charge = more volleys, hit power = stronger balls **and** lances) |
 
-Feedback: lance beams in the turret's colour, rings (shockwave, shatter,
-"not ready" tap), `RECHARGED +$n` / `CORE SHATTERED +$n` labels, `LEVEL n`
-banner, turrets glow while charging and pulse when ready, aim preview
-(dashed lines + crosshair) when a mouse hovers a ready field, volley meter
-top-right ("Volley n%" → "VOLLEY READY"), crosshair cursor when ready.
+Feedback (look: "Visual identity"): magenta lances, rings (shockwave,
+"not ready" tap), relay surge arcs to the turrets, breach finale,
+`RECHARGED +$n` / `CORE SHATTERED +$n` labels on a graphite backing (above
+/ below the core), `LEVEL n` banner, turret capacitors fill while
+charging and spark when ready, lock-on brackets on the heart when ready
+(plus dashed lines from the turrets until the first hand-aimed volley), aim
+preview (dashed lines + reticle) when a mouse hovers a ready field, volley
+meter top-right ("Volley n%" → "VOLLEY READY"), crosshair cursor when ready.
+
+## Visual identity (NC-ART-1) — "Fractured Intelligence"
+
+Art direction (working name; the game's title stays **Neon Crusher**): a
+rogue AI has taken over a vast digital infrastructure; the player runs an
+emergency breach system that breaks its defences layer by layer to reach its
+prime module. The enemy is not a robot but a distributed digital organism:
+its structure, links, reactions to damage and loss of integrity are visible.
+No dialogue, characters or story screens — the story is told by the look of
+play. The lattice is a picture of the real structure (which blocks touch,
+where the heart is), never a new mechanic. All art is procedural Canvas 2D /
+inline SVG made in this repo; no imported assets or fonts. Colours carry
+meaning (`COLORS` in `game.js`, same tokens in `style.css`):
+
+| Colour | Meaning |
+|---|---|
+| graphite / violet-graphite (`#07070d`–`#3a4463`) | the AI's material: armour slabs, panels, background |
+| cyan `#00f3ff` / ice `#9ff8ff` | outer armour circuits and lattice, the player's balls, turret pads and rails |
+| violet `#a46bff` | the inner shield (armour layer touching the heart) |
+| amber `#ffc400` | the AI's energy: the heart (prime module), relays, power pipes, axons, core meter |
+| magenta `#ff2bb0` | the player's breach: turret capacitors and charge rings, lances, aim reticle, lock-on, volley meter, cracks, shatter front |
+| green `#39ff14` | money only (`+$n`, cash, costs) |
+| white | impacts, hot cores, crack cores (sparingly) |
+
+Visual references: three concept images from the owner (2026-11-09,
+not in the repo) set mood and quality — faceted slabs, an amber crystal
+core, amber pipes, magenta beams, an arena bezel. Used as inspiration only;
+forms are redrawn as this game's own Canvas 2D shapes.
+
+| Element | Look |
+|---|---|
+| Background | the AI's wider infrastructure, calmer than everything interactive: violet-graphite with a soft light behind the core, a sparse dot field fading outward, 16 dark circuit routes running in from the edges (one 45° bend, a pad), two containment rings with ticks, a slow scanning arc, a chamfered arena bezel with dim light strips; no neon grid; cached once per canvas size |
+| Neural lattice | links between every block's node and its direct neighbours (cyan) and amber axons from the innermost blocks into the heart; signal pulses run inward on half the links. Reacts: a hit lights the struck block's links white; pulses speed up and links brighten as the core loses HP; a link to a destroyed block is cut to a sparking stub; links ahead of the shatter wave flicker white |
+| Armour | faceted graphite slabs: dark sides, a raised top face nudged up-left (the bottom-right wall shows) with a lit bevel and a honeycomb cell texture; corners cut, the corner facing away from the heart cut deeper (the core reads as scales radiating from its centre); circuit node + one of three slot patterns; dim outline + bright lit rim on the outward side; layer colour (cyan outer, violet inner shield on cores with ≥ 2 layers); damage: 4 stages, magenta cracks with white cores grow (1–3), rim dims, last stage flickers; hit = white rim; broken = four shards flying apart; shatter pending = white rim |
+| Heart (prime module, fracture sigil) | amber octagonal housing; a seal of six rotating segments, one falls away per sixth of HP; a faceted amber crystal (light upper, deep lower facets) split in two halves around a seam of light with three data cells — the halves part and the cells brighten as HP drops (closed = full, wide open = about to break). Deliberately a geometric sign: no eye, face or skull |
+| Relays | hexagonal amber capacitor in a dark housing, pulsing cell, three terminals; an amber power pipe (axis run + one 45° run, energy flowing) into the heart; zigzag link to every relay inside its shockwave radius (chain visible before it happens); overload at damage stage ≥ 2 (arcs crawl over the shell); destroyed → amber surge arcs to every turret (the recharge) |
+| Turrets ("fork emitter") | round pad with a cyan rim, hexagonal base, two rails aimed at the core, magenta capacitor between the rails filling with the volley charge, four-segment magenta charge ring; ready: full capacitor, spark between the rail tips, pulsing ring; fire: white muzzle flash |
+| Volley | a synchronised breach: a dashed magenta line ties the turrets together for 0.33 s, every turret fires a magenta lance with a white core that, as it fades, splits into a cyan and an amber ghost ("signal fracture"); X mark where it stops |
+| Balls | motion trail, soft halo, cyan/ice rim, white-hot centre (brightest small objects on the field) |
+| Sparks | streaks along their velocity, in the hit block's colour |
+| Breach finale (loss of integrity) | the seal implodes (0.2 s), the crystal's halves fly apart, ten jagged amber fracture lines (the AI's energy escaping) race outward, a magenta front at the exact radius of the shatter wave; the lattice flickers and is cut as plates split into shards; magenta-white veil (single, gentle). Event labels (`RECHARGED`, `CORE SHATTERED`) sit above / below the core, never over the heart |
+| New core | plates appear outward from the heart in 0.45 s (drawing only; solid from the first step) |
+| HUD on canvas | segmented slanted bars: core (amber), volley (magenta) |
+| DOM HUD / shop | violet-graphite panels; brand mark = the heart sigil; volley hint magenta; upgrades wear the colour of what they power (balls cyan, volley charge magenta, hit power amber — it cracks the amber heart) with corner tabs and a line icon (hidden below 640 px); sizes unchanged |
+
+`prefers-reduced-motion`: no shake, no assembly animation, static seal,
+sigil pulse, scanning arc, conduit flow and sparks; flash much weaker.
+Nothing flashes faster than 3 Hz over a large area.
 
 ## Core loop
 
@@ -91,8 +142,8 @@ of passive (`qa/economy.mjs` pins all three).
 
 | Element | Status |
 |---|---|
-| Neon glow on every shape (`shadowBlur`) | IMPLEMENTED (cost: NC-13) |
-| Particles (pool of 400) | IMPLEMENTED |
+| Neon glow on every shape (`shadowBlur`, or a translucent underlay/halo where a batched blur is too costly: balls, plate rims) | IMPLEMENTED (NC-ART-1; cost: NC-13) |
+| Particles (pool of 400), drawn as streaks | IMPLEMENTED |
 | HUD: cash (number format of the UI language), level | IMPLEMENTED |
 | English UI (default and fallback) + Polish UI; language from `?lang=en/pl`, else the browser's preferred languages | IMPLEMENTED (NC-BASIC-1); CrazyGames SDK locale: Full Launch |
 | Audio | IMPLEMENTED (NC-ORIGINAL-1): synthesised Web Audio, no files — hit (min gap 70 ms), break, volley, ready, relay, shatter, buy, "not ready", level-up; master gain 0.5; AudioContext created/resumed only in a user gesture, suspended when the tab hides; sound toggle (♪ button in the top bar, M key) persisted under `neonCrusher.audio.v1`; listened to by a person: NOT VERIFIED |
@@ -118,6 +169,9 @@ of passive (`qa/economy.mjs` pins all three).
    heart, relays, shatter). Compared in words only with Idle Breakout (click
    breaks a brick; ball types, skill tree, prestige) and Neon Core Breaker
    (a click guides the ball), 2026-11-09; NC-12 stays open for the name.
+   NC-ART-1 adds a visual identity built to differ from both (no HP numbers
+   on blocks, scale-plate armour, heart sigil, relay conduits, fork turrets);
+   the visual comparison could only use text sources (NOT VERIFIED, NC-12).
 6. **Small and fast.** Zero external requests, tiny build, smooth on a 4 GB
    Chromebook and on phones.
 7. **Progress is sacred.** Never reset or corrupt a player's save
@@ -127,6 +181,7 @@ of passive (`qa/economy.mjs` pins all three).
 
 Owner decisions that change this file are recorded here with a date.
 
+- 2026-11-09 (NC-ART-1, PR pending GPT review + owner approval; the stage prompt set the direction "Neon Breach — Signal Fracture", refined by the owner the same day to "Fractured Intelligence" (rogue AI, title unchanged), and the palette graphite/cyan/magenta/amber, green as an accent): visual identity above; drawing, colours, HUD/shop styling only. Simulation bit-identical to the base (same seeds, same inputs: `qa/sim-compare.mjs`); no change to mechanics, numbers, save, text or layout sizes.
 - 2026-11-09 (NC-FOUNDATION-1): baseline documented; no gameplay change.
 - 2026-11-09 (NC-ORIGINAL-1, PR pending GPT review + owner approval; the stage prompt authorised the concept choice and balance tuning): breach mechanic (heart, relays, aimed volley, autopilot, shatter), Fire rate → Volley charge (NC-10), ball refill fixed 700 ms, new income sources (above), audio + sound toggle, first-purchase target 20–45 s → 15–45 s. Prices, block HP, money per hit and the save format unchanged.
 - 2026-11-09 (NC-CORE-1A, merged PR #6 with scale 250): first minute — world scale 250 (NC-09), turrets aim at the core, core progress bar, `+$n` labels, first-minute hint; no price, reward, HP or save change. Alternative for the owner: world scale 280 (800×450 unchanged 1:1, slower mid-game). Active-play twist (NC-10/11/12) proposed, not implemented.

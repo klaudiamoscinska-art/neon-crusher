@@ -15,11 +15,11 @@ effect gets a cost note); sound → `nc-audio`.
 - `docs/RISKS.md` NC-13 (glow cost) before adding glow or particles.
 
 ## Rules
-- Glow convention: `save()` → `shadowColor` = fill colour, `shadowBlur` ~15
-  (boost briefly on events) → draw → `restore()`; keep it for new drawables
-  unless `nc-performance` replaces it with a cached sprite of identical look.
-- Palette: cyan `#00f3ff`, pink `#ff007f`, green `#39ff14` on black — this is
-  the game's identity (GLITCH GULP's palette rules do not apply here).
+- Glow and batching: `docs/ARCHITECTURE.md` "Neon rendering convention"
+  (batched passes; no blurred batch over a large area; no `Math.random`).
+- Palette and meaning (graphite, cyan, magenta, amber, green = money only):
+  `docs/GAME_DESIGN.md` "Visual identity" (NC-ART-1). A new drawable gets a
+  colour by meaning, not by rotation.
 - Effects serve readability: hits, breaks and level-ups must be distinguishable
   at a glance; no flashing faster than 3 Hz over large areas (photosensitivity).
 - Respect `prefers-reduced-motion` for shake/flash once such effects exist.
@@ -27,9 +27,10 @@ effect gets a cost note); sound → `nc-audio`.
   1920×1080, 800×1200, 800×800 (`docs/CRAZYGAMES.md`).
 
 ## Procedure
-1. Screenshot/record base; implement; compare at 800×450 and 1920×1080.
-2. Count draw work with the harness context counters (`h.ctx.__calls`) on a
-   late-game state (e.g. 24+ balls, 80 blocks) — report before/after.
+1. `qa/art-shots.mjs` on the base and the candidate (same scenes, frame
+   probe), side-by-side sheets with `--sheet`.
+2. `qa/sim-compare.mjs <base game.js>`: simulation identical + draw counters
+   before/after.
 
 ## Done when
 Visual change shown in screenshots, draw-call delta reported, no new

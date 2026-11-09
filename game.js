@@ -1,13 +1,35 @@
 'use strict';
 
+// Palette "Fractured Intelligence" (NC-ART-1, docs/GAME_DESIGN.md "Visual
+// identity"). Every colour has one meaning: graphite = the AI's material,
+// cyan = its outer armour circuits and the player's balls, violet = its inner
+// shield, amber = the AI's energy (the heart/prime module, relays, conduits),
+// magenta = the player's breach (volley, lances, aim, cracks it opens),
+// green = money only, white = impacts and hot cores.
 const COLORS = {
   cyan: '#00f3ff',
+  ice: '#9ff8ff',
   pink: '#ff007f',
+  magenta: '#ff2bb0',
+  violet: '#a46bff',
   green: '#39ff14',
   // Energy (NC-ORIGINAL-1): relays, the volley meter, aim marks.
   amber: '#ffc400',
   white: '#ffffff',
+  // Graphite structure tones.
+  void: '#07070d',
+  plate: '#141826',
+  plateFace: '#20263a',
+  plateHi: '#3a4463',
+  plateDark: '#090a11',
+  trace: '#1c2536',
 };
+// Cosmetic caps (NC-ART-1): relay surge arcs alive at once, crack lines per
+// plate, fracture lines of the breach finale.
+const MAX_ARCS = 8;
+const BREACH_LINES = 10;
+// Seconds the new core takes to assemble outward from the heart (draw only).
+const CORE_ASSEMBLY_TIME = 0.45;
 
 const SAVE_KEY = 'neonCrusher.save.v1';
 // Copy of a save that could not be loaded exactly as written (unreadable JSON,
@@ -210,6 +232,58 @@ function randRange(min, max) {
   return min + Math.random() * (max - min);
 }
 
+/** Deterministic pseudo-random value in [0, 1) from an integer (cosmetic
+ *  detail: crack layouts, plate patterns, arcs). Never Math.random in
+ *  drawing: the simulation RNG must not depend on frames drawn (NC-03). */
+function hash01(n) {
+  let x = Math.imul((n | 0) ^ 0x9e3779b9, 0x85ebca6b);
+  x ^= x >>> 13;
+  x = Math.imul(x, 0xc2b2ae35);
+  x ^= x >>> 16;
+  return (x >>> 0) / 4294967296;
+}
+
+/** Adds a chamfered rectangle to the current path. `c` = corner cuts
+ *  [top-left, top-right, bottom-right, bottom-left] in units. */
+function chamferPath(ctx, x, y, w, h, c) {
+  ctx.moveTo(x + c[0], y);
+  ctx.lineTo(x + w - c[1], y);
+  ctx.lineTo(x + w, y + c[1]);
+  ctx.lineTo(x + w, y + h - c[2]);
+  ctx.lineTo(x + w - c[2], y + h);
+  ctx.lineTo(x + c[3], y + h);
+  ctx.lineTo(x, y + h - c[3]);
+  ctx.lineTo(x, y + c[0]);
+  ctx.closePath();
+}
+
+/** Adds a regular polygon (n sides, radius r, rotation a) to the path. */
+function polygonPath(ctx, cx, cy, r, n, a) {
+  for (let i = 0; i < n; i++) {
+    const t = a + (i / n) * Math.PI * 2;
+    if (i === 0) ctx.moveTo(cx + Math.cos(t) * r, cy + Math.sin(t) * r);
+    else ctx.lineTo(cx + Math.cos(t) * r, cy + Math.sin(t) * r);
+  }
+  ctx.closePath();
+}
+
+/** Adds a jagged line from (x0, y0) to (x1, y1) to the path: `n` segments,
+ *  sideways jitter up to `amp`, layout fixed by `seed`. */
+function jaggedPath(ctx, x0, y0, x1, y1, n, amp, seed) {
+  const dx = x1 - x0;
+  const dy = y1 - y0;
+  const len = Math.hypot(dx, dy) || 1;
+  const px = -dy / len;
+  const py = dx / len;
+  ctx.moveTo(x0, y0);
+  for (let i = 1; i < n; i++) {
+    const t = i / n;
+    const o = (hash01(seed + i * 131) - 0.5) * 2 * amp;
+    ctx.lineTo(x0 + dx * t + px * o, y0 + dy * t + py * o);
+  }
+  ctx.lineTo(x1, y1);
+}
+
 /** Distance along a ray (unit direction) to where it enters an axis-aligned
  *  box, 0 if it starts inside, null if it misses (slab method). */
 function rayBoxEnter(ox, oy, dx, dy, x0, y0, x1, y1) {
@@ -268,16 +342,25 @@ class Particle {
     if (this.life <= 0) this.active = false;
   }
 
-  draw(ctx) {
+  /** A spark: a short streak along its velocity, thinning as it dies (the
+   *  pool sets the glow once per colour: ParticlePool.draw). */
+  drawStreak(ctx) {
     const t = clamp(this.life / this.maxLife, 0, 1);
-    ctx.save();
     ctx.globalAlpha = t;
-    ctx.fillStyle = this.color;
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = this.color;
+    ctx.lineWidth = Math.max(0.6, this.radius * 0.9 * t);
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius * t, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(this.x - this.vx * 0.03, this.y - this.vy * 0.03);
+    ctx.stroke();
+  }
+
+  draw(ctx) {
+    ctx.save();
+    ctx.strokeStyle = this.color;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = this.color;
+    ctx.lineCap = 'round';
+    this.drawStreak(ctx);
     ctx.restore();
   }
 }
@@ -321,8 +404,23 @@ class ParticlePool {
     }
   }
 
+  /** Batched by colour: one glow setup per colour instead of a save/restore
+   *  and a shadow per particle (NC-13). */
   draw(ctx) {
-    for (const p of this.active) p.draw(ctx);
+    if (!this.active.length) return;
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.shadowBlur = 8;
+    let color = null;
+    for (const p of this.active) {
+      if (p.color !== color) {
+        color = p.color;
+        ctx.strokeStyle = color;
+        ctx.shadowColor = color;
+      }
+      p.drawStreak(ctx);
+    }
+    ctx.restore();
   }
 }
 
@@ -337,6 +435,7 @@ class FloatText {
     this.color = color;
     this.fontSize = fontSize;
     this.life = FLOAT_TEXT_LIFE;
+    this.big = false;
   }
 
   update(dt) {
@@ -347,6 +446,21 @@ class FloatText {
   draw(ctx) {
     ctx.save();
     ctx.globalAlpha = clamp(this.life / FLOAT_TEXT_LIFE, 0, 1);
+    if (this.big) {
+      // Event labels get a graphite backing so they stay readable over a
+      // shattering core (NC-ART-1).
+      ctx.font = `bold ${this.fontSize.toFixed(2)}px "Segoe UI", Arial, sans-serif`;
+      const m = typeof ctx.measureText === 'function' ? ctx.measureText(this.text) : null;
+      const w = (m && m.width ? m.width : this.text.length * this.fontSize * 0.6) + this.fontSize * 1.2;
+      const h = this.fontSize * 1.6;
+      ctx.fillStyle = COLORS.plateDark;
+      ctx.strokeStyle = this.color;
+      ctx.lineWidth = Math.max(0.5, this.fontSize * 0.08);
+      ctx.beginPath();
+      chamferPath(ctx, this.x - w / 2, this.y - h / 2, w, h, [h * 0.3, 0, h * 0.3, 0]);
+      ctx.fill();
+      ctx.stroke();
+    }
     ctx.fillStyle = this.color;
     ctx.shadowBlur = 8;
     ctx.shadowColor = this.color;
@@ -374,22 +488,34 @@ class Ring {
     this.life -= dt;
   }
 
+  /** A thin ring with a hexagonal echo inside: the game's shockwaves are
+   *  angular like its armour, not plain circles. */
   draw(ctx) {
     const t = clamp(this.life / this.maxLife, 0, 1);
+    const r = Math.max(0.1, this.radius * (1 - t * t));
     ctx.save();
     ctx.globalAlpha = t;
     ctx.strokeStyle = this.color;
     ctx.lineWidth = this.width * (0.4 + t * 0.6);
-    ctx.shadowBlur = 18;
+    ctx.shadowBlur = 12;
     ctx.shadowColor = this.color;
     ctx.beginPath();
-    ctx.arc(this.x, this.y, Math.max(0.1, this.radius * (1 - t * t)), 0, Math.PI * 2);
+    ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
     ctx.stroke();
+    if (r > 6) {
+      ctx.globalAlpha = t * 0.5;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      polygonPath(ctx, this.x, this.y, r * 0.82, 6, Math.PI / 6 + (1 - t) * 0.6);
+      ctx.stroke();
+    }
     ctx.restore();
   }
 }
 
-/** A volley lance: a piercing beam from a turret, fading in 0.35 s. */
+/** A volley lance: a piercing magenta beam from a turret, fading in 0.35 s.
+ *  Signature effect "signal fracture": as it fades the beam splits into a
+ *  cyan and an amber ghost on either side. */
 class Lance {
   constructor(x0, y0, x1, y1, color) {
     this.x0 = x0;
@@ -406,19 +532,90 @@ class Lance {
 
   draw(ctx) {
     const t = clamp(this.life / 0.35, 0, 1);
+    const dx = this.x1 - this.x0;
+    const dy = this.y1 - this.y0;
+    const len = Math.hypot(dx, dy) || 1;
+    const split = (1 - t) * 3.5;
+    const px = (-dy / len) * split;
+    const py = (dx / len) * split;
     ctx.save();
+    ctx.lineCap = 'round';
+    // Chromatic ghosts (no shadow: cheap).
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = t * 0.8;
+    ctx.strokeStyle = COLORS.cyan;
+    ctx.beginPath();
+    ctx.moveTo(this.x0 + px, this.y0 + py);
+    ctx.lineTo(this.x1 + px, this.y1 + py);
+    ctx.stroke();
+    ctx.strokeStyle = COLORS.amber;
+    ctx.beginPath();
+    ctx.moveTo(this.x0 - px, this.y0 - py);
+    ctx.lineTo(this.x1 - px, this.y1 - py);
+    ctx.stroke();
+    // The beam.
     ctx.globalAlpha = t;
     ctx.strokeStyle = this.color;
-    ctx.shadowBlur = 22;
+    ctx.shadowBlur = 16;
     ctx.shadowColor = this.color;
-    ctx.lineCap = 'round';
     ctx.lineWidth = 1 + 5 * t;
     ctx.beginPath();
     ctx.moveTo(this.x0, this.y0);
     ctx.lineTo(this.x1, this.y1);
     ctx.stroke();
+    ctx.shadowBlur = 0;
     ctx.strokeStyle = COLORS.white;
-    ctx.lineWidth = 1.5 * t;
+    ctx.lineWidth = 1.6 * t;
+    ctx.stroke();
+    // Pierce mark where the beam ends: a small X.
+    const k = 2 + 4 * t;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(this.x1 - k, this.y1 - k);
+    ctx.lineTo(this.x1 + k, this.y1 + k);
+    ctx.moveTo(this.x1 + k, this.y1 - k);
+    ctx.lineTo(this.x1 - k, this.y1 + k);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+/** Relay surge (NC-ART-1): a jagged amber arc from a broken relay to a
+ *  turret — the visible link between a relay and the volley recharge. */
+class Arc {
+  constructor(x0, y0, x1, y1, seed) {
+    this.x0 = x0;
+    this.y0 = y0;
+    this.x1 = x1;
+    this.y1 = y1;
+    this.seed = seed;
+    this.life = 0.4;
+  }
+
+  update(dt) {
+    this.life -= dt;
+  }
+
+  draw(ctx) {
+    const t = clamp(this.life / 0.4, 0, 1);
+    // The arc travels: its head reaches the turret in the first third.
+    const reach = Math.min(1, (1 - t) * 3 + 0.05);
+    const x1 = this.x0 + (this.x1 - this.x0) * reach;
+    const y1 = this.y0 + (this.y1 - this.y0) * reach;
+    const seed = this.seed + Math.floor(t * 12) * 977;
+    ctx.save();
+    ctx.globalAlpha = t;
+    ctx.strokeStyle = COLORS.amber;
+    ctx.shadowColor = COLORS.amber;
+    ctx.shadowBlur = 10;
+    ctx.lineWidth = 1.6;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    jaggedPath(ctx, this.x0, this.y0, x1, y1, 9, 5, seed);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = COLORS.white;
+    ctx.lineWidth = 0.7;
     ctx.stroke();
     ctx.restore();
   }
@@ -544,6 +741,137 @@ class Block {
     this.kind = 'armor';
     // Seconds until the shatter wave breaks this block (null = not shattering).
     this.shatter = null;
+    // Cosmetic only (NC-ART-1): armour layer (0 = outer, 1 = inner shield
+    // around the heart), a stable seed for its circuit pattern and cracks,
+    // and the plate corner that points away from the heart (cut deeper, so
+    // the core reads as overlapping scales radiating from its centre).
+    this.layer = 0;
+    this.seed = (Math.imul(Math.round(offsetX * 8), 73856093) ^ Math.imul(Math.round(offsetY * 8), 19349663)) | 0;
+    const sx = offsetX === 0 ? (hash01(this.seed) < 0.5 ? -1 : 1) : Math.sign(offsetX);
+    const sy = offsetY === 0 ? (hash01(this.seed + 7) < 0.5 ? -1 : 1) : Math.sign(offsetY);
+    this.outCorner = sy < 0 ? (sx < 0 ? 0 : 1) : (sx < 0 ? 3 : 2);
+    this.variant = Math.floor(hash01(this.seed + 13) * 3);
+  }
+
+  /** Damage stage 0 (intact) .. 3 (nearly broken): cracks and edge light. */
+  get damageStage() {
+    const r = this.hp / this.maxHp;
+    return r > 0.75 ? 0 : r > 0.5 ? 1 : r > 0.25 ? 2 : 3;
+  }
+
+  /** Corner cuts of the armour plate (world units) for chamferPath. */
+  plateCuts(inset) {
+    const s = this.size - inset * 2;
+    const c = [s * 0.08, s * 0.08, s * 0.08, s * 0.08];
+    c[this.outCorner] = s * 0.24;
+    return c;
+  }
+
+  platePath(ctx, inset) {
+    chamferPath(ctx, this.x + inset, this.y + inset, this.size - inset * 2, this.size - inset * 2, this.plateCuts(inset));
+  }
+
+  /** The slab's raised top face: inset and nudged toward the top-left. */
+  facePath(ctx) {
+    const i = Math.max(1.5, this.size * 0.11);
+    const d = this.size * 0.05;
+    chamferPath(ctx, this.x + i - d, this.y + i - d, this.size - i * 2, this.size - i * 2, this.plateCuts(i));
+  }
+
+  /** Honeycomb cell texture in `color` (cached; null where an offscreen
+   *  canvas or patterns are unavailable, e.g. the QA harness). */
+  static cellPattern(ctx, color) {
+    Block.patterns = Block.patterns || new Map();
+    if (Block.patterns.has(color)) return Block.patterns.get(color);
+    let pattern = null;
+    try {
+      if (typeof document !== 'undefined' && typeof document.createElement === 'function' && typeof ctx.createPattern === 'function') {
+        const r = 3;
+        const w = r * 3;
+        const h = Math.sqrt(3) * r;
+        const scale = 4;
+        const c = document.createElement('canvas');
+        c.width = Math.round(w * scale);
+        c.height = Math.round(h * scale);
+        const g = c.getContext('2d');
+        g.scale(c.width / w, c.height / h);
+        g.strokeStyle = color;
+        g.globalAlpha = 0.35;
+        g.lineWidth = 0.35;
+        g.beginPath();
+        for (const [ox, oy] of [[0, 0], [w, 0], [0, h], [w, h], [1.5 * r, h / 2]]) polygonPath(g, ox, oy, r * 0.92, 6, 0);
+        g.stroke();
+        pattern = ctx.createPattern(c, 'repeat') || null;
+        if (pattern && typeof pattern.setTransform === 'function' && typeof DOMMatrix !== 'undefined') {
+          pattern.setTransform(new DOMMatrix().scale(w / c.width, h / c.height));
+        }
+      }
+    } catch (err) {
+      pattern = null;
+    }
+    Block.patterns.set(color, pattern);
+    return pattern;
+  }
+
+  /** The plate's lit rim: the two edges around its outward corner (the side
+   *  that faces the turrets), drawn brighter than the rest of the outline. */
+  litPath(ctx, inset) {
+    const x = this.x + inset;
+    const y = this.y + inset;
+    const s = this.size - inset * 2;
+    const c = this.plateCuts(inset);
+    const p = [
+      x + c[0], y, x + s - c[1], y, x + s, y + c[1], x + s, y + s - c[2],
+      x + s - c[2], y + s, x + c[3], y + s, x, y + s - c[3], x, y + c[0],
+    ];
+    const k = this.outCorner;
+    for (let i = 0; i < 4; i++) {
+      const j = ((2 * k - 2 + i) % 8 + 8) % 8;
+      if (i === 0) ctx.moveTo(p[j * 2], p[j * 2 + 1]);
+      else ctx.lineTo(p[j * 2], p[j * 2 + 1]);
+    }
+  }
+
+  /** Micro-circuit: the plate's node (where the neural lattice attaches:
+   *  Game.drawNetwork) and one of three slot patterns. Armour only. */
+  tracePath(ctx) {
+    const s = this.size;
+    const cx = this.cx;
+    const cy = this.cy;
+    // Inward axis (toward the heart), snapped to the plate's major axis.
+    const horiz = Math.abs(this.offsetX) >= Math.abs(this.offsetY);
+    const ix = horiz ? -Math.sign(this.offsetX || 1) : 0;
+    const iy = horiz ? 0 : -Math.sign(this.offsetY || 1);
+    const px = -iy;
+    const py = ix;
+    const n = s * 0.07;
+    ctx.rect(cx - n, cy - n, n * 2, n * 2);
+    const slot = (d, w) => {
+      ctx.moveTo(cx - ix * s * d + px * s * w, cy - iy * s * d + py * s * w);
+      ctx.lineTo(cx - ix * s * d - px * s * w, cy - iy * s * d - py * s * w);
+    };
+    if (this.variant === 0) { slot(0.2, 0.22); slot(0.3, 0.16); }
+    else if (this.variant === 1) { slot(0.26, 0.26); }
+    else {
+      ctx.moveTo(cx + px * n, cy + py * n);
+      ctx.lineTo(cx + px * s * 0.26, cy + py * s * 0.26);
+      ctx.lineTo(cx + px * s * 0.26 - ix * s * 0.24, cy + py * s * 0.26 - iy * s * 0.24);
+    }
+  }
+
+  /** Cracks for the current damage stage: up to 3 jagged lines from one
+   *  fixed impact point toward the plate's edges (they grow with damage). */
+  crackPath(ctx, stage) {
+    const s = this.size;
+    const ox = this.x + s * (0.3 + 0.4 * hash01(this.seed + 21));
+    const oy = this.y + s * (0.3 + 0.4 * hash01(this.seed + 22));
+    for (let i = 0; i < stage; i++) {
+      const a = hash01(this.seed + 30 + i) * Math.PI * 2;
+      const len = s * (0.3 + 0.12 * stage);
+      const ex = clamp(ox + Math.cos(a) * len, this.x + 1, this.x + s - 1);
+      const ey = clamp(oy + Math.sin(a) * len, this.y + 1, this.y + s - 1);
+      jaggedPath(ctx, ox, oy, ex, ey, 3, s * 0.07, this.seed + 40 + i * 17);
+    }
   }
 
   get cx() { return this.x + this.size / 2; }
@@ -574,79 +902,357 @@ class Block {
     if (this.hitFlash > 0) this.hitFlash = Math.max(0, this.hitFlash - dt * 4);
   }
 
+  /** Draws this block alone (the game draws the whole core in batches:
+   *  Block.drawCore). */
   draw(ctx, time) {
-    if (this.alive && this.kind === 'heart') { this.drawHeart(ctx, time); return; }
-    ctx.save();
-    if (!this.alive) {
-      ctx.globalAlpha = this.hitFlash * 0.4;
-      ctx.fillStyle = this.color;
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = this.color;
-      ctx.fillRect(this.x, this.y, this.size, this.size);
-      ctx.restore();
-      return;
+    Block.drawCore(ctx, [this], time, false);
+  }
+
+  /**
+   * Draws a set of blocks in batches (NC-ART-1): one path per pass and
+   * colour instead of a save/restore and a shadow per block (NC-13).
+   * Armour = graphite plates (chamfered, the outward corner cut deeper), an
+   * inner panel line, circuit traces, a glowing edge in the layer colour that
+   * dims with damage, cracks that grow with damage; relays and the heart have
+   * their own silhouettes; broken blocks split into four shards.
+   */
+  static drawCore(ctx, blocks, time, reducedMotion, underlay) {
+    const armour = [];
+    const relays = [];
+    const hearts = [];
+    const dying = [];
+    for (const b of blocks) {
+      if (!b.alive) dying.push(b);
+      else if (b.kind === 'heart') hearts.push(b);
+      else if (b.kind === 'relay') relays.push(b);
+      else armour.push(b);
     }
-    const hpRatio = clamp(this.hp / this.maxHp, 0, 1);
-    const alpha = 0.35 + hpRatio * 0.65;
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = this.color;
-    ctx.shadowBlur = 15 + this.hitFlash * 20;
-    ctx.shadowColor = this.color;
-    ctx.strokeStyle = this.color;
-    ctx.lineWidth = 2;
-    ctx.fillRect(this.x, this.y, this.size, this.size);
-    ctx.globalAlpha = 1;
-    if (this.shatter !== null) ctx.strokeStyle = COLORS.white;
-    ctx.strokeRect(this.x, this.y, this.size, this.size);
-    if (this.kind === 'relay') {
-      // Energy relay: a bright diamond inside the block.
-      const c = this.size / 2;
-      const r = this.size * (0.28 + 0.06 * Math.sin(time * 6));
-      ctx.fillStyle = COLORS.white;
-      ctx.shadowColor = COLORS.amber;
+    ctx.save();
+    ctx.lineJoin = 'round';
+    if (armour.length || relays.length) {
+      // 1. Slab bodies: the dark sides of each armour slab (relays get a
+      //    darker housing).
+      ctx.fillStyle = COLORS.plateDark;
       ctx.beginPath();
-      ctx.moveTo(this.x + c, this.y + c - r);
-      ctx.lineTo(this.x + c + r, this.y + c);
-      ctx.lineTo(this.x + c, this.y + c + r);
-      ctx.lineTo(this.x + c - r, this.y + c);
-      ctx.closePath();
+      for (const b of armour) b.platePath(ctx, 0.5);
+      for (const b of relays) chamferPath(ctx, b.x + 0.5, b.y + 0.5, b.size - 1, b.size - 1, [b.size * 0.2, b.size * 0.2, b.size * 0.2, b.size * 0.2]);
       ctx.fill();
+      // 2. Raised top face, nudged toward the top-left so the bottom-right
+      //    wall shows (a faceted slab, not a flat tile), with a lit bevel.
+      ctx.fillStyle = COLORS.plateFace;
+      ctx.beginPath();
+      for (const b of armour) b.facePath(ctx);
+      ctx.fill();
+      ctx.strokeStyle = COLORS.plateHi;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    // 3. Circuit traces and 4. glowing edges, per colour and damage stage.
+    const groups = new Map();
+    for (const b of armour) {
+      const key = `${b.color}|${b.damageStage}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(b);
+    }
+    ctx.lineWidth = 1;
+    for (const [key, list] of groups) {
+      const color = key.split('|')[0];
+      // Material: a honeycomb cell texture on the face (cached pattern, one
+      // fill per colour) and circuits in the layer colour (no glow: cheap).
+      const pattern = Block.cellPattern(ctx, color);
+      ctx.fillStyle = pattern || color;
+      ctx.globalAlpha = pattern ? 0.5 : 0.07;
+      ctx.beginPath();
+      for (const b of list) b.facePath(ctx);
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = 0.34;
+      ctx.beginPath();
+      for (const b of list) b.tracePath(ctx);
+      ctx.stroke();
+    }
+    // The neural lattice runs over the plate bodies, under their rims.
+    if (underlay) underlay(ctx);
+    // The glow is a wide translucent underlay stroked on the same path, not
+    // shadowBlur: a blurred core-sized batch cost ~3 ms per frame at
+    // 1920x1080 in software raster (NC-13).
+    ctx.shadowBlur = 0;
+    for (const [key, list] of groups) {
+      const [color, stageText] = key.split('|');
+      const stage = Number(stageText);
+      const light = [1, 0.8, 0.62, 0.48][stage] * (stage === 3 && !reducedMotion ? 0.85 + 0.15 * Math.sin(time * 9) : 1);
+      ctx.strokeStyle = color;
+      // Dim full outline, then the bright lit rim with its glow.
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = light * 0.55;
+      ctx.beginPath();
+      for (const b of list) b.platePath(ctx, 0.5);
+      ctx.stroke();
+      ctx.beginPath();
+      for (const b of list) b.litPath(ctx, 0.5);
+      ctx.lineWidth = 5;
+      ctx.globalAlpha = light * 0.2;
+      ctx.stroke();
+      ctx.lineWidth = 1.8;
+      ctx.globalAlpha = light;
+      ctx.stroke();
+      if (stage > 0) {
+        // 5. Cracks: the breach (magenta) burning through, white-hot core.
+        ctx.beginPath();
+        for (const b of list) b.crackPath(ctx, stage);
+        ctx.strokeStyle = COLORS.magenta;
+        ctx.lineWidth = 3.5;
+        ctx.globalAlpha = 0.4;
+        ctx.stroke();
+        ctx.lineWidth = 1.3;
+        ctx.globalAlpha = 1;
+        ctx.stroke();
+        ctx.strokeStyle = COLORS.white;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+    // 6. Shatter wave pending: the plate's edge turns white.
+    ctx.globalAlpha = 0.9;
+    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = COLORS.white;
+    ctx.beginPath();
+    let marked = false;
+    for (const b of armour) if (b.shatter !== null) { b.platePath(ctx, 0.5); marked = true; }
+    if (marked) ctx.stroke();
+    // 7. Hit flashes: a white edge that fades in 0.25 s.
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = 2;
+    for (const b of armour) {
+      if (b.hitFlash <= 0) continue;
+      ctx.globalAlpha = b.hitFlash * 0.9;
+      ctx.beginPath();
+      b.platePath(ctx, 0.5);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    for (const b of relays) b.drawRelay(ctx, time, reducedMotion);
+    for (const b of hearts) b.drawHeart(ctx, time, reducedMotion);
+    if (dying.length) Block.drawShards(ctx, dying);
+    ctx.restore();
+  }
+
+  /** A broken block flies apart as four triangular shards (centre to each
+   *  edge), drifting outward while it fades (hitFlash 1 -> 0 in 0.25 s). */
+  static drawShards(ctx, dying) {
+    ctx.lineWidth = 1.2;
+    ctx.shadowBlur = 0;
+    for (const b of dying) {
+      const t = b.hitFlash;
+      if (t <= 0) continue;
+      const s = b.size;
+      const d = (1 - t) * s * 0.6;
+      const cx = b.cx;
+      const cy = b.cy;
+      ctx.globalAlpha = t;
+      ctx.fillStyle = COLORS.plate;
+      ctx.strokeStyle = b.color;
+      ctx.beginPath();
+      for (let i = 0; i < 4; i++) {
+        const nx = i === 1 ? 1 : i === 3 ? -1 : 0;
+        const ny = i === 0 ? -1 : i === 2 ? 1 : 0;
+        const ox = cx + nx * d + ny * d * 0.25;
+        const oy = cy + ny * d - nx * d * 0.25;
+        const h = s * 0.5 * (0.6 + 0.4 * t);
+        ctx.moveTo(ox, oy);
+        ctx.lineTo(ox + nx * h - ny * h, oy + ny * h + nx * h);
+        ctx.lineTo(ox + nx * h + ny * h, oy + ny * h - nx * h);
+        ctx.closePath();
+      }
+      ctx.fill();
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /** Relay: a hexagonal capacitor in a dark chamfered housing, an amber
+   *  charge that pulses and three terminals; dims as it is damaged. */
+  drawRelay(ctx, time, reducedMotion) {
+    const s = this.size;
+    const cx = this.cx;
+    const cy = this.cy;
+    const stage = this.damageStage;
+    const pulse = reducedMotion ? 0.6 : 0.5 + 0.5 * Math.sin(time * 5 + this.seed);
+    const r = s * 0.42;
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = COLORS.amber;
+    ctx.shadowColor = COLORS.amber;
+    // Housing edge (faint) and terminals.
+    ctx.globalAlpha = 0.45;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    chamferPath(ctx, this.x + 0.5, this.y + 0.5, s - 1, s - 1, [s * 0.2, s * 0.2, s * 0.2, s * 0.2]);
+    for (let i = 0; i < 6; i += 2) {
+      const a = -Math.PI / 2 + (i / 6) * Math.PI * 2;
+      ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+      ctx.lineTo(cx + Math.cos(a) * s * 0.5, cy + Math.sin(a) * s * 0.5);
+    }
+    ctx.stroke();
+    // Hexagon shell.
+    ctx.globalAlpha = [1, 0.85, 0.7, 0.55][stage];
+    ctx.shadowBlur = 10 + this.hitFlash * 10;
+    ctx.lineWidth = 1.7;
+    ctx.fillStyle = COLORS.plate;
+    ctx.beginPath();
+    polygonPath(ctx, cx, cy, r, 6, -Math.PI / 2);
+    ctx.fill();
+    ctx.stroke();
+    // Charge cell.
+    ctx.fillStyle = COLORS.amber;
+    ctx.globalAlpha = 0.35 + 0.45 * pulse;
+    ctx.beginPath();
+    polygonPath(ctx, cx, cy, r * 0.55, 6, 0);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = COLORS.white;
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    polygonPath(ctx, cx, cy, Math.max(1, r * 0.2), 4, 0);
+    ctx.fill();
+    if (stage > 0) {
+      ctx.shadowBlur = 4;
+      ctx.strokeStyle = COLORS.white;
+      ctx.lineWidth = 0.8;
+      ctx.beginPath();
+      this.crackPath(ctx, stage);
+      ctx.stroke();
+    }
+    if (stage >= 2) {
+      // Overload: arcs crawl over the shell (the relay is about to blow).
+      const tick = reducedMotion ? 1 : Math.floor(time * 14);
+      ctx.strokeStyle = COLORS.amber;
+      ctx.shadowBlur = 8;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let i = 0; i < stage - 1; i++) {
+        const a = hash01(this.seed + tick * 7 + i) * Math.PI * 2;
+        const a2 = a + 1.1;
+        jaggedPath(ctx, cx + Math.cos(a) * r * 1.05, cy + Math.sin(a) * r * 1.05, cx + Math.cos(a2) * r * 1.2, cy + Math.sin(a2) * r * 1.2, 3, s * 0.08, this.seed + tick + i * 5);
+      }
+      ctx.stroke();
+    }
+    if (this.hitFlash > 0) {
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = this.hitFlash;
+      ctx.strokeStyle = COLORS.white;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      polygonPath(ctx, cx, cy, r, 6, -Math.PI / 2);
+      ctx.stroke();
     }
     ctx.restore();
   }
 
-  /** The heart: a hollow white-framed reactor (armour is solid) with a
-   *  bright core that shrinks with its HP and a rotating pink ring. */
-  drawHeart(ctx, time) {
-    const hpRatio = clamp(this.hp / this.maxHp, 0, 1);
-    const c = this.size / 2;
-    const cx = this.x + c;
-    const cy = this.y + c;
-    const pulse = 0.5 + 0.5 * Math.sin(time * 4);
+  /**
+   * The heart: the AI's prime module, a "fracture sigil" (NC-ART-1). An
+   * octagonal amber housing; a seal of six rotating segments that fall away
+   * as the heart loses HP; inside, a faceted amber crystal split in two
+   * halves around a seam of light holding three data cells. The halves part and the cells brighten as the heart weakens, so
+   * its state reads at a glance (closed = full HP, wide open = about to
+   * break). The rogue AI's prime module: a geometric sign, not a face or eye.
+   */
+  drawHeart(ctx, time, reducedMotion) {
+    const hp = clamp(this.hp / this.maxHp, 0, 1);
+    const open = 1 - hp;
+    const s = this.size / 2;
+    const cx = this.x + s;
+    const cy = this.y + s;
+    const pulse = reducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(time * 3.2);
+    const c = this.size * 0.28;
     ctx.save();
-    ctx.shadowColor = this.color;
-    ctx.shadowBlur = 18 + pulse * 10 + this.hitFlash * 25;
-    ctx.fillStyle = this.color;
-    ctx.globalAlpha = 0.18;
-    ctx.fillRect(this.x, this.y, this.size, this.size);
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = COLORS.white;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(this.x + 1, this.y + 1, this.size - 2, this.size - 2);
-    // Rotating ring: two arcs.
-    ctx.strokeStyle = this.color;
-    ctx.lineWidth = Math.max(1.5, this.size * 0.07);
-    const spin = time * 2.2;
+    ctx.lineJoin = 'round';
+    // Housing.
+    ctx.fillStyle = COLORS.plateDark;
+    ctx.strokeStyle = COLORS.amber;
+    ctx.shadowColor = COLORS.amber;
+    ctx.shadowBlur = 12 + pulse * 6 + this.hitFlash * 18;
+    ctx.lineWidth = 1.8;
     ctx.beginPath();
-    ctx.arc(cx, cy, c * 0.72, spin, spin + 2.2);
-    ctx.moveTo(cx + Math.cos(spin + Math.PI) * c * 0.72, cy + Math.sin(spin + Math.PI) * c * 0.72);
-    ctx.arc(cx, cy, c * 0.72, spin + Math.PI, spin + Math.PI + 2.2);
-    ctx.stroke();
-    // Core light.
-    ctx.fillStyle = COLORS.white;
-    ctx.beginPath();
-    ctx.arc(cx, cy, Math.max(1, c * (0.15 + 0.35 * hpRatio) * (0.9 + 0.1 * pulse)), 0, Math.PI * 2);
+    chamferPath(ctx, this.x + 0.5, this.y + 0.5, this.size - 1, this.size - 1, [c, c, c, c]);
     ctx.fill();
+    ctx.stroke();
+    // Seal: six segments, one lost per sixth of HP.
+    const segments = Math.ceil(hp * 6 - 1e-9);
+    const spin = reducedMotion ? 0 : time * 0.6;
+    ctx.lineWidth = Math.max(1.2, s * 0.1);
+    ctx.lineCap = 'butt';
+    ctx.beginPath();
+    for (let i = 0; i < segments; i++) {
+      const a = spin + (i / 6) * Math.PI * 2;
+      ctx.moveTo(cx + Math.cos(a) * s * 0.74, cy + Math.sin(a) * s * 0.74);
+      ctx.arc(cx, cy, s * 0.74, a, a + 0.72);
+    }
+    ctx.stroke();
+    // Split crystal: two faceted amber halves (light upper facets, deep
+    // lower facets: a solid, glowing energy crystal).
+    const H = s * 0.6;
+    const W = s * 0.42;
+    const g = s * (0.05 + 0.3 * open);
+    ctx.shadowBlur = 8 + 6 * pulse;
+    ctx.fillStyle = '#ffd25a';
+    ctx.beginPath();
+    for (const sx of [-1, 1]) {
+      ctx.moveTo(cx + sx * g, cy - H);
+      ctx.lineTo(cx + sx * (g + W), cy);
+      ctx.lineTo(cx + sx * g, cy);
+      ctx.closePath();
+    }
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#b8650a';
+    ctx.beginPath();
+    for (const sx of [-1, 1]) {
+      ctx.moveTo(cx + sx * g, cy);
+      ctx.lineTo(cx + sx * (g + W), cy);
+      ctx.lineTo(cx + sx * g, cy + H);
+      ctx.closePath();
+    }
+    ctx.fill();
+    ctx.strokeStyle = '#fff1c4';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (const sx of [-1, 1]) {
+      ctx.moveTo(cx + sx * g, cy - H);
+      ctx.lineTo(cx + sx * (g + W), cy);
+      ctx.lineTo(cx + sx * g, cy + H);
+      ctx.closePath();
+    }
+    ctx.stroke();
+    ctx.shadowColor = COLORS.amber;
+    // In the fracture: the module's three data cells on a light seam
+    // (a column of nodes, deliberately not an eye). They brighten and drift
+    // apart as the heart opens.
+    const cell = Math.max(0.8, s * (0.1 + 0.06 * open));
+    const gapY = H * (0.42 + 0.2 * open);
+    ctx.globalAlpha = 0.5 + 0.5 * open;
+    ctx.strokeStyle = COLORS.white;
+    ctx.lineWidth = Math.max(0.6, g * 0.35);
+    ctx.shadowBlur = 8 + 14 * open;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - H * 0.92);
+    ctx.lineTo(cx, cy + H * 0.92);
+    ctx.stroke();
+    ctx.globalAlpha = 0.75 + 0.25 * open;
+    ctx.fillStyle = COLORS.white;
+    ctx.shadowBlur = 10 + 16 * open + pulse * 4;
+    ctx.beginPath();
+    for (const k of [-1, 0, 1]) polygonPath(ctx, cx, cy + k * gapY, cell * (k === 0 ? 1.35 : 1), 4, 0);
+    ctx.fill();
+    if (this.hitFlash > 0) {
+      ctx.globalAlpha = this.hitFlash;
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = COLORS.white;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      chamferPath(ctx, this.x + 0.5, this.y + 0.5, this.size - 1, this.size - 1, [c, c, c, c]);
+      ctx.stroke();
+    }
     ctx.restore();
   }
 }
@@ -759,12 +1365,65 @@ class Ball {
   }
 
   draw(ctx) {
+    Ball.drawAll(ctx, [this]);
+  }
+
+  /** All balls in batched passes (NC-ART-1): a short motion trail, a soft
+   *  halo, a rim in the ball's colour and a white-hot centre. The glow is a
+   *  translucent halo instead of shadowBlur: a blurred batch spanning the
+   *  whole field cost ~22 ms per frame at 1920x1080 with 60 balls in software
+   *  raster (NC-13); the halo costs almost nothing and looks the same at
+   *  this size. Balls stay the brightest small objects on the field. */
+  static drawAll(ctx, balls) {
+    if (!balls.length) return;
     ctx.save();
-    ctx.fillStyle = this.flash > 0 ? COLORS.white : this.color;
-    ctx.shadowBlur = 15 + this.flash * 20;
-    ctx.shadowColor = this.color;
+    ctx.lineCap = 'round';
+    const byColor = new Map();
+    for (const b of balls) {
+      const key = b.flash > 0 ? COLORS.white : b.color;
+      if (!byColor.has(key)) byColor.set(key, []);
+      byColor.get(key).push(b);
+    }
+    for (const [color, list] of byColor) {
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.35;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (const b of list) {
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.x - b.vx * 0.04, b.y - b.vy * 0.04);
+      }
+      ctx.stroke();
+      const halo = color === COLORS.white ? 2.8 : 1.95;
+      ctx.globalAlpha = 0.13;
+      ctx.beginPath();
+      for (const b of list) {
+        ctx.moveTo(b.x + b.radius * halo, b.y);
+        ctx.arc(b.x, b.y, b.radius * halo, 0, Math.PI * 2);
+      }
+      ctx.fill();
+      ctx.globalAlpha = 0.24;
+      ctx.beginPath();
+      for (const b of list) {
+        ctx.moveTo(b.x + b.radius * 1.4, b.y);
+        ctx.arc(b.x, b.y, b.radius * 1.4, 0, Math.PI * 2);
+      }
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      for (const b of list) {
+        ctx.moveTo(b.x + b.radius, b.y);
+        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+      }
+      ctx.fill();
+    }
+    ctx.fillStyle = COLORS.white;
     ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    for (const b of balls) {
+      ctx.moveTo(b.x + b.radius * 0.55, b.y);
+      ctx.arc(b.x, b.y, b.radius * 0.55, 0, Math.PI * 2);
+    }
     ctx.fill();
     ctx.restore();
   }
@@ -804,33 +1463,107 @@ class Turret {
 
   /** `charge` 0..1 = the volley meter: the turret glows brighter while it
    *  charges and pulses white when the volley is ready. */
-  draw(ctx, charge, time) {
+  /**
+   * "Fork emitter" (NC-ART-1): a round pad with a cyan rim, a hexagonal
+   * graphite base, two rails aimed at the core, a magenta capacitor between
+   * the rails that fills with the
+   * volley charge and a four-segment charge ring around the base. Ready: the
+   * capacitor is full, a spark jumps between the rail tips and the ring
+   * pulses. Firing: a white flash at the muzzle.
+   */
+  draw(ctx, charge, time, reducedMotion) {
+    const ready = charge >= 1;
+    const pulse = reducedMotion ? 0.7 : 0.5 + 0.5 * Math.sin(time * 6);
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angle);
-    if (charge >= 1) {
-      ctx.strokeStyle = COLORS.white;
-      ctx.globalAlpha = 0.5 + 0.5 * Math.sin(time * 8);
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = COLORS.white;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.arc(0, 0, 16, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-    }
-    ctx.fillStyle = this.color;
-    ctx.shadowBlur = 10 + charge * 12 + this.flash * 15;
-    ctx.shadowColor = this.color;
+    ctx.lineJoin = 'round';
+    // Pad: a round graphite platform with a cyan rim.
+    ctx.fillStyle = COLORS.plateDark;
+    ctx.strokeStyle = COLORS.cyan;
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.9;
     ctx.beginPath();
-    ctx.moveTo(14, 0);
-    ctx.lineTo(-8, 9);
-    ctx.lineTo(-8, -9);
-    ctx.closePath();
+    ctx.arc(0, 0, 11, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = this.color;
-    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.5;
     ctx.stroke();
+    ctx.globalAlpha = 1;
+    // Charge ring: four quarter segments around the base (breach magenta).
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = COLORS.magenta;
+    ctx.shadowColor = COLORS.magenta;
+    for (let i = 0; i < 4; i++) {
+      const fill = clamp(charge * 4 - i, 0, 1);
+      const a = Math.PI + i * (Math.PI / 2) + 0.12;
+      ctx.globalAlpha = 0.18;
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(0, 0, 13, a, a + Math.PI / 2 - 0.24);
+      ctx.stroke();
+      if (fill > 0) {
+        ctx.globalAlpha = ready ? 0.6 + 0.4 * pulse : 0.9;
+        ctx.shadowBlur = ready ? 10 : 4;
+        ctx.beginPath();
+        ctx.arc(0, 0, 13, a, a + (Math.PI / 2 - 0.24) * fill);
+        ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+    // Rails.
+    ctx.fillStyle = COLORS.plate;
+    ctx.strokeStyle = COLORS.ice;
+    ctx.shadowColor = COLORS.cyan;
+    ctx.shadowBlur = 6 + this.flash * 12;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    for (const side of [-1, 1]) {
+      ctx.moveTo(1, side * 3);
+      ctx.lineTo(15, side * 3.2);
+      ctx.lineTo(17, side * 5.2);
+      ctx.lineTo(3, side * 7.5);
+      ctx.closePath();
+    }
+    ctx.fill();
+    ctx.stroke();
+    // Base.
+    ctx.strokeStyle = COLORS.cyan;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    polygonPath(ctx, 0, 0, 8.5, 6, 0);
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = COLORS.plateHi;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    polygonPath(ctx, 0, 0, 5, 6, 0);
+    ctx.stroke();
+    // Capacitor between the rails.
+    ctx.fillStyle = COLORS.magenta;
+    ctx.shadowColor = COLORS.magenta;
+    ctx.shadowBlur = ready ? 12 : 5;
+    ctx.globalAlpha = ready ? 0.75 + 0.25 * pulse : 0.85;
+    ctx.fillRect(2, -1.4, 13 * clamp(charge, 0, 1), 2.8);
+    ctx.globalAlpha = 1;
+    if (ready) {
+      // Spark between the rail tips (deterministic: changes 12x per second).
+      ctx.strokeStyle = COLORS.white;
+      ctx.lineWidth = 1;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      jaggedPath(ctx, 16.5, -4.6, 16.5, 4.6, 4, 2.2, reducedMotion ? 3 : Math.floor(time * 12));
+      ctx.stroke();
+    }
+    if (this.flash > 0) {
+      ctx.fillStyle = COLORS.white;
+      ctx.globalAlpha = this.flash;
+      ctx.shadowColor = COLORS.white;
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      polygonPath(ctx, 19, 0, 2 + 4 * this.flash, 4, 0);
+      ctx.fill();
+    }
     ctx.restore();
   }
 }
@@ -878,6 +1611,22 @@ class Game {
     this.coresShattered = 0;
     this.lances = [];
     this.rings = [];
+    // Cosmetic effects (NC-ART-1): relay surge arcs, the breach finale, the
+    // moment the current core was generated (assembly animation), the cached
+    // background.
+    this.arcs = [];
+    this.breach = null;
+    // Neural lattice of the current core (buildNetwork) and the volley's
+    // synchronisation flash between the turrets.
+    this.links = [];
+    this.syncFlash = 0;
+    // Lattice pulse phase; its speed follows the core's damage (refreshed
+    // with the UI tick, so a hit never makes the pulses jump).
+    this.netPhase = 0;
+    this.netSpeed = 0.35;
+    this.coreBornAt = -10;
+    this.bgCanvas = null;
+    this.bgKey = '';
     this.aim = null;
     this.banner = null;
     this.time = 0;
@@ -1187,21 +1936,21 @@ class Game {
     const moneyMul = Math.pow(1.5, level - 1);
     const maxHp = Math.max(1, Math.round(10 * hpMul));
     const moneyPerHit = Math.max(1, Math.round(1 * moneyMul));
-    const colors = [COLORS.cyan, COLORS.pink, COLORS.green];
 
     const useGrid = level % 2 === 1;
     const layout = useGrid ? this.gridLayout(level) : this.circleLayout(level);
 
-    layout.points.forEach((p, i) => {
-      const color = colors[i % colors.length];
-      const block = new Block(p.x, p.y, layout.size, maxHp, moneyPerHit, color);
-      this.blocks.push(block);
-    });
+    for (const p of layout.points) {
+      this.blocks.push(new Block(p.x, p.y, layout.size, maxHp, moneyPerHit, COLORS.cyan));
+    }
     this.blockHp = maxHp;
     this.blockMoney = moneyPerHit;
     this.blockStep = layout.size + (useGrid ? 5 : 8);
     this.placeHeart(layout, useGrid, maxHp, moneyPerHit);
+    this.markInnerShield(layout, useGrid);
     this.placeRelays(level);
+    this.buildNetwork();
+    this.coreBornAt = this.time;
     this.coreTotalHp = this.blocks.reduce((sum, b) => sum + b.maxHp, 0);
 
     // Half-size of the core's bounding box, measured from the generated blocks.
@@ -1230,9 +1979,61 @@ class Game {
     } else {
       size = Math.round(layout.size * 1.4);
     }
-    const heart = new Block(0, 0, size, HEART_HP * maxHp, moneyPerHit, COLORS.pink);
+    const heart = new Block(0, 0, size, HEART_HP * maxHp, moneyPerHit, COLORS.amber);
     heart.kind = 'heart';
     this.blocks.push(heart);
+  }
+
+  /** Cosmetic (NC-ART-1): the armour layer touching the heart is its inner
+   *  shield, edged violet; the rest is cyan. Only cores with at least two
+   *  layers have one (a 3x3 core stays all cyan, so on level 1 the amber
+   *  heart stands alone in the middle). */
+  markInnerShield(layout, useGrid) {
+    const heart = this.blocks.find((b) => b.kind === 'heart');
+    if (!heart) return;
+    if (useGrid) {
+      if (layout.n < 5) return;
+      const reach = heart.size / 2 + layout.size + 6;
+      for (const b of this.blocks) {
+        if (b.kind === 'armor' && Math.max(Math.abs(b.offsetX), Math.abs(b.offsetY)) <= reach) { b.layer = 1; b.color = COLORS.violet; }
+      }
+    } else {
+      let maxR = 0;
+      for (const b of this.blocks) if (b.kind === 'armor') maxR = Math.max(maxR, Math.hypot(b.offsetX, b.offsetY));
+      for (const b of this.blocks) {
+        if (b.kind === 'armor' && Math.hypot(b.offsetX, b.offsetY) < maxR - layout.size * 0.5) { b.layer = 1; b.color = COLORS.violet; }
+      }
+    }
+  }
+
+  /** Cosmetic (NC-ART-1, "Fractured Intelligence"): the core is drawn as one
+   *  digital organism, a lattice linking every block to its direct
+   *  neighbours (grid: up/down/left/right; rings: along and between rings)
+   *  and the innermost blocks to the heart. It mirrors the real structure
+   *  (which blocks touch, where the heart is); it is not a mechanic. */
+  buildNetwork() {
+    this.links = [];
+    const blocks = this.blocks;
+    const heart = blocks.find((b) => b.kind === 'heart');
+    const reach = this.blockStep * 1.25;
+    const others = blocks.filter((b) => b.kind !== 'heart');
+    for (let i = 0; i < others.length; i++) {
+      for (let j = i + 1; j < others.length; j++) {
+        const a = others[i];
+        const b = others[j];
+        if (Math.hypot(a.baseOffsetX - b.baseOffsetX, a.baseOffsetY - b.baseOffsetY) <= reach) this.links.push({ a, b, axon: false });
+      }
+    }
+    if (!heart) return;
+    const dist = (b) => Math.hypot(b.baseOffsetX, b.baseOffsetY);
+    let near = others.filter((b) => Math.max(Math.abs(b.baseOffsetX), Math.abs(b.baseOffsetY)) <= heart.baseSize / 2 + this.blockStep * 0.9);
+    if (!near.length) {
+      // Ring cores: the heart floats inside; six axons to the inner ring.
+      const sorted = others.slice().sort((p, q) => dist(p) - dist(q));
+      const inner = sorted.filter((b) => dist(b) <= dist(sorted[0]) + 1);
+      near = inner.filter((_, i) => i % Math.max(1, Math.floor(inner.length / 6)) === 0).slice(0, 6);
+    }
+    for (const b of near) this.links.push({ a: b, b: heart, axon: true });
   }
 
   /** Energy relays: min(1 + floor((L-2)/3), 4) random armour blocks from
@@ -1257,13 +2058,12 @@ class Game {
       { dx: 0, dy: 1 },
       { dx: -1, dy: 0 },
     ];
-    const colors = [COLORS.cyan, COLORS.pink, COLORS.green, COLORS.cyan];
-
     this.turrets = [];
     for (let i = 0; i < count; i++) {
       const dir = compass[i];
       // Aimed at the core (NC-CORE-1A): every new ball starts with a hit.
-      const turret = new Turret(0, 0, Math.atan2(-dir.dy, -dir.dx), colors[i]);
+      // Magenta = the player's breach: every turret's lance (NC-ART-1).
+      const turret = new Turret(0, 0, Math.atan2(-dir.dy, -dir.dx), COLORS.magenta);
       turret.dirX = dir.dx;
       turret.dirY = dir.dy;
       this.turrets.push(turret);
@@ -1290,7 +2090,9 @@ class Game {
     const spawnDist = clamp(gap - radius - 2, 0, 22);
     const x = turret.x + Math.cos(turret.angle) * spawnDist;
     const y = turret.y + Math.sin(turret.angle) * spawnDist;
-    const colors = [COLORS.cyan, COLORS.pink, COLORS.green];
+    // Three tints of the player's cyan; the random pick is kept exactly as
+    // before so the simulation's random sequence is unchanged (NC-ART-1).
+    const colors = [COLORS.cyan, COLORS.ice, COLORS.cyan];
     const color = colors[Math.floor(Math.random() * colors.length)];
     this.balls.push(new Ball(x, y, angle, speed, radius, color));
   }
@@ -1418,6 +2220,7 @@ class Game {
       turret.flash = 1;
     }
     this.addRing(x, y, 14, COLORS.white, 0.3, 2);
+    this.syncFlash = 1;
     this.shake = Math.max(this.shake, 0.12);
     this.sound.play('volley');
     // Instant response to the player: hint, cash and cursor now, not at the
@@ -1479,7 +2282,7 @@ class Game {
    *  deals damage, shows feedback and resolves a destruction. */
   hitBlock(block, damage, x, y, source) {
     this.cash += block.moneyPerHit;
-    this.addFloatText(x, y, block.moneyPerHit, block.color);
+    this.addFloatText(x, y, block.moneyPerHit, COLORS.green);
     this.particles.burst(x, y, block.color, source === 'ball' ? 6 : 10, {
       minSpeed: 40, maxSpeed: 150, minLife: 0.25, maxLife: 0.5,
     });
@@ -1501,13 +2304,20 @@ class Game {
   triggerRelay(relay) {
     const bonus = RELAY_BONUS * relay.moneyPerHit;
     this.cash += bonus;
-    this.addBigText(relay.cx, relay.cy - 10, `${this.t('relay')} +${formatMoney(bonus, this.lang)}`, COLORS.amber);
+    // Above the core (never over the heart); chained relays stack upward.
+    const stacked = this.floatTexts.filter((f) => f.big && f.life > FLOAT_TEXT_LIFE * 0.8).length;
+    const top = this.height / 2 - this.coreRadius * this.coreScale - 14 - stacked * 16 / Math.max(1, this.viewScale);
+    this.addBigText(this.width / 2, Math.max(14, top), `${this.t('relay')} +${formatMoney(bonus, this.lang)}`, COLORS.amber);
     if (this.volleyCharge < 1) {
       this.volleyCharge = 1;
       this.volleyReadyFor = 0;
     }
     const radius = SHOCK_RADIUS_STEPS * this.blockStep * this.coreScale;
     this.addRing(relay.cx, relay.cy, radius, COLORS.amber, 0.45, 3);
+    // Surge to every turret: the recharge made visible (cosmetic).
+    for (const t of this.turrets) {
+      if (this.arcs.length < MAX_ARCS) this.arcs.push(new Arc(relay.cx, relay.cy, t.x, t.y, relay.seed + this.arcs.length * 31));
+    }
     this.sound.play('relay');
     const damage = SHOCK_DAMAGE * this.ballDamage;
     for (const b of this.blocks) {
@@ -1522,12 +2332,17 @@ class Game {
     const bonus = HEART_BONUS * heart.moneyPerHit;
     this.cash += bonus;
     this.coresShattered += 1;
-    this.addBigText(heart.cx, heart.cy - 14, `${this.t('breached')} +${formatMoney(bonus, this.lang)}`, COLORS.white);
+    // Below the core: not on top of the breaking plates, nor under the
+    // level banner that follows (NC-ART-1).
+    const below = heart.cy + this.coreRadius * this.coreScale + 16;
+    this.addBigText(heart.cx, Math.min(this.height - 14, below), `${this.t('breached')} +${formatMoney(bonus, this.lang)}`, COLORS.amber);
     for (const b of this.blocks) {
       if (b.alive && b.shatter === null) b.shatter = Math.hypot(b.cx - heart.cx, b.cy - heart.cy) / SHATTER_SPEED;
     }
-    this.addRing(heart.cx, heart.cy, Math.max(this.width, this.height) * 0.6, COLORS.pink, 0.7, 5);
-    this.addRing(heart.cx, heart.cy, this.coreRadius * this.coreScale * 1.2, COLORS.white, 0.45, 3);
+    // Breach finale (cosmetic): the seal implodes, the sigil splits, fracture
+    // lines run outward and a magenta front marks the shatter wave.
+    const reach = this.coreRadius * this.coreScale * 1.5;
+    this.breach = { x: heart.cx, y: heart.cy, t: 0, size: heart.size, reach, life: reach / SHATTER_SPEED + 0.7, seed: this.level * 7919 };
     this.screenFlash = 1;
     this.shake = Math.max(this.shake, 0.35);
     this.volleyCharge = 1;
@@ -1653,6 +2468,7 @@ class Game {
     const screenPx = 15 * Math.min(1.5, this.viewScale);
     const label = new FloatText(x, y, text, color, screenPx / this.viewScale);
     label.life = FLOAT_TEXT_LIFE * 1.6;
+    label.big = true;
     this.floatTexts.push(label);
   }
 
@@ -1685,6 +2501,8 @@ class Game {
       this.level += 1;
       this.generateCore(this.level);
       this.banner = { text: this.t('levelUp', { n: this.level }), life: 1.4 };
+      // The banner owns the top of the field: event labels above the core go.
+      this.floatTexts = this.floatTexts.filter((f) => !(f.big && f.y < this.height / 2));
       this.sound.play('level');
     }
 
@@ -1694,8 +2512,16 @@ class Game {
     for (const l of this.lances) l.update(dt);
     if (this.lances.length && this.lances[0].life <= 0) this.lances = this.lances.filter((l) => l.life > 0);
     for (const ring of this.rings) ring.update(dt);
+    for (const a of this.arcs) a.update(dt);
+    if (this.arcs.length && this.arcs.some((a) => a.life <= 0)) this.arcs = this.arcs.filter((a) => a.life > 0);
+    if (this.breach) {
+      this.breach.t += dt;
+      if (this.breach.t >= this.breach.life) this.breach = null;
+    }
     if (this.rings.length && this.rings.some((ring) => ring.life <= 0)) this.rings = this.rings.filter((ring) => ring.life > 0);
     if (this.screenFlash > 0) this.screenFlash = Math.max(0, this.screenFlash - dt * 3);
+    if (this.syncFlash > 0) this.syncFlash = Math.max(0, this.syncFlash - dt * 3);
+    this.netPhase += dt * this.netSpeed;
     if (this.shake > 0) this.shake = Math.max(0, this.shake - dt);
     if (this.banner) {
       this.banner.life -= dt;
@@ -1706,6 +2532,7 @@ class Game {
     if (this.uiTimer >= 0.15) {
       this.uiTimer = 0;
       this.updateUI();
+      this.netSpeed = 0.35 + 1.4 * this.coreProgress;
     }
 
     this.saveTimer += dt;
@@ -1717,9 +2544,7 @@ class Game {
 
   draw() {
     const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.width, this.height);
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, this.width, this.height);
+    this.drawBackground(ctx);
 
     const shaking = this.shake > 0 && !this.reducedMotion;
     if (shaking) {
@@ -1729,19 +2554,32 @@ class Game {
       const a = this.shake * 10;
       ctx.translate(Math.sin(this.time * 91) * a, Math.cos(this.time * 77) * a);
     }
+    this.drawFieldMarks(ctx);
     this.drawAimPreview(ctx);
-    for (const block of this.blocks) block.draw(ctx, this.time);
-    for (const turret of this.turrets) turret.draw(ctx, this.volleyCharge, this.time);
+    Block.drawCore(ctx, this.visibleBlocks(), this.time, this.reducedMotion, (c) => {
+      this.drawNetwork(c);
+      this.drawConduits(c);
+    });
+    this.drawHeartLock(ctx);
+    this.drawSync(ctx);
+    for (const turret of this.turrets) turret.draw(ctx, this.volleyCharge, this.time, this.reducedMotion);
+    this.drawBreach(ctx);
     for (const l of this.lances) l.draw(ctx);
+    for (const a of this.arcs) a.draw(ctx);
     for (const ring of this.rings) ring.draw(ctx);
     this.particles.draw(ctx);
-    for (const ball of this.balls) ball.draw(ctx);
+    Ball.drawAll(ctx, this.balls);
     for (const f of this.floatTexts) f.draw(ctx);
     if (shaking) ctx.restore();
 
     if (this.screenFlash > 0) {
+      // Breach flash: a magenta-white veil, gentle and single (no strobe);
+      // much weaker with prefers-reduced-motion.
       ctx.save();
-      ctx.globalAlpha = this.screenFlash * (this.reducedMotion ? 0.1 : 0.3);
+      ctx.globalAlpha = this.screenFlash * (this.reducedMotion ? 0.06 : 0.2);
+      ctx.fillStyle = COLORS.magenta;
+      ctx.fillRect(0, 0, this.width, this.height);
+      ctx.globalAlpha = this.screenFlash * (this.reducedMotion ? 0.04 : 0.12);
       ctx.fillStyle = COLORS.white;
       ctx.fillRect(0, 0, this.width, this.height);
       ctx.restore();
@@ -1751,33 +2589,587 @@ class Game {
     this.drawBanner(ctx);
   }
 
-  /** With a mouse over the field and the volley ready: dashed lines from
-   *  every turret through the cursor, and a crosshair (where lances go). */
+  /** Blocks to draw: while a new core assembles (CORE_ASSEMBLY_TIME after
+   *  generation), plates appear outward from the heart. Drawing only; the
+   *  blocks are solid from the first step. */
+  visibleBlocks() {
+    const age = this.time - this.coreBornAt;
+    if (this.reducedMotion || age >= CORE_ASSEMBLY_TIME) return this.blocks;
+    const reach = (this.coreRadius * this.coreScale * 1.5) * (age / CORE_ASSEMBLY_TIME);
+    return this.blocks.filter((b) => b.kind === 'heart' || Math.hypot(b.offsetX, b.offsetY) <= reach);
+  }
+
+  /**
+   * Static backdrop, rendered once per canvas size into an offscreen canvas
+   * (NC-ART-1): graphite with a soft light behind the core, a sparse dot
+   * field that fades toward the edges, two containment rings with ticks
+   * around the core and bottom corner brackets. No full neon grid. Where an
+   * offscreen canvas is unavailable (QA harness) the plain colour is used.
+   */
+  drawBackground(ctx) {
+    const key = `${this.canvas.width}x${this.canvas.height}@${this.viewScale}`;
+    if (this.bgKey !== key) {
+      this.bgKey = key;
+      this.bgCanvas = this.renderBackground();
+    }
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (this.bgCanvas) {
+      ctx.drawImage(this.bgCanvas, 0, 0);
+    } else {
+      ctx.fillStyle = COLORS.void;
+      ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+    ctx.restore();
+  }
+
+  renderBackground() {
+    if (typeof document === 'undefined' || typeof document.createElement !== 'function') return null;
+    let canvas;
+    let g;
+    try {
+      canvas = document.createElement('canvas');
+      canvas.width = this.canvas.width;
+      canvas.height = this.canvas.height;
+      g = canvas.getContext('2d');
+    } catch (err) {
+      return null;
+    }
+    if (!g || typeof g.createRadialGradient !== 'function') return null;
+    const s = this.dpr * this.viewScale;
+    g.setTransform(s, 0, 0, s, 0, 0);
+    const w = this.width;
+    const h = this.height;
+    const cx = w / 2;
+    const cy = h / 2;
+    const far = Math.hypot(cx, cy);
+    g.fillStyle = COLORS.void;
+    g.fillRect(0, 0, w, h);
+    const glow = g.createRadialGradient(cx, cy, 0, cx, cy, far);
+    glow.addColorStop(0, '#15142a');
+    glow.addColorStop(0.45, '#0c0c18');
+    glow.addColorStop(1, '#05050a');
+    g.fillStyle = glow;
+    g.fillRect(0, 0, w, h);
+    // Dot field.
+    g.fillStyle = '#2a3a52';
+    const step = 14;
+    for (let y = (cy % step); y < h; y += step) {
+      for (let x = (cx % step); x < w; x += step) {
+        const d = Math.hypot(x - cx, y - cy) / far;
+        g.globalAlpha = 0.55 * (1 - d) * (1 - d);
+        g.fillRect(x - 0.5, y - 0.5, 1, 1);
+      }
+    }
+    const short = Math.min(w, h);
+    // The AI's wider infrastructure: a few dark circuit routes run in from
+    // the field edges toward the core (orthogonal, one 45-degree bend, a pad
+    // at the end). Fixed layout, very low contrast: depth, not a grid.
+    g.strokeStyle = '#141d2d';
+    g.fillStyle = '#1a2538';
+    g.lineWidth = 1.2;
+    g.lineJoin = 'round';
+    const stopR = short * 0.5;
+    for (let i = 0; i < 16; i++) {
+      const side = i % 4;
+      const f = 0.08 + 0.84 * hash01(911 + i * 17);
+      let x = side === 0 ? f * w : side === 1 ? w : side === 2 ? f * w : 0;
+      let y = side === 0 ? 0 : side === 1 ? f * h : side === 2 ? h : f * h;
+      const dirX = side === 1 ? -1 : side === 3 ? 1 : 0;
+      const dirY = side === 0 ? 1 : side === 2 ? -1 : 0;
+      g.beginPath();
+      g.moveTo(x, y);
+      const run = (Math.hypot(cx - x, cy - y) - stopR) * (0.35 + 0.4 * hash01(977 + i));
+      if (run <= 4) continue;
+      x += dirX * run;
+      y += dirY * run;
+      g.lineTo(x, y);
+      // Bend 45 degrees toward the core and stop short of the rings.
+      const bx = Math.sign(cx - x) || 1;
+      const by = Math.sign(cy - y) || 1;
+      const diag = Math.max(0, (Math.hypot(cx - x, cy - y) - stopR) * 0.5);
+      x += (dirX === 0 ? bx : dirX) * diag * 0.7071;
+      y += (dirY === 0 ? by : dirY) * diag * 0.7071;
+      g.lineTo(x, y);
+      g.stroke();
+      g.fillRect(x - 2, y - 2, 4, 4);
+    }
+    // Containment rings and ticks.
+    g.globalAlpha = 1;
+    g.strokeStyle = '#162033';
+    g.lineWidth = 1;
+    for (const r of [short * 0.36, short * 0.47]) {
+      g.beginPath();
+      g.arc(cx, cy, r, 0, Math.PI * 2);
+      g.stroke();
+    }
+    g.strokeStyle = '#1e2b42';
+    g.beginPath();
+    for (let i = 0; i < 72; i++) {
+      const a = (i / 72) * Math.PI * 2;
+      const r0 = short * 0.47;
+      const len = i % 18 === 0 ? 9 : i % 6 === 0 ? 5 : 2.5;
+      g.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0);
+      g.lineTo(cx + Math.cos(a) * (r0 + len), cy + Math.sin(a) * (r0 + len));
+    }
+    g.stroke();
+    // Arena frame: a chamfered bezel just inside the walls the balls bounce
+    // off, with a few dim light strips (cyan sides, amber bottom corners).
+    const m = 3;
+    const cut = Math.min(22, short * 0.08);
+    g.strokeStyle = '#1d2236';
+    g.lineWidth = 2;
+    g.beginPath();
+    chamferPath(g, m, m, w - m * 2, h - m * 2, [cut, cut, cut, cut]);
+    g.stroke();
+    g.lineWidth = 2;
+    g.globalAlpha = 0.45;
+    g.strokeStyle = COLORS.cyan;
+    g.beginPath();
+    for (const fy of [0.38, 0.62]) {
+      g.moveTo(m, h * fy - 6); g.lineTo(m, h * fy + 6);
+      g.moveTo(w - m, h * fy - 6); g.lineTo(w - m, h * fy + 6);
+    }
+    g.stroke();
+    g.strokeStyle = COLORS.amber;
+    g.beginPath();
+    g.moveTo(m + cut + 6, h - m); g.lineTo(m + cut + 18, h - m);
+    g.moveTo(w - m - cut - 6, h - m); g.lineTo(w - m - cut - 18, h - m);
+    g.stroke();
+    g.globalAlpha = 1;
+    return canvas;
+  }
+
+  /** Live layer of the backdrop: a slow scanning arc on the outer
+   *  containment ring (static with prefers-reduced-motion). */
+  drawFieldMarks(ctx) {
+    const cx = this.width / 2;
+    const cy = this.height / 2;
+    const r = Math.min(this.width, this.height) * 0.47;
+    const a = this.reducedMotion ? -Math.PI / 2 : this.time * 0.35;
+    ctx.save();
+    ctx.strokeStyle = COLORS.cyan;
+    ctx.globalAlpha = 0.16;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, a, a + 0.9);
+    ctx.stroke();
+    ctx.globalAlpha = 0.08;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, a + Math.PI, a + Math.PI + 0.5);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /** Relay energy lines (NC-ART-1): an amber power pipe (axis run + one
+   *  45-degree run) from every relay into the heart with energy flowing
+   *  along it, and a zigzag link between
+   *  relays close enough for one's shockwave to reach the other (a chain). */
+  drawConduits(ctx) {
+    let heart = null;
+    const relays = [];
+    for (const b of this.blocks) {
+      if (!b.alive) continue;
+      if (b.kind === 'heart') heart = b;
+      else if (b.kind === 'relay') relays.push(b);
+    }
+    if (!relays.length) return;
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    if (heart) {
+      // Power pipes: straight along the major axis, then one 45-degree run
+      // into the heart (drawn under the relay and heart housings).
+      ctx.beginPath();
+      for (const r of relays) {
+        const dx = heart.cx - r.cx;
+        const dy = heart.cy - r.cy;
+        ctx.moveTo(r.cx, r.cy);
+        if (Math.abs(dx) >= Math.abs(dy)) ctx.lineTo(heart.cx - Math.sign(dx) * Math.abs(dy), r.cy);
+        else ctx.lineTo(r.cx, heart.cy - Math.sign(dy) * Math.abs(dx));
+        ctx.lineTo(heart.cx, heart.cy);
+      }
+      ctx.strokeStyle = COLORS.plateDark;
+      ctx.globalAlpha = 0.9;
+      ctx.lineWidth = 4.5;
+      ctx.stroke();
+      ctx.strokeStyle = COLORS.amber;
+      ctx.globalAlpha = 0.55;
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+      ctx.strokeStyle = '#fff1c4';
+      ctx.globalAlpha = 0.9;
+      ctx.lineWidth = 1;
+      if (ctx.setLineDash) ctx.setLineDash([2, 7]);
+      ctx.lineDashOffset = this.reducedMotion ? 0 : -this.time * 22;
+      ctx.stroke();
+      if (ctx.setLineDash) ctx.setLineDash([]);
+    }
+    ctx.strokeStyle = COLORS.amber;
+    ctx.lineWidth = 1.2;
+    const reach = SHOCK_RADIUS_STEPS * this.blockStep * this.coreScale;
+    ctx.globalAlpha = 0.7;
+    ctx.shadowColor = COLORS.amber;
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    let links = 0;
+    for (let i = 0; i < relays.length; i++) {
+      for (let j = i + 1; j < relays.length; j++) {
+        const a = relays[i];
+        const b = relays[j];
+        if (Math.hypot(a.cx - b.cx, a.cy - b.cy) > reach) continue;
+        jaggedPath(ctx, a.cx, a.cy, b.cx, b.cy, 5, 2.5, a.seed + b.seed + (this.reducedMotion ? 0 : Math.floor(this.time * 8)));
+        links += 1;
+      }
+    }
+    if (links) ctx.stroke();
+    ctx.restore();
+  }
+
+  /**
+   * The core's neural lattice (NC-ART-1, "Fractured Intelligence"): thin
+   * links between neighbouring blocks' nodes and magenta axons into the
+   * heart, with signal pulses flowing inward. The organism reacts: a hit
+   * lights the struck block's links; as the core loses HP the lattice
+   * brightens and its pulses speed up; a link to a destroyed block is cut to
+   * a sparking stub; links ahead of the shatter wave flicker white.
+   */
+  drawNetwork(ctx) {
+    if (!this.links.length) return;
+    const cx = this.width / 2;
+    const cy = this.height / 2;
+    const k = this.coreScale;
+    const age = this.time - this.coreBornAt;
+    if (!this.reducedMotion && age < CORE_ASSEMBLY_TIME) return;
+    const stress = clamp((this.netSpeed - 0.35) / 1.4, 0, 1);
+    const phase = this.reducedMotion ? 0 : this.netPhase;
+    const nodeR = (b) => (b.kind === 'heart' ? b.size * 0.5 : b.kind === 'relay' ? b.size * 0.42 : b.size * 0.08);
+    const live = [];
+    const axons = [];
+    const hot = [];
+    const marked = [];
+    const stubs = [];
+    for (const l of this.links) {
+      const ea = l.a.alive;
+      const eb = l.b.alive;
+      if (ea && eb) {
+        (l.axon ? axons : live).push(l);
+        if (l.a.hitFlash > 0 || l.b.hitFlash > 0) hot.push(l);
+        if (l.a.shatter !== null || l.b.shatter !== null) marked.push(l);
+      } else if (ea !== eb && !l.axon) {
+        stubs.push(ea ? [l.a, l.b] : [l.b, l.a]);
+      }
+    }
+    const seg = (path, list) => {
+      for (const l of list) {
+        const ax = cx + l.a.baseOffsetX * k;
+        const ay = cy + l.a.baseOffsetY * k;
+        const bx = cx + l.b.baseOffsetX * k;
+        const by = cy + l.b.baseOffsetY * k;
+        const d = Math.hypot(bx - ax, by - ay) || 1;
+        const ra = nodeR(l.a);
+        const rb = nodeR(l.b);
+        if (d <= ra + rb) continue;
+        path.moveTo(ax + ((bx - ax) / d) * ra, ay + ((by - ay) / d) * ra);
+        path.lineTo(bx - ((bx - ax) / d) * rb, by - ((by - ay) / d) * rb);
+      }
+    };
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 0.9;
+    ctx.strokeStyle = COLORS.cyan;
+    ctx.globalAlpha = 0.22 + 0.25 * stress;
+    ctx.beginPath();
+    seg(ctx, live);
+    ctx.stroke();
+    ctx.strokeStyle = COLORS.amber;
+    ctx.lineWidth = 1.4;
+    ctx.globalAlpha = 0.55 + 0.3 * stress;
+    ctx.beginPath();
+    seg(ctx, axons);
+    ctx.stroke();
+    if (hot.length) {
+      ctx.strokeStyle = COLORS.white;
+      ctx.lineWidth = 1.2;
+      ctx.globalAlpha = 0.7;
+      ctx.beginPath();
+      seg(ctx, hot);
+      ctx.stroke();
+    }
+    if (marked.length) {
+      ctx.strokeStyle = COLORS.white;
+      ctx.globalAlpha = this.reducedMotion ? 0.6 : 0.35 + 0.35 * Math.sin(this.time * 40);
+      ctx.beginPath();
+      seg(ctx, marked);
+      ctx.stroke();
+    }
+    // Severed links: a stub from the surviving node, sparking at its end.
+    if (stubs.length) {
+      const tick = this.reducedMotion ? 0 : Math.floor(this.time * 10);
+      ctx.strokeStyle = COLORS.cyan;
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.6;
+      ctx.beginPath();
+      const ends = [];
+      for (const [alive, dead] of stubs) {
+        const ax = cx + alive.baseOffsetX * k;
+        const ay = cy + alive.baseOffsetY * k;
+        const dx = cx + dead.baseOffsetX * k - ax;
+        const dy = cy + dead.baseOffsetY * k - ay;
+        const ex = ax + dx * 0.42;
+        const ey = ay + dy * 0.42;
+        jaggedPath(ctx, ax + dx * 0.12, ay + dy * 0.12, ex, ey, 2, 1.2, alive.seed + dead.seed);
+        if (hash01(alive.seed + dead.seed + tick) < 0.5) ends.push(ex, ey);
+      }
+      ctx.stroke();
+      ctx.fillStyle = COLORS.white;
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath();
+      for (let i = 0; i < ends.length; i += 2) ctx.rect(ends[i] - 0.8, ends[i + 1] - 0.8, 1.6, 1.6);
+      ctx.fill();
+    }
+    // Signal pulses toward the heart on about half of the links.
+    ctx.globalAlpha = 0.9;
+    for (const [list, color] of [[live, COLORS.ice], [axons, '#fff1c4']]) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      for (const l of list) {
+        const h = hash01(l.a.seed * 3 + l.b.seed);
+        if (!l.axon && h > 0.5) continue;
+        // Outer end first: pulses run inward.
+        const outerA = Math.hypot(l.a.baseOffsetX, l.a.baseOffsetY) >= Math.hypot(l.b.baseOffsetX, l.b.baseOffsetY);
+        const p = l.axon || outerA ? [l.a, l.b] : [l.b, l.a];
+        const f = (phase + h * 7) % 1;
+        const x = cx + (p[0].baseOffsetX + (p[1].baseOffsetX - p[0].baseOffsetX) * f) * k;
+        const y = cy + (p[0].baseOffsetY + (p[1].baseOffsetY - p[0].baseOffsetY) * f) * k;
+        ctx.rect(x - 0.9, y - 0.9, 1.8, 1.8);
+      }
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /** Volley synchronisation (cosmetic): for 0.33 s after a volley, an amber
+   *  line ties the turrets together and each fires in step. */
+  drawSync(ctx) {
+    if (this.syncFlash <= 0 || this.turrets.length < 2) return;
+    ctx.save();
+    ctx.strokeStyle = COLORS.magenta;
+    ctx.shadowColor = COLORS.magenta;
+    ctx.shadowBlur = 8;
+    ctx.lineWidth = 1.2;
+    ctx.globalAlpha = this.syncFlash * 0.8;
+    if (ctx.setLineDash) ctx.setLineDash([6, 4]);
+    ctx.beginPath();
+    this.turrets.forEach((t, i) => (i === 0 ? ctx.moveTo(t.x, t.y) : ctx.lineTo(t.x, t.y)));
+    if (this.turrets.length > 2) ctx.closePath();
+    ctx.stroke();
+    if (ctx.setLineDash) ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  /** Magenta lock-on brackets around the heart while a volley is ready: the target
+   *  is obvious without text. Brighter, with dashed lines from every turret,
+   *  until the player's first hand-aimed volley (onboarding). */
+  drawHeartLock(ctx) {
+    if (!this.volleyReady) return;
+    const heart = this.blocks.find((b) => b.alive && b.kind === 'heart');
+    if (!heart) return;
+    const teach = this.manualVolleys === 0;
+    const pulse = this.reducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(this.time * 5);
+    const cx = heart.cx;
+    const cy = heart.cy;
+    const r = heart.size / 2 + 5 + pulse * 3;
+    const k = Math.max(5, heart.size * 0.25);
+    ctx.save();
+    ctx.strokeStyle = COLORS.magenta;
+    ctx.shadowColor = COLORS.magenta;
+    ctx.shadowBlur = 8;
+    ctx.lineWidth = 1.6;
+    ctx.globalAlpha = teach ? 0.95 : 0.55;
+    ctx.beginPath();
+    for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      ctx.moveTo(cx + sx * r, cy + sy * (r - k));
+      ctx.lineTo(cx + sx * r, cy + sy * r);
+      ctx.lineTo(cx + sx * (r - k), cy + sy * r);
+    }
+    ctx.stroke();
+    if (teach && !this.aim) {
+      ctx.shadowBlur = 0;
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.25 + 0.25 * pulse;
+      if (ctx.setLineDash) ctx.setLineDash([2, 5]);
+      ctx.lineDashOffset = this.reducedMotion ? 0 : -this.time * 20;
+      ctx.beginPath();
+      for (const t of this.turrets) {
+        ctx.moveTo(t.x, t.y);
+        ctx.lineTo(cx, cy);
+      }
+      ctx.stroke();
+      if (ctx.setLineDash) ctx.setLineDash([]);
+    }
+    ctx.restore();
+  }
+
+  /** Breach finale (NC-ART-1), drawn from the heart's position while
+   *  `this.breach` lives: implosion of the seal (0-0.2 s), the two halves of
+   *  the sigil flying apart, ten fracture lines racing outward, and a
+   *  magenta front at the exact radius of the shatter wave. */
+  drawBreach(ctx) {
+    const b = this.breach;
+    if (!b) return;
+    const t = b.t;
+    const fade = clamp(1 - t / b.life, 0, 1);
+    const front = t * SHATTER_SPEED;
+    const s = b.size / 2;
+    ctx.save();
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    // Implosion: the seal collapses into the heart.
+    if (t < 0.2) {
+      const k = 1 - t / 0.2;
+      ctx.strokeStyle = COLORS.white;
+      ctx.shadowColor = COLORS.amber;
+      ctx.shadowBlur = 16;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = k;
+      ctx.beginPath();
+      polygonPath(ctx, b.x, b.y, s * (0.4 + 1.6 * k), 6, t * 4);
+      ctx.stroke();
+    }
+    // The split sigil: two halves sliding apart.
+    const part = Math.min(1, t / 0.5);
+    if (part < 1) {
+      const off = s * (0.3 + 2.2 * part);
+      const H = s * 0.6 * (1 + part * 0.4);
+      const W = s * 0.42;
+      ctx.globalAlpha = 1 - part;
+      ctx.fillStyle = '#ffd25a';
+      ctx.strokeStyle = '#fff1c4';
+      ctx.shadowColor = COLORS.amber;
+      ctx.shadowBlur = 10;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(b.x - off, b.y - H);
+      ctx.lineTo(b.x - off - W, b.y);
+      ctx.lineTo(b.x - off, b.y + H);
+      ctx.closePath();
+      ctx.moveTo(b.x + off, b.y - H);
+      ctx.lineTo(b.x + off + W, b.y);
+      ctx.lineTo(b.x + off, b.y + H);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+    // Fracture lines.
+    const len = Math.min(front, b.reach);
+    if (len > 2) {
+      ctx.strokeStyle = COLORS.amber;
+      ctx.shadowColor = COLORS.amber;
+      ctx.shadowBlur = 12;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = fade;
+      ctx.beginPath();
+      for (let i = 0; i < BREACH_LINES; i++) {
+        const a = (i / BREACH_LINES) * Math.PI * 2 + hash01(b.seed + i) * 0.5;
+        const l = len * (0.65 + 0.35 * hash01(b.seed + i + 50));
+        jaggedPath(ctx, b.x, b.y, b.x + Math.cos(a) * l, b.y + Math.sin(a) * l, 5, 4, b.seed + i * 13);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = COLORS.white;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+    // Shatter front: exactly where the wave breaks blocks.
+    if (front < b.reach * 1.4) {
+      ctx.globalAlpha = fade * clamp(1 - front / (b.reach * 1.4), 0, 1);
+      ctx.strokeStyle = COLORS.magenta;
+      ctx.shadowColor = COLORS.magenta;
+      ctx.shadowBlur = 14;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, Math.max(0.1, front), 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      polygonPath(ctx, b.x, b.y, Math.max(0.1, front * 0.85), 6, Math.PI / 6);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  /** With a mouse over the field and the volley ready: dashed amber lines
+   *  from every turret through the cursor, and a rotating bracket reticle
+   *  (where the lances go). */
   drawAimPreview(ctx) {
     if (!this.aim || !this.volleyReady) return;
+    const x = this.aim.x;
+    const y = this.aim.y;
     ctx.save();
-    ctx.strokeStyle = COLORS.white;
-    ctx.globalAlpha = 0.45;
+    ctx.strokeStyle = COLORS.magenta;
+    ctx.globalAlpha = 0.5;
     ctx.lineWidth = 1;
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = COLORS.white;
     if (ctx.setLineDash) ctx.setLineDash([4, 5]);
+    ctx.lineDashOffset = this.reducedMotion ? 0 : -this.time * 24;
     ctx.beginPath();
     for (const t of this.turrets) {
       ctx.moveTo(t.x, t.y);
-      ctx.lineTo(this.aim.x, this.aim.y);
+      ctx.lineTo(x, y);
     }
     ctx.stroke();
     if (ctx.setLineDash) ctx.setLineDash([]);
-    ctx.globalAlpha = 0.9;
+    ctx.globalAlpha = 0.95;
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = COLORS.magenta;
+    ctx.lineWidth = 1.5;
+    const spin = this.reducedMotion ? 0 : this.time * 1.5;
     ctx.beginPath();
-    ctx.arc(this.aim.x, this.aim.y, 7, 0, Math.PI * 2);
-    ctx.moveTo(this.aim.x - 11, this.aim.y);
-    ctx.lineTo(this.aim.x + 11, this.aim.y);
-    ctx.moveTo(this.aim.x, this.aim.y - 11);
-    ctx.lineTo(this.aim.x, this.aim.y + 11);
+    for (let i = 0; i < 4; i++) {
+      const a = spin + (i * Math.PI) / 2;
+      ctx.moveTo(x + Math.cos(a - 0.35) * 10, y + Math.sin(a - 0.35) * 10);
+      ctx.lineTo(x + Math.cos(a) * 12, y + Math.sin(a) * 12);
+      ctx.lineTo(x + Math.cos(a + 0.35) * 10, y + Math.sin(a + 0.35) * 10);
+    }
     ctx.stroke();
+    ctx.fillStyle = COLORS.white;
+    ctx.beginPath();
+    polygonPath(ctx, x, y, 2.2, 4, 0);
+    ctx.fill();
     ctx.restore();
+  }
+
+  /** Segmented HUD bar (screen pixels): `n` slanted cells, the last one
+   *  partially filled. Shared by the core and volley meters. */
+  drawSegmentBar(ctx, x, y, w, h, value, color, glow) {
+    const n = 10;
+    const gap = 2;
+    const cw = (w - gap * (n - 1)) / n;
+    const skew = h * 0.6;
+    const cell = (i, fill) => {
+      const x0 = x + i * (cw + gap);
+      const x1 = x0 + cw * fill;
+      ctx.moveTo(x0 + skew, y);
+      ctx.lineTo(x1 + skew, y);
+      ctx.lineTo(x1, y + h);
+      ctx.lineTo(x0, y + h);
+      ctx.closePath();
+    };
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.18;
+    ctx.shadowBlur = 0;
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) cell(i, 1);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = glow;
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const fill = clamp(value * n - i, 0, 1);
+      if (fill > 0) cell(i, fill);
+    }
+    ctx.fill();
   }
 
   /** Volley charge meter in the field's top-right corner (screen pixels). */
@@ -1788,49 +3180,67 @@ class Game {
     const y = 10;
     const ready = this.volleyReady;
     const label = ready ? this.t('volleyReady') : `${this.t('volley')} ${Math.floor(this.volleyCharge * 100)}%`;
+    const pulse = this.reducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(this.time * 6);
     ctx.save();
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.font = 'bold 12px "Segoe UI", Arial, sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'top';
-    const color = ready ? COLORS.white : COLORS.amber;
-    ctx.fillStyle = color;
-    ctx.shadowColor = ready ? COLORS.amber : color;
-    ctx.shadowBlur = ready ? 10 + 8 * (0.5 + 0.5 * Math.sin(this.time * 8)) : 8;
+    ctx.fillStyle = ready ? COLORS.white : COLORS.magenta;
+    ctx.shadowColor = COLORS.magenta;
+    ctx.shadowBlur = ready ? 8 + 8 * pulse : 6;
     ctx.fillText(label, x + w, y);
-    ctx.fillStyle = COLORS.amber;
-    ctx.globalAlpha = 0.25;
-    ctx.fillRect(x, y + 15, w, 5);
-    ctx.globalAlpha = 1;
-    ctx.shadowBlur = 12;
-    ctx.fillRect(x, y + 15, w * this.volleyCharge, 5);
+    this.drawSegmentBar(ctx, x, y + 16, w, 5, this.volleyCharge, COLORS.magenta, ready ? 8 + 6 * pulse : 5);
     ctx.restore();
   }
 
-  /** "LEVEL n" banner after a level-up, centred, screen pixels. */
+  /** "LEVEL n" banner after a level-up, centred, screen pixels, between two
+   *  bracket rules that open as it appears. */
   drawBanner(ctx) {
     if (!this.banner) return;
     const t = clamp(this.banner.life / 1.4, 0, 1);
+    const size = Math.round(22 * Math.min(1.6, this.viewScale));
+    const cx = (this.width * this.viewScale) / 2;
+    const cy = (this.height * this.viewScale) * 0.18;
     ctx.save();
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.globalAlpha = Math.min(1, t * 2);
-    ctx.font = `bold ${Math.round(22 * Math.min(1.6, this.viewScale))}px "Segoe UI", Arial, sans-serif`;
+    ctx.font = `bold ${size}px "Segoe UI", Arial, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    const m = typeof ctx.measureText === 'function' ? ctx.measureText(this.banner.text) : null;
+    const tw = m && m.width ? m.width : this.banner.text.length * size * 0.6;
+    const open = this.reducedMotion ? 1 : Math.min(1, (1 - t) * 6);
+    const half = tw / 2 + 14;
+    const rule = 40 * open;
+    ctx.strokeStyle = COLORS.magenta;
+    ctx.shadowColor = COLORS.magenta;
+    ctx.shadowBlur = 10;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cx - half, cy - size * 0.4);
+    ctx.lineTo(cx - half - 6, cy);
+    ctx.lineTo(cx - half, cy + size * 0.4);
+    ctx.moveTo(cx - half - 10, cy);
+    ctx.lineTo(cx - half - 10 - rule, cy);
+    ctx.moveTo(cx + half, cy - size * 0.4);
+    ctx.lineTo(cx + half + 6, cy);
+    ctx.lineTo(cx + half, cy + size * 0.4);
+    ctx.moveTo(cx + half + 10, cy);
+    ctx.lineTo(cx + half + 10 + rule, cy);
+    ctx.stroke();
     ctx.fillStyle = COLORS.white;
-    ctx.shadowBlur = 18;
-    ctx.shadowColor = COLORS.pink;
-    ctx.fillText(this.banner.text, (this.width * this.viewScale) / 2, (this.height * this.viewScale) * 0.18);
+    ctx.shadowBlur = 16;
+    ctx.fillText(this.banner.text, cx, cy);
     ctx.restore();
   }
 
-  /** Core destruction bar in the top-left corner of the field, drawn in
+  /** Core destruction meter in the top-left corner of the field, drawn in
    *  screen pixels (a HUD element: same size at any world scale). */
   drawCoreProgress(ctx) {
     const x = 10;
     const y = 10;
     const w = Math.min(120, this.width * this.viewScale * 0.3);
-    const h = 5;
     const progress = this.coreProgress;
     const label = `${this.t('core')} ${Math.floor(progress * 100)}%`;
     ctx.save();
@@ -1838,15 +3248,11 @@ class Game {
     ctx.font = 'bold 12px "Segoe UI", Arial, sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillStyle = COLORS.pink;
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = COLORS.pink;
+    ctx.fillStyle = COLORS.amber;
+    ctx.shadowColor = COLORS.amber;
+    ctx.shadowBlur = 6;
     ctx.fillText(label, x, y);
-    ctx.globalAlpha = 0.25;
-    ctx.fillRect(x, y + 15, w, h);
-    ctx.globalAlpha = 1;
-    ctx.shadowBlur = 12;
-    ctx.fillRect(x, y + 15, w * progress, h);
+    this.drawSegmentBar(ctx, x, y + 16, w, 5, progress, COLORS.amber, 6);
     ctx.restore();
   }
 

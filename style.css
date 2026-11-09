@@ -1,11 +1,19 @@
+/* Palette "Fractured Intelligence" (NC-ART-1): graphite structure, cyan
+   circuits and balls, amber = the AI's energy (its heart), magenta = the
+   player's breach (volley), green = money only. Same
+   tokens as COLORS in game.js. Sizes, paddings and fonts are unchanged
+   (the canvas size at every CrazyGames frame is pinned by browser-smoke). */
 :root {
   --cyan: #00f3ff;
-  --pink: #ff007f;
+  --ice: #9ff8ff;
+  --magenta: #ff2bb0;
+  --amber: #ffc400;
   --green: #39ff14;
-  --bg: #000000;
-  --panel-bg: #0a0a0f;
-  --panel-border: #1a1a2e;
-  --text-dim: #7d7d9a;
+  --bg: #07070d;
+  --panel-bg: #0a0a13;
+  --panel-hi: #13132a;
+  --panel-border: #1f2238;
+  --text-dim: #8590a8;
 }
 
 * {
@@ -54,28 +62,56 @@ body {
   gap: 10px;
   padding: calc(10px + env(safe-area-inset-top, 0px)) 20px 10px;
   background: var(--panel-bg);
+  background: linear-gradient(180deg, var(--panel-hi), var(--panel-bg));
   border-bottom: 2px solid var(--panel-border);
-  box-shadow: 0 0 20px rgba(0, 243, 255, 0.15);
+  box-shadow: inset 0 -1px 0 rgba(0, 243, 255, 0.22), 0 6px 18px rgba(0, 0, 0, 0.6);
   z-index: 10;
 }
 
 .brand {
+  display: flex;
+  align-items: center;
   font-size: 1.4rem;
   font-weight: 800;
   letter-spacing: 2px;
-  color: var(--cyan);
+  color: var(--ice);
   text-shadow:
-    0 0 5px var(--cyan),
-    0 0 15px var(--cyan),
-    0 0 30px rgba(0, 243, 255, 0.6);
+    0 0 4px var(--cyan),
+    0 0 14px rgba(0, 243, 255, 0.7);
 }
 
 .brand span {
-  color: var(--pink);
+  color: var(--magenta);
   text-shadow:
-    0 0 5px var(--pink),
-    0 0 15px var(--pink),
-    0 0 30px rgba(255, 0, 127, 0.6);
+    0 0 4px var(--magenta),
+    0 0 14px rgba(255, 43, 176, 0.7);
+}
+
+/* The heart's fracture sigil (amber crystal, magenta seam) as the mark. */
+.brand__mark {
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  flex: none;
+  overflow: visible;
+  filter: drop-shadow(0 0 4px rgba(255, 196, 0, 0.8));
+}
+
+.brand__housing {
+  fill: #0b0b15;
+  stroke: var(--amber);
+  stroke-width: 1.6;
+}
+
+.brand__half {
+  fill: #ffc400;
+  stroke: #fff1c4;
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+}
+
+.brand__light {
+  fill: #fff;
 }
 
 .stats {
@@ -90,8 +126,8 @@ body {
   height: 32px;
   padding: 0;
   border: 1px solid rgba(0, 243, 255, 0.6);
-  border-radius: 50%;
-  background: transparent;
+  border-radius: 7px;
+  background: rgba(0, 243, 255, 0.06);
   color: var(--cyan);
   font-family: inherit;
   font-size: 1rem;
@@ -116,10 +152,22 @@ body {
 }
 
 .stat {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   min-width: 90px;
+}
+
+/* Thin divider left of each stat (decoration only: no layout effect). */
+.stat::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 4px;
+  bottom: 4px;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--panel-border), transparent);
 }
 
 .stat-label {
@@ -141,8 +189,8 @@ body {
 }
 
 .stat--level .stat-value {
-  color: var(--pink);
-  text-shadow: 0 0 6px var(--pink), 0 0 16px rgba(255, 0, 127, 0.6);
+  color: var(--magenta);
+  text-shadow: 0 0 6px var(--magenta), 0 0 16px rgba(255, 43, 176, 0.6);
 }
 
 /* ---------- Game area ---------- */
@@ -173,8 +221,8 @@ body {
   margin: 0;
   padding: 5px 12px;
   border: 1px solid rgba(0, 243, 255, 0.5);
-  border-radius: 999px;
-  background: rgba(5, 5, 12, 0.75);
+  border-radius: 4px;
+  background: rgba(8, 11, 18, 0.85);
   color: #fff;
   font-size: 0.8rem;
   line-height: 1.2;
@@ -191,17 +239,18 @@ body {
   display: none;
 }
 
-/* The volley hint asks for an action on the field: amber, gently pulsing. */
+/* The volley hint asks for an action on the field: magenta (the breach),
+   gently pulsing. */
 .hint--action {
-  border-color: rgba(255, 196, 0, 0.8);
-  text-shadow: 0 0 6px rgba(255, 196, 0, 0.9);
-  box-shadow: 0 0 12px rgba(255, 196, 0, 0.45);
+  border-color: rgba(255, 43, 176, 0.85);
+  text-shadow: 0 0 6px rgba(255, 43, 176, 0.9);
+  box-shadow: 0 0 12px rgba(255, 43, 176, 0.45);
   animation: hint-pulse 0.9s ease-in-out infinite alternate;
 }
 
 @keyframes hint-pulse {
-  from { box-shadow: 0 0 6px rgba(255, 196, 0, 0.3); }
-  to { box-shadow: 0 0 18px rgba(255, 196, 0, 0.8); }
+  from { box-shadow: 0 0 6px rgba(255, 43, 176, 0.3); }
+  to { box-shadow: 0 0 18px rgba(255, 43, 176, 0.8); }
 }
 
 /* ---------- Shop / upgrades ---------- */
@@ -211,51 +260,63 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px));
-  background: var(--panel-bg);
+  background: linear-gradient(0deg, var(--panel-hi), var(--panel-bg));
   border-top: 2px solid var(--panel-border);
-  box-shadow: 0 0 20px rgba(0, 243, 255, 0.15);
+  box-shadow: inset 0 1px 0 rgba(0, 243, 255, 0.22), 0 -6px 18px rgba(0, 0, 0, 0.6);
   z-index: 10;
 }
 
+/* Each upgrade wears the colour of what it powers: balls cyan, volley
+   charge magenta (the breach), hit power amber (it cracks the amber heart). */
+#btnBuyBall { --accent: var(--cyan); --accent-rgb: 0, 243, 255; }
+#btnFireRate { --accent: var(--magenta); --accent-rgb: 255, 43, 176; }
+#btnDamage { --accent: var(--amber); --accent-rgb: 255, 196, 0; }
+
 .shop-btn {
+  --accent: var(--cyan);
+  --accent-rgb: 0, 243, 255;
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
   padding: 12px 8px;
-  background: linear-gradient(180deg, #0f0f1e, #060610);
-  border: 2px solid var(--cyan);
-  border-radius: 10px;
+  /* Corner tabs (armour-plate look) over a graphite panel. */
+  background:
+    linear-gradient(135deg, var(--accent) 0 6px, transparent 6px),
+    linear-gradient(315deg, var(--accent) 0 6px, transparent 6px),
+    linear-gradient(180deg, #121827, #070a10);
+  border: 2px solid var(--accent);
+  border-radius: 3px;
   color: #fff;
   cursor: pointer;
   font-family: inherit;
   touch-action: manipulation;
   transition: transform 0.12s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-  box-shadow: 0 0 8px rgba(0, 243, 255, 0.4), inset 0 0 10px rgba(0, 243, 255, 0.05);
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.4), inset 0 0 12px rgba(var(--accent-rgb), 0.08);
 }
 
-.shop-btn:nth-child(2) {
-  border-color: var(--pink);
-  box-shadow: 0 0 8px rgba(255, 0, 127, 0.4), inset 0 0 10px rgba(255, 0, 127, 0.05);
-}
-
-.shop-btn:nth-child(3) {
-  border-color: var(--green);
-  box-shadow: 0 0 8px rgba(57, 255, 20, 0.4), inset 0 0 10px rgba(57, 255, 20, 0.05);
+/* Icon: absolutely placed, so the button's size does not change. */
+.shop-btn__icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 3px rgba(var(--accent-rgb), 0.8));
+  pointer-events: none;
 }
 
 .shop-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 0 20px rgba(0, 243, 255, 0.8), inset 0 0 14px rgba(0, 243, 255, 0.15);
-}
-
-.shop-btn:nth-child(2):hover:not(:disabled) {
-  box-shadow: 0 0 20px rgba(255, 0, 127, 0.8), inset 0 0 14px rgba(255, 0, 127, 0.15);
-}
-
-.shop-btn:nth-child(3):hover:not(:disabled) {
-  box-shadow: 0 0 20px rgba(57, 255, 20, 0.8), inset 0 0 14px rgba(57, 255, 20, 0.15);
+  box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.8), inset 0 0 14px rgba(var(--accent-rgb), 0.18);
 }
 
 .shop-btn:active:not(:disabled) {
@@ -278,8 +339,8 @@ body {
 }
 
 @keyframes shop-pulse {
-  from { box-shadow: 0 0 8px rgba(0, 243, 255, 0.5), inset 0 0 10px rgba(0, 243, 255, 0.1); }
-  to { box-shadow: 0 0 26px rgba(0, 243, 255, 1), inset 0 0 18px rgba(0, 243, 255, 0.35); }
+  from { box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.5), inset 0 0 10px rgba(var(--accent-rgb), 0.1); }
+  to { box-shadow: 0 0 26px rgba(var(--accent-rgb), 1), inset 0 0 18px rgba(var(--accent-rgb), 0.35); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -290,7 +351,11 @@ body {
 
   .shop-btn--suggested:not(:disabled) {
     animation: none;
-    box-shadow: 0 0 22px rgba(0, 243, 255, 0.9), inset 0 0 14px rgba(0, 243, 255, 0.25);
+    box-shadow: 0 0 22px rgba(var(--accent-rgb), 0.9), inset 0 0 14px rgba(var(--accent-rgb), 0.25);
+  }
+
+  .shop-btn {
+    transition: none;
   }
 }
 
@@ -360,6 +425,11 @@ body {
 
   .shop-btn__cost {
     font-size: 0.75rem;
+  }
+
+  /* Narrow buttons: the text needs the room. */
+  .shop-btn__icon {
+    display: none;
   }
 }
 
