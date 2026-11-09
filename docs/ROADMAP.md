@@ -14,8 +14,9 @@ submission / Full Launch. Size S/M/L.
 | # | Stage | Content | Class | Size |
 |---|---|---|---|---|
 | 1 | NC-BASIC-1 | EN + PL UI, save validation + backup, `user-select`, safe areas, readable text | done (merged, PR #4) | M |
-| 2 | NC-PHYS-1 | fixed timestep (NC-03, required 144/165 Hz), approach check + push-out (NC-01/02), layout on resize (NC-15), turret clearance (NC-14) | done (PR) | M |
-| 3 | NC-CORE-1 *(owner picks the concept)* | core scaled to the field (NC-09, NC-17), the chosen twist (NC-12), meaningful fire rate (NC-10), on-field hint, floating +$ and core progress (NC-11) | BLOCKER | M |
+| 2 | NC-PHYS-1 | fixed timestep (NC-03, required 144/165 Hz), approach check + push-out (NC-01/02), layout on resize (NC-15), turret clearance (NC-14) | done (merged, PR #5) | M |
+| 3a | NC-CORE-1A | first minute: world scale (NC-09), turrets aim at the core, on-field hint, floating +$, core progress (NC-11 part) | done (PR) | M |
+| 3b | NC-CORE-1B *(owner picks the concept)* | the chosen active twist (NC-12), meaningful fire rate (NC-10); proposals in the NC-CORE-1A PR | BLOCKER | M |
 | 4 | NC-ID-1 *(owner)* | name uniqueness check on CrazyGames/web; keep or rename before covers | BLOCKER | S |
 | 5 | NC-AUDIO-1 | a few synthesised SFX (hit, break, buy, level-up) + mute | QUALITY | S |
 | 6 | NC-PERF-1 | glow budget / ball cap; 4 GB Chromebook and a phone (NC-13) | QUALITY | M |

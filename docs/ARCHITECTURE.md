@@ -104,8 +104,13 @@ flight. `maxBalls` is a cap, not a spawn count.
 
 - `localStorage[SAVE_KEY]` stores only economic state; balls, blocks and
   turrets are regenerated from `level` on load. Full contract: `docs/SAVE.md`.
-- Canvas backing store = CSS size × `devicePixelRatio`; `ctx.setTransform(dpr…)`
-  is re-applied on every resize; all drawing uses CSS-pixel coordinates.
+- Canvas backing store = CSS size × `devicePixelRatio`. **World units**
+  (NC-CORE-1A): `viewScale = max(1, min(w, h) / WORLD_SHORT_SIDE)` (250);
+  `Game.width/height` are the world size (CSS size ÷ `viewScale`) and
+  `ctx.setTransform(dpr × viewScale…)` is re-applied on every resize, so all
+  simulation and drawing use world units. HUD drawn on the canvas (core
+  progress bar) switches to `setTransform(dpr…)` and uses CSS pixels; `+$n`
+  labels pick a world font size for a fixed screen size.
 - Resize sources: `resize`, `orientationchange`, `ResizeObserver` on
   `#gameArea`. On resize, ball positions scale by the old/new size ratio,
   then `fitCoreToCanvas()` re-fits the core from its generated geometry
@@ -146,6 +151,10 @@ script. Planned hooks (each needs its own approved runtime stage):
 
 - an injectable RNG (`Game` option or `NC_RNG`) — needed only if gameplay
   seeds become a feature (daily layouts);
+
+Done in NC-CORE-1A: the harness's fake elements have `hidden` and a
+`classList` (the hint and the suggested shop button); `Game.viewScale`,
+`coreProgress`, `floatTexts` are readable state.
 
 Done in NC-PHYS-1: fixed-timestep loop with a `simSteps` counter (the harness
 compares states at equal step counts across refresh rates); `NC_GAME_JS=<path>`
