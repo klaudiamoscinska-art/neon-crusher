@@ -4,9 +4,10 @@ Dev-only test suites. Node.js 18+ built-ins only: no `package.json`, no test
 framework, nothing to install. Outputs go to `qa/out/` (git-ignored).
 
 ```bash
-node qa/run-all.mjs                      # every suite; exit 1 on any FAIL
+node qa/run-all.mjs                      # every suite; exit 1 if any suite blocks (below)
 node qa/run-all.mjs --quick              # CI profile (fewer seeds, no long bot)
 node qa/run-all.mjs --base origin/main --no-runtime-change   # docs-only stage guard
+node qa/run-all.mjs --only save,levels   # a subset (an unknown name exits 1)
 node qa/<suite>.mjs                      # one suite
 ```
 
@@ -16,6 +17,7 @@ node qa/<suite>.mjs                      # one suite
 |---|---|---|
 | `qa/integrity.mjs` | `node --check` on all JS; runtime file set from `index.html`; relative paths; zero external URLs; save-key literal; no `eval`/`innerHTML`; no Liquid tags in published Markdown (Pages/Jekyll); `--base <ref>` runtime diff, `--no-runtime-change` makes it a gate | no |
 | `qa/instructions.mjs` | `CLAUDE.md` budget + required rules; skill format/name/description budget; skill map sync; dead paths; duplicated lines; doc sizes; KNOWN ids registered in `docs/RISKS.md` | no |
+| `qa/runner.mjs` | self-test of the runner: a mandatory suite with zero checks, only NOT RUN rows or only KNOWN rows blocks; a FAIL or crash always blocks (also in an optional suite); only the optional browser-smoke may be NOT RUN, and only for an unavailable environment; real CLI exit codes (`NC_QA_NO_BROWSER=1` simulates a machine without a browser) | no |
 | `qa/physics.mjs` | reflections per face/corner/oblique, push-out, walls, speed conservation, tunnelling bound, refresh-rate consistency (60 vs 144 Hz, 48 seeds; `--quick` = 12 seeds, verdict NOT RUN) | no |
 | `qa/levels.mjs` | grid/circle alternation, N×N, rings, HP and money scaling, turret count, level-up, geometry on 8 canvas sizes × 30 levels, resize | no |
 | `qa/economy.mjs` | cost curves, purchases through the real buttons, fire interval floor, live damage, income per hit, maxBalls cap, fire-rate value, time to first purchase, greedy bot level-1 time | no |
@@ -43,26 +45,42 @@ classes are visible to a second script in the same context. Expected values
 in the suites come from `docs/GAME_DESIGN.md` (the spec), never from copying
 the code's formulas into the test.
 
-## Statuses
+## Statuses and when a run fails
 
-`PASS` / `FAIL` / `NOT RUN` (with a reason) / `INFO` (a measurement, never a
-pass) / `KNOWN` — a confirmed open defect registered in `docs/RISKS.md`. A
-KNOWN check documents the current wrong behaviour so CI stays green while the
-defect stays visible; when the runtime is fixed the check turns into a FAIL
-until the check and the register are updated. A suite that executed no check
-exits 2 and is reported NOT RUN.
+Rows: `PASS` / `FAIL` / `NOT RUN` (with a reason) / `INFO` (a measurement,
+never a pass) / `KNOWN` — a confirmed open defect registered in
+`docs/RISKS.md`. A KNOWN check documents the current wrong behaviour so CI
+stays green while the defect stays visible; when the runtime is fixed it
+turns into a FAIL until the check and the register are updated.
+
+Suite verdict (`classifySuite` in `qa/lib.mjs`, the only place this is decided):
+
+| Suite result | Verdict | Blocks the run (exit 1) |
+|---|---|---|
+| any FAIL, or the suite crashed | FAIL | yes, mandatory or optional |
+| no PASS and no KNOWN (nothing executed) | NOT RUN | yes — except the **optional** `browser-smoke` when it reports Playwright/Chromium unavailable |
+| no PASS, only KNOWN | KNOWN ONLY (never PASS) | yes |
+| PASS > 0, no FAIL | PASS, or PASS+KNOWN / PASS+NOT RUN with the rows listed | no |
+
+`browser-smoke` is the only optional suite; every other suite is mandatory.
+A run with no suite (e.g. `--only` with an unknown name) fails. A suite run
+on its own exits 0 / 1 (FAIL) / 2 (blocking NOT RUN or KNOWN ONLY).
+`qa/runner.mjs` pins these rules.
 
 ## Adding a suite
 
 Create `qa/<area>.mjs` exporting `run()` that returns a `Reporter`, guard the
 CLI entry with `isMain(import.meta.url)` (a naive check runs nothing on
-Windows and exits 0), register it in `qa/run-all.mjs` and in the table above.
+Windows and exits 0), register it in `defaultSuites()` of `qa/run-all.mjs`
+(mandatory unless it needs something a machine may lack; an optional suite
+must call `r.envUnavailable()` for that case) and in the table above.
 
 ## CI
 
 `.github/workflows/qa.yml` runs `node qa/run-all.mjs --quick` on pull
 requests to `main` and on manual dispatch, read-only, Node 22. Playwright is
-not installed there, so `browser-smoke` is NOT RUN in CI — run it locally.
+not installed there, so `browser-smoke` is NOT RUN (optional, allowed) in
+CI — run it locally; every other suite must execute checks or CI fails.
 
 ## Windows notes
 

@@ -32,10 +32,11 @@ function serve() {
 
 export async function run() {
   const r = new Reporter('browser-smoke');
-  const pw = loadPlaywright();
-  if (!pw) { r.notRun('browser smoke (all checks)', 'Playwright not installed on this machine'); return r; }
+  // NC_QA_NO_BROWSER=1 simulates a machine without Playwright (qa/runner.mjs uses it).
+  const pw = process.env.NC_QA_NO_BROWSER === '1' ? null : loadPlaywright();
+  if (!pw) { r.envUnavailable('browser smoke (all checks)', 'Playwright not installed on this machine'); return r; }
   let browser;
-  try { browser = await pw.chromium.launch(); } catch (e) { r.notRun('browser smoke (all checks)', `Chromium failed to launch: ${e.message.split('\n')[0]}`); return r; }
+  try { browser = await pw.chromium.launch(); } catch (e) { r.envUnavailable('browser smoke (all checks)', `Chromium failed to launch: ${e.message.split('\n')[0]}`); return r; }
   const server = await serve();
   const base = `http://127.0.0.1:${server.address().port}/`;
   const shots = path.join(OUT, 'shots'); fs.mkdirSync(shots, { recursive: true });
@@ -107,4 +108,4 @@ export async function run() {
   return r;
 }
 
-if (isMain(import.meta.url)) run().then((r) => process.exit(r.finish()));
+if (isMain(import.meta.url)) run().then((r) => process.exit(r.finish({ optional: true })));

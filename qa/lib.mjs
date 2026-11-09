@@ -41,6 +41,7 @@ export class Reporter {
   constructor(suite) {
     this.suite = suite;
     this.rows = [];
+    this.unavailable = false; // set only by envUnavailable()
   }
   /** cond true = PASS, false = FAIL. */
   check(name, cond, detail = '') {
@@ -55,6 +56,13 @@ export class Reporter {
   notRun(name, reason) {
     this.rows.push({ status: 'NOT RUN', name, detail: reason });
   }
+  /** The machine lacks what the suite needs (e.g. Playwright/Chromium).
+   *  Only an OPTIONAL suite may end NOT RUN for this reason without failing
+   *  the run (classifySuite); a mandatory suite still blocks. */
+  envUnavailable(name, reason) {
+    this.unavailable = true;
+    this.notRun(name, reason);
+  }
   /** Measurement only (never counted as PASS). */
   info(name, detail) {
     this.rows.push({ status: 'INFO', name, detail });
@@ -64,23 +72,74 @@ export class Reporter {
     for (const r of this.rows) c[r.status]++;
     return c;
   }
-  /** Prints the table, writes qa/out/<suite>.json, returns the exit code. */
-  finish() {
-    for (const r of this.rows) {
-      console.log(`${r.status.padEnd(7)} ${r.name}${r.detail ? ' -- ' + r.detail : ''}`);
-    }
+  /** Prints the table, writes qa/out/<suite>.json, returns the exit code:
+   *  0 = not blocking, 1 = FAIL, 2 = blocking NOT RUN / KNOWN ONLY. */
+  finish({ optional = false, print = true, write = true } = {}) {
     const c = this.counts();
-    const checks = c.PASS + c.FAIL;
-    console.log(`\n[${this.suite}] ${c.PASS}/${checks} checks PASS, FAIL ${c.FAIL}, KNOWN ${c.KNOWN}, NOT RUN ${c['NOT RUN']}, INFO ${c.INFO}`);
-    fs.mkdirSync(OUT, { recursive: true });
-    fs.writeFileSync(path.join(OUT, `${this.suite}.json`), JSON.stringify({ suite: this.suite, counts: c, rows: this.rows }, null, 2));
-    // A suite that executed no check is NOT RUN, never PASS.
-    if (checks === 0 && c.KNOWN === 0) {
-      console.log(`[${this.suite}] NOT RUN: no check executed`);
-      return 2;
+    const v = classifySuite(c, { optional, unavailable: this.unavailable });
+    if (print) {
+      for (const r of this.rows) console.log(`${r.status.padEnd(7)} ${r.name}${r.detail ? ' -- ' + r.detail : ''}`);
+      console.log(`\n[${this.suite}] ${c.PASS}/${c.PASS + c.FAIL} checks PASS, FAIL ${c.FAIL}, KNOWN ${c.KNOWN}, NOT RUN ${c['NOT RUN']}, INFO ${c.INFO} => ${v.status}${v.blocking ? ' (blocking)' : ''}: ${v.reason}`);
     }
-    return c.FAIL > 0 ? 1 : 0;
+    if (write) {
+      fs.mkdirSync(OUT, { recursive: true });
+      fs.writeFileSync(path.join(OUT, `${this.suite}.json`), JSON.stringify({ suite: this.suite, counts: c, verdict: v, rows: this.rows }, null, 2));
+    }
+    return v.status === 'FAIL' ? 1 : v.blocking ? 2 : 0;
   }
+}
+
+/**
+ * The one place that decides what a suite's result means (used by
+ * Reporter.finish and qa/run-all.mjs; self-tested by qa/runner.mjs).
+ *  - crash or any FAIL                        -> FAIL, blocking
+ *  - nothing executed (no PASS, no KNOWN)     -> NOT RUN, blocking, unless the
+ *    suite is optional AND reported its environment unavailable
+ *  - only KNOWN, no PASS                      -> KNOWN ONLY, blocking (nothing verified)
+ *  - PASS > 0                                 -> PASS / PASS+KNOWN / PASS+NOT RUN ..., not blocking
+ */
+export function classifySuite(counts, { optional = false, unavailable = false, crashed = false } = {}) {
+  if (crashed || !counts) return { status: 'FAIL', blocking: true, reason: 'suite crashed' };
+  if (counts.FAIL > 0) return { status: 'FAIL', blocking: true, reason: `${counts.FAIL} failing check(s)` };
+  if (counts.PASS === 0 && counts.KNOWN === 0) {
+    if (optional && unavailable) return { status: 'NOT RUN', blocking: false, reason: 'optional suite, environment unavailable (allowed)' };
+    return { status: 'NOT RUN', blocking: true, reason: optional ? 'optional suite executed no check without reporting an unavailable environment' : 'mandatory suite executed no check' };
+  }
+  if (counts.PASS === 0) return { status: 'KNOWN ONLY', blocking: true, reason: 'only known defects, no passing check' };
+  const tags = [counts.KNOWN ? 'KNOWN' : '', counts['NOT RUN'] ? 'NOT RUN' : ''].filter(Boolean);
+  return { status: ['PASS', ...tags].join('+'), blocking: false, reason: tags.length ? `passing checks; also ${tags.join(' and ')} rows (listed above)` : 'all checks pass' };
+}
+
+/**
+ * Runs suites, classifies each one and returns { exitCode, summary }.
+ * exitCode 1 if no suite ran or any suite blocks; 0 otherwise.
+ */
+export async function runSuites(suites, { print = true, write = true } = {}) {
+  const log = print ? (...a) => console.log(...a) : () => {};
+  const summary = [];
+  for (const s of suites) {
+    log(`\n===== ${s.name}${s.optional ? ' (optional)' : ''} =====`);
+    let counts = null; let verdict;
+    try {
+      const r = await s.run();
+      r.finish({ optional: !!s.optional, print, write });
+      counts = r.counts();
+      verdict = classifySuite(counts, { optional: !!s.optional, unavailable: r.unavailable });
+    } catch (e) {
+      log(`CRASH ${e.stack}`);
+      verdict = classifySuite(null, { crashed: true });
+    }
+    summary.push({ name: s.name, optional: !!s.optional, counts, ...verdict });
+  }
+  const exitCode = summary.length === 0 || summary.some((s) => s.blocking) ? 1 : 0;
+  log('\n===== SUMMARY =====');
+  if (summary.length === 0) log('FAIL    no suite was run');
+  for (const s of summary) {
+    const c = s.counts;
+    log(`${s.status.padEnd(16)} ${s.name.padEnd(14)} ${c ? `PASS ${c.PASS}  FAIL ${c.FAIL}  KNOWN ${c.KNOWN}  NOT RUN ${c['NOT RUN']}` : 'crashed'}  ${s.blocking ? '<- BLOCKS' : ''}${!s.blocking && s.status === 'NOT RUN' ? '(optional, allowed)' : ''}`);
+  }
+  log(`\nRESULT: ${exitCode === 0 ? 'PASS (no blocking suite)' : 'FAIL (see BLOCKS above)'}`);
+  return { exitCode, summary };
 }
 
 // ---------------------------------------------------------------------------

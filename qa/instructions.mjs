@@ -120,7 +120,7 @@ export function run() {
   // --- KNOWN ids used by qa/ are in the risk register.
   const risks = readText('docs/RISKS.md');
   const ids = new Set();
-  for (const f of fs.readdirSync(path.join(ROOT, 'qa')).filter((x) => x.endsWith('.mjs') && x !== 'instructions.mjs')) {
+  for (const f of fs.readdirSync(path.join(ROOT, 'qa')).filter((x) => x.endsWith('.mjs') && !['instructions.mjs', 'runner.mjs'].includes(x)) /* runner.mjs uses the synthetic id NC-00 */) {
     for (const m of readText(`qa/${f}`).matchAll(/known\('(NC-\d+)'/g)) ids.add(m[1]);
     for (const m of readText(`qa/${f}`).matchAll(/notRun\('\[(NC-\d+)\]/g)) ids.add(m[1]);
   }
