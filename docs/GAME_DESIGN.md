@@ -62,12 +62,11 @@ numbers are a retention risk (NC-09), not targets.
 |---|---|
 | Neon glow on every shape (`shadowBlur`) | IMPLEMENTED (cost: NC-13) |
 | Particles (pool of 400) | IMPLEMENTED |
-| HUD: cash (pl-PL number format), level | IMPLEMENTED |
-| Polish UI | IMPLEMENTED |
-| English UI | NOT IMPLEMENTED (NC-07, CrazyGames blocker) |
+| HUD: cash (number format of the UI language), level | IMPLEMENTED |
+| English UI (default and fallback) + Polish UI; language from `?lang=en/pl`, else the browser's preferred languages | IMPLEMENTED (NC-BASIC-1); CrazyGames SDK locale: Full Launch |
 | Audio | NOT IMPLEMENTED |
 | Onboarding / first-time hint | NOT IMPLEMENTED |
-| Responsive layout (phone/desktop), safe area bottom | IMPLEMENTED; readability at DPR 1 NOT VERIFIED (smallest text 10.4 px) |
+| Responsive layout (phone/desktop), safe areas (all sides), no text selection | IMPLEMENTED; smallest text 11.2 px at DPR 1; canvas share at 800×450 still 62 % (NC-17); notched device NOT VERIFIED |
 | Save across reloads | IMPLEMENTED (`docs/SAVE.md`) |
 
 ## Design principles (for every future change)
@@ -92,3 +91,4 @@ numbers are a retention risk (NC-09), not targets.
 Owner decisions that change this file are recorded here with a date.
 
 - 2026-11-09 (NC-FOUNDATION-1): baseline documented; no gameplay change.
+- 2026-11-09 (NC-BASIC-1, fast track to Basic Launch): English UI added (Polish kept), save validation + backup; no gameplay, balance or canvas-size change. UI copy: Cash/Kasa, Level/Poziom, Buy new ball/Kup nową kulę, Balls: n/Kulki: n, Fire rate/Szybkość strzału, Hit power/Siła uderzenia, Lvl n.

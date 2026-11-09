@@ -21,8 +21,9 @@ node qa/<suite>.mjs                      # one suite
 | `qa/physics.mjs` | reflections per face/corner/oblique, push-out, walls, speed conservation, tunnelling bound, refresh-rate consistency (60 vs 144 Hz, 48 seeds; `--quick` = 12 seeds, verdict NOT RUN) | no |
 | `qa/levels.mjs` | grid/circle alternation, N×N, rings, HP and money scaling, turret count, level-up, geometry on 8 canvas sizes × 30 levels, resize | no |
 | `qa/economy.mjs` | cost curves, purchases through the real buttons, fire interval floor, live damage, income per hit, maxBalls cap, fire-rate value, time to first purchase, greedy bot level-1 time | no |
-| `qa/save.mjs` | key, fields, round trip, autosave 5 s, lifecycle saves, storage throwing, truncated JSON, wrong types, invalid ranges, crash on bad level | no |
-| `qa/browser-smoke.mjs` | real Chromium at the 10 CrazyGames frames (DPR 1): errors, external requests, page scroll, shop visible, animation, user-select, save restore + reload, language; screenshots `qa/out/shots/` | Playwright if installed, else NOT RUN |
+| `qa/save.mjs` | key, fields, round trip, autosave 5 s, lifecycle saves, storage throwing, valid saves kept unchanged, per-field fallback of invalid numbers, backup of unreadable/unsupported saves before any write, no overwrite when the backup or the read fails | no |
+| `qa/i18n.mjs` | EN/PL tables (same keys, placeholders, no Polish in English), language selection (`?lang=`, browser list, English fallback), every label filled, number formatting | no |
+| `qa/browser-smoke.mjs` | real Chromium at the 10 CrazyGames frames (DPR 1), English and Polish browser: errors, external requests, page scroll, shop visible, text inside buttons, smallest text, canvas share of the height, animation, user-select, safe-area padding, save restore + reload, corrupted save backed up; screenshots `qa/out/shots/` | Playwright if installed, else NOT RUN |
 
 ## Harness (`qa/lib.mjs`)
 

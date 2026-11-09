@@ -213,9 +213,11 @@ const GAME_SRC_PATH = path.join(ROOT, 'game.js');
  * @param {number} o.dpr           devicePixelRatio
  * @param {number} o.seed          seed for Math.random inside the vm
  * @param {FakeStorage} o.storage  localStorage stand-in
+ * @param {object} o.navigator     navigator stand-in ({ languages, language }); omitted = none
+ * @param {string} o.search        location.search (e.g. '?lang=pl')
  * @returns harness with the game's classes, a Game factory and a frame pump
  */
-export function loadGame({ width = 900, height = 600, dpr = 1, seed = 1, storage = new FakeStorage() } = {}) {
+export function loadGame({ width = 900, height = 600, dpr = 1, seed = 1, storage = new FakeStorage(), navigator = undefined, search = '' } = {}) {
   const src = fs.readFileSync(GAME_SRC_PATH, 'utf8');
   const winHandlers = {};
   const docHandlers = {};
@@ -230,6 +232,7 @@ export function loadGame({ width = 900, height = 600, dpr = 1, seed = 1, storage
 
   const document = {
     hidden: false,
+    documentElement: { lang: 'en' },
     getElementById(id) {
       if (id === 'gameCanvas') return canvas;
       if (!elements.has(id)) elements.set(id, makeElement(id));
@@ -245,14 +248,20 @@ export function loadGame({ width = 900, height = 600, dpr = 1, seed = 1, storage
     devicePixelRatio: dpr,
     requestAnimationFrame(fn) { rafQueue.push(fn); return rafQueue.length; },
     addEventListener(type, fn) { (winHandlers[type] ||= []).push(fn); },
+    location: { search },
   };
+  // No navigator unless a test passes one (= a browser without language info).
+  if (navigator !== undefined) sandbox.navigator = navigator;
   sandbox.window = sandbox;
   const context = vm.createContext(sandbox);
   vm.runInContext(`(() => { const r = (${mulberry32.toString()})(${seed >>> 0}); Math.random = r; })();`, context);
   vm.runInContext(src, context, { filename: 'game.js' });
   // Top-level class/const declarations of a classic script live in the
   // context's global lexical scope; a second script in the same context sees them.
-  const api = vm.runInContext('({ COLORS, SAVE_KEY, MAX_PARTICLES, clamp, randRange, Particle, ParticlePool, Block, Ball, Turret, Game })', context);
+  // Names added in NC-BASIC-1 are optional so the same suites can run against an
+  // older base game.js (base-vs-candidate comparison on one machine).
+  const optionalNames = ['SAVE_BACKUP_KEY', 'SAVE_INT_MAX', 'STRINGS', 'DEFAULT_LANGUAGE', 'detectLanguage', 'translate', 'formatMoney', 'sanitizeSave'];
+  const api = vm.runInContext(`({ COLORS, SAVE_KEY, MAX_PARTICLES, clamp, randRange, Particle, ParticlePool, Block, Ball, Turret, Game, ${optionalNames.map((n) => `${n}: typeof ${n} === 'undefined' ? undefined : ${n}`).join(', ')} })`, context);
 
   let now = 0;
   const h = {

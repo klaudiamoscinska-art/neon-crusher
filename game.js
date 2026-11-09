@@ -7,7 +7,102 @@ const COLORS = {
 };
 
 const SAVE_KEY = 'neonCrusher.save.v1';
+// Copy of a save that could not be loaded exactly as written (unreadable JSON,
+// unknown format, invalid values). Written BEFORE the game's first save, so
+// the player's original data is never lost (docs/SAVE.md).
+const SAVE_BACKUP_KEY = 'neonCrusher.save.v1.bak';
+// Upper bound for the saved integer counters: keeps every derived number
+// (1.5^n costs, HP, income) finite. Unreachable in normal play.
+const SAVE_INT_MAX = 1000;
+const SAVE_INT_FIELDS = ['level', 'maxBalls', 'fireRateLevel', 'damageLevel'];
 const MAX_PARTICLES = 400;
+
+// ---------------------------------------------------------------------------
+// Localization: one table, English is the default and the fallback.
+// ---------------------------------------------------------------------------
+
+const DEFAULT_LANGUAGE = 'en';
+const STRINGS = {
+  en: {
+    locale: 'en-US',
+    cash: 'Cash',
+    level: 'Level',
+    buyBall: 'Buy new ball',
+    balls: 'Balls: {n}',
+    fireRate: 'Fire rate',
+    damage: 'Hit power',
+    upgradeLevel: 'Lvl {n}',
+  },
+  pl: {
+    locale: 'pl-PL',
+    cash: 'Kasa',
+    level: 'Poziom',
+    buyBall: 'Kup nową kulę',
+    balls: 'Kulki: {n}',
+    fireRate: 'Szybkość strzału',
+    damage: 'Siła uderzenia',
+    upgradeLevel: 'Lvl {n}',
+  },
+};
+
+/** Picks the UI language: an explicit `?lang=xx` in the URL first, then the
+ *  browser's preferred languages; anything unsupported falls back to English.
+ *  (The CrazyGames SDK locale replaces the browser list once the SDK is added.) */
+function detectLanguage(nav, search) {
+  const candidates = [];
+  const match = /[?&]lang=([a-zA-Z-]+)/.exec(search || '');
+  if (match) candidates.push(match[1]);
+  if (nav) {
+    if (Array.isArray(nav.languages)) candidates.push(...nav.languages);
+    if (nav.language) candidates.push(nav.language);
+  }
+  for (const tag of candidates) {
+    const base = String(tag).toLowerCase().split('-')[0];
+    if (Object.prototype.hasOwnProperty.call(STRINGS, base)) return base;
+  }
+  return DEFAULT_LANGUAGE;
+}
+
+function translate(lang, key, vars) {
+  const table = STRINGS[lang] || STRINGS[DEFAULT_LANGUAGE];
+  let text = table[key] !== undefined ? table[key] : STRINGS[DEFAULT_LANGUAGE][key];
+  if (text === undefined) return key;
+  if (vars) for (const name of Object.keys(vars)) text = text.split(`{${name}}`).join(String(vars[name]));
+  return text;
+}
+
+function formatMoney(value, lang) {
+  const locale = (STRINGS[lang] || STRINGS[DEFAULT_LANGUAGE]).locale;
+  return `$${Math.floor(value).toLocaleString(locale)}`;
+}
+
+/**
+ * Validates parsed save data field by field (docs/SAVE.md). Returns the
+ * accepted values and `exact`: true only for a well-formed v1 save that is
+ * taken over unchanged. Invalid fields fall back to the defaults (they are
+ * simply not returned); the caller backs up the raw data when `exact` is false.
+ */
+function sanitizeSave(data) {
+  const values = {};
+  if (data === null || typeof data !== 'object' || Array.isArray(data)) return { values, exact: false };
+  const known = ['cash', ...SAVE_INT_FIELDS];
+  let exact = Object.keys(data).every((k) => known.includes(k));
+
+  const cash = data.cash;
+  if (typeof cash === 'number' && Number.isFinite(cash) && cash >= 0) values.cash = cash;
+  else exact = false;
+
+  for (const field of SAVE_INT_FIELDS) {
+    const v = data[field];
+    if (typeof v === 'number' && Number.isFinite(v) && v >= 1) {
+      values[field] = Math.min(Math.floor(v), SAVE_INT_MAX);
+      if (values[field] !== v) exact = false;
+    } else {
+      exact = false;
+    }
+  }
+  return { values, exact };
+}
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -344,7 +439,18 @@ class Game {
 
     this.lastTime = 0;
 
+    this.saveBlocked = false;
+    this.lang = detectLanguage(
+      typeof navigator !== 'undefined' ? navigator : null,
+      typeof location !== 'undefined' ? location.search : ''
+    );
+
     this.ui = {
+      cashLabel: document.getElementById('labelCash'),
+      levelLabel: document.getElementById('labelLevel'),
+      buyBallTitle: document.getElementById('titleBuyBall'),
+      fireRateTitle: document.getElementById('titleFireRate'),
+      damageTitle: document.getElementById('titleDamage'),
       cash: document.getElementById('statCash'),
       level: document.getElementById('statLevel'),
       buyBall: document.getElementById('btnBuyBall'),
@@ -358,6 +464,7 @@ class Game {
       damageCost: document.getElementById('costDamage'),
     };
 
+    this.applyLanguage();
     this.loadSave();
     this.recalcFireInterval();
     this.bindUpgradeButtons();
@@ -388,22 +495,55 @@ class Game {
     this.fireInterval = Math.max(300, this.baseFireInterval * Math.pow(0.85, this.fireRateLevel - 1));
   }
 
+  t(key, vars) {
+    return translate(this.lang, key, vars);
+  }
+
+  /** Sets every static label to the current language (dynamic ones: updateUI). */
+  applyLanguage() {
+    if (document.documentElement) document.documentElement.lang = this.lang;
+    this.ui.cashLabel.textContent = this.t('cash');
+    this.ui.levelLabel.textContent = this.t('level');
+    this.ui.buyBallTitle.textContent = this.t('buyBall');
+    this.ui.fireRateTitle.textContent = this.t('fireRate');
+    this.ui.damageTitle.textContent = this.t('damage');
+  }
+
   loadSave() {
+    let raw;
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
-      if (!raw) return;
-      const data = JSON.parse(raw);
-      if (typeof data.cash === 'number') this.cash = data.cash;
-      if (typeof data.level === 'number') this.level = data.level;
-      if (typeof data.maxBalls === 'number') this.maxBalls = data.maxBalls;
-      if (typeof data.fireRateLevel === 'number') this.fireRateLevel = data.fireRateLevel;
-      if (typeof data.damageLevel === 'number') this.damageLevel = data.damageLevel;
+      raw = localStorage.getItem(SAVE_KEY);
     } catch (err) {
-      console.warn('Nie udalo sie wczytac zapisu Neon Crusher:', err);
+      // Storage we cannot read must not be written over blindly.
+      this.saveBlocked = true;
+      console.warn('Neon Crusher: could not read the save; saving is off for this session:', err);
+      return;
+    }
+    if (!raw) return;
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch (err) {
+      console.warn('Neon Crusher: the save is unreadable; keeping a copy and starting fresh:', err);
+    }
+    const { values, exact } = sanitizeSave(data);
+    Object.assign(this, values);
+    if (!exact) this.backupRawSave(raw);
+  }
+
+  /** Keeps the original save string before the game ever overwrites it.
+   *  If even that fails, the session plays without saving. */
+  backupRawSave(raw) {
+    try {
+      localStorage.setItem(SAVE_BACKUP_KEY, raw);
+    } catch (err) {
+      this.saveBlocked = true;
+      console.warn('Neon Crusher: could not back up the save; saving is off for this session:', err);
     }
   }
 
   save() {
+    if (this.saveBlocked) return;
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify({
         cash: this.cash,
@@ -413,7 +553,7 @@ class Game {
         damageLevel: this.damageLevel,
       }));
     } catch (err) {
-      console.warn('Nie udalo sie zapisac stanu Neon Crusher:', err);
+      console.warn('Neon Crusher: could not save:', err);
     }
   }
 
@@ -602,19 +742,19 @@ class Game {
   }
 
   updateUI() {
-    this.ui.cash.textContent = `$${Math.floor(this.cash).toLocaleString('pl-PL')}`;
+    this.ui.cash.textContent = formatMoney(this.cash, this.lang);
     this.ui.level.textContent = String(this.level);
 
-    this.ui.buyBallDesc.textContent = `Kulki: ${this.maxBalls}`;
-    this.ui.buyBallCost.textContent = `$${this.ballCost}`;
+    this.ui.buyBallDesc.textContent = this.t('balls', { n: this.maxBalls });
+    this.ui.buyBallCost.textContent = formatMoney(this.ballCost, this.lang);
     this.ui.buyBall.disabled = this.cash < this.ballCost;
 
-    this.ui.fireRateDesc.textContent = `Lvl ${this.fireRateLevel}`;
-    this.ui.fireRateCost.textContent = `$${this.fireRateCost}`;
+    this.ui.fireRateDesc.textContent = this.t('upgradeLevel', { n: this.fireRateLevel });
+    this.ui.fireRateCost.textContent = formatMoney(this.fireRateCost, this.lang);
     this.ui.fireRate.disabled = this.cash < this.fireRateCost;
 
-    this.ui.damageDesc.textContent = `Lvl ${this.damageLevel}`;
-    this.ui.damageCost.textContent = `$${this.damageCost}`;
+    this.ui.damageDesc.textContent = this.t('upgradeLevel', { n: this.damageLevel });
+    this.ui.damageCost.textContent = formatMoney(this.damageCost, this.lang);
     this.ui.damage.disabled = this.cash < this.damageCost;
   }
 

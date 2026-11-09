@@ -41,8 +41,11 @@ Note: GitHub Pages currently publishes the whole repo root (`docs/RELEASE.md`).
 - `Particle` / `ParticlePool` — pooled particles (hit sparks, destruction
   bursts) capped at `MAX_PARTICLES` (400) to avoid GC churn.
 
-Top-level helpers: `COLORS` (cyan/pink/green), `SAVE_KEY`, `MAX_PARTICLES`,
-`clamp`, `randRange` (uses unseeded `Math.random`).
+Top-level helpers: `COLORS` (cyan/pink/green), `SAVE_KEY`, `SAVE_BACKUP_KEY`,
+`MAX_PARTICLES`, `clamp`, `randRange` (uses unseeded `Math.random`);
+`STRINGS` (en/pl table), `detectLanguage`, `translate`, `formatMoney`
+(localization, `Game.t()`/`applyLanguage()`); `sanitizeSave` (pure save
+validation, `docs/SAVE.md`).
 
 ## Frame loop
 
@@ -102,8 +105,9 @@ glow and is expected on any new drawable. It is also the main rendering cost
 - Vanilla ES2020+ classes in `game.js`; no frameworks, no dependencies, no
   build step. A module split (ES modules, static relative imports) or any new
   runtime file is an owner decision and changes `qa/integrity.mjs`.
-- Comments and identifiers in English; player-facing text Polish + English
-  (once i18n exists, every string goes through it — `nc-ux`).
+- Comments and identifiers in English; every player-facing string lives in
+  `STRINGS.en` and `STRINGS.pl` and goes through `Game.t()` (`nc-ux`,
+  `qa/i18n.mjs`); `index.html` carries the English defaults.
 - Player text via `textContent`, never `innerHTML` (`qa/integrity.mjs`).
 - Keep the offset-from-centre pattern for anything attached to the core.
 - Keep physics exact on block bounces; randomness only where it is design.
@@ -122,6 +126,6 @@ script. Planned hooks (each needs its own approved runtime stage):
   seeds become a feature (daily layouts);
 - a fixed-timestep simulation (`accumulator`, e.g. 120 Hz substeps) — the fix
   path for NC-03 and NC-01/02;
-- a pure `sanitizeSave(raw)` function exported to tests — the fix path for
-  NC-04/NC-05;
-- an i18n table (`STRINGS.pl/en`) read by `updateUI()` — NC-07.
+
+Done in NC-BASIC-1: pure `sanitizeSave(data)` (NC-04/NC-05) and the i18n
+table `STRINGS.en/pl` (NC-07), both visible to the harness.
