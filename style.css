@@ -131,6 +131,34 @@ body {
   touch-action: none;
 }
 
+/* First-minute hint over the field: never blocks input (NC-CORE-1A). */
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  max-width: calc(100% - 24px);
+  margin: 0;
+  padding: 5px 12px;
+  border: 1px solid rgba(0, 243, 255, 0.5);
+  border-radius: 999px;
+  background: rgba(5, 5, 12, 0.75);
+  color: #fff;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  text-shadow: 0 0 6px rgba(0, 243, 255, 0.8);
+  box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+}
+
+.hint[hidden] {
+  display: none;
+}
+
 /* ---------- Shop / upgrades ---------- */
 
 #shop {
@@ -187,6 +215,23 @@ body {
 
 .shop-btn:active:not(:disabled) {
   transform: translateY(0) scale(0.97);
+}
+
+/* The purchase the first-minute hint points at. */
+.shop-btn--suggested:not(:disabled) {
+  animation: shop-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes shop-pulse {
+  from { box-shadow: 0 0 8px rgba(0, 243, 255, 0.5), inset 0 0 10px rgba(0, 243, 255, 0.1); }
+  to { box-shadow: 0 0 26px rgba(0, 243, 255, 1), inset 0 0 18px rgba(0, 243, 255, 0.35); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shop-btn--suggested:not(:disabled) {
+    animation: none;
+    box-shadow: 0 0 22px rgba(0, 243, 255, 0.9), inset 0 0 14px rgba(0, 243, 255, 0.25);
+  }
 }
 
 .shop-btn:disabled {
