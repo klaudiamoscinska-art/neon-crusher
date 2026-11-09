@@ -70,7 +70,7 @@ export function run({ base = null, noRuntimeChange = false } = {}) {
     catch (e) { r.notRun(`runtime diff vs ${base}`, 'git diff failed (base ref missing? run git fetch origin main)'); }
     if (changed) {
       const dirty = git(['status', '--porcelain', '--', ...RUNTIME_FILES]).split('\n').filter(Boolean);
-      const all = [...changed, ...dirty.map((l) => l.slice(3) + ' (uncommitted)')];
+      const all = [...changed, ...dirty.map((l) => l.replace(/^\s*\S+\s+/, '') + ' (uncommitted)')];
       if (noRuntimeChange) r.check(`runtime unchanged vs ${base} (committed + working tree)`, all.length === 0, all.join(', '));
       else r.info(`runtime files changed vs ${base}`, all.length ? all.join(', ') : 'none');
     }
