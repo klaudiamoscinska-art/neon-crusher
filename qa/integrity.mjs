@@ -43,12 +43,16 @@ export function run({ base = null, noRuntimeChange = false } = {}) {
 
   // --- Zero third-party requests from the runtime.
   const ext = [];
+  // The SVG namespace is an XML identifier, never fetched: allowed exactly
+  // once, as the SVG_NS constant of game.js (embedded sprites, R3).
+  const SVG_NS_DECL = "const SVG_NS = 'http://www.w3.org/2000/svg';";
   for (const f of RUNTIME_FILES) {
-    const t = readText(f);
+    let t = readText(f);
+    if (f === 'game.js' && t.split(SVG_NS_DECL).length === 2) t = t.replace(SVG_NS_DECL, '');
     for (const m of t.matchAll(/(?:https?:)?\/\/[a-z0-9.-]+\.[a-z]{2,}[^\s"'`)]*/gi)) ext.push(`${f}: ${m[0]}`);
     if (/@import|url\(\s*['"]?https?:/i.test(t)) ext.push(`${f}: @import/url()`);
   }
-  r.check('runtime makes no external requests (no http(s) URLs in index.html/style.css/game.js)', ext.length === 0, ext.slice(0, 5).join('; '));
+  r.check('runtime makes no external requests (no http(s) URLs in index.html/style.css/game.js; the SVG namespace identifier allowed once)', ext.length === 0, ext.slice(0, 5).join('; '));
 
   // --- Save key and dev hooks in the shipped source.
   const game = readText('game.js');

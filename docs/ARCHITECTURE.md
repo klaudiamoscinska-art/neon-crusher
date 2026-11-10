@@ -57,6 +57,35 @@ Note: GitHub Pages currently publishes the whole repo root (`docs/RELEASE.md`).
   (`coreBornAt`, `CORE_ASSEMBLY_TIME`), `markInnerShield` (cosmetic layer),
   `buildNetwork` → `links` drawn by `drawNetwork` (neural lattice; pulse
   phase `netPhase`/`netSpeed`), `syncFlash` (volley sync line).
+- Adaptive defense (NC-AI-RECOVERY-1, `docs/GAME_DESIGN.md`): `Game.heart`
+  (the core block of the sector), `updateDefense` (every fixed step, after
+  `updateVolley`): `defenseTimer` → `pickDefenseNode` (armour hit first on a
+  turret's line, `hash01` pick, no RNG) → `defense = { node, target, t, path }`
+  (`Block.firewall` marks the node; `blocksBetween` = the power line) →
+  ends by itself (`endDefense`) or when the node dies (`onBlockDestroyed` →
+  `breakDefense` → `exposed = { t, blocks, node }`). `damageFactor(block,
+  source)` is applied in `hitBlock` (balls, shockwaves) and per block inside
+  `castLance` (`scaled` flag: the lance budget is spent in unscaled units).
+  `lanceManual` is true while `fireVolley(…, manual)` casts, so a node broken
+  by the player's own pulse refunds charge. `autoTarget` prefers the node.
+  The node is picked with the lance geometry (boxes grown by
+  `LANCE_HALF_WIDTH`), so its turret's pulse reaches it first.
+  Cosmetic only: `recovered` (cells broken this sector), `alert`,
+  `uiProgress` (recovery tint), `toasts` (`addToast`), `drawDefense`,
+  `drawRecovered`, `drawBrackets`, `mixColor`.
+- Sprites (R3): `SPRITE_SVG` (embedded SVG bodies + shared `SPRITE_DEFS`),
+  `SPRITE_USE` (core, node, drone), `SpriteAtlas` (decodes `data:` URIs,
+  rasterises per device-pixel size, cache ≤ 300 rasters; `get()` returns
+  null until loaded), shared with static drawing code as `Block.atlas` /
+  `Block.pxScale` (= dpr × viewScale, set in `resize`). Every sprite path
+  falls back to the Canvas code; the QA harness has no `Image`, so suites
+  always exercise the Canvas path. `SVG_NS` is the one http literal
+  `qa/integrity.mjs` allows (an XML namespace, never fetched).
+- HUD (R2): `hudLayout()` returns the CSS-pixel rects of every HUD text
+  (meters, AI alert, toasts) and is the only place that positions them;
+  `drawHud` draws from it and `qa/recovery.mjs` checks it for overlaps.
+  `hudTextWidth` measures with the context (an upper estimate in the
+  harness).
 - `Sound` — synthesised Web Audio (oscillators only), created/resumed in a
   user gesture, per-sound minimum gap, mute under `AUDIO_PREF_KEY`. Neither
   `Sound` nor `draw()` may call `Math.random` (the simulation RNG must not
@@ -144,16 +173,20 @@ flight. `maxBalls` is a cap, not a spawn count.
 
 Every drawable glows in its own colour (look and palette:
 `docs/GAME_DESIGN.md` "Visual identity"). Since NC-ART-1:
-- **Batched passes.** `Block.drawCore` draws the whole core in passes (plate
-  bodies, panel lines, tint + circuits per colour, outline + lit rim per
-  colour and damage stage, cracks, shatter marks, hit flashes), one path per
-  pass and colour; `Ball.drawAll` and `ParticlePool.draw` batch the same way.
-  No `save()/restore()` or shadow per block, ball or particle.
+- **Batched passes.** `Block.drawCore` draws the whole core in passes
+  (NC-AI-RECOVERY-1, 2.5D: L-shaped floor shadows, side walls, top faces,
+  bevel, then per colour × damage stage × light-wave step: circuits, inlay,
+  collision-edge outline; cracks per stage; recovered (shatter-pending)
+  tiles; hit flashes), one path per pass and group; `Ball.drawAll` and
+  `ParticlePool.draw` batch the same way. No `save()/restore()` or shadow
+  per block, ball or particle. A tile's footprint (`bodyPath`) is exactly
+  its collision square; the raised top (`topPath`) sits inside it.
 - **Glow.** `shadowBlur` + matching `shadowColor` for small shapes (turrets,
   heart, relays, lances, arcs, rings, sparks, HUD). A blurred batch that spans
   a large area is expensive in software raster (Skia blurs the batch's bounds:
   60 balls at 1920×1080 cost ~22 ms/frame), so balls use a translucent halo
-  and plate rims a wide translucent underlay stroke on the same path.
+  and large shapes (the AI shield hexagon) a wide translucent underlay
+  stroke on the same path.
 - **Background** is rendered once per canvas size into an offscreen canvas
   (`renderBackground`) and drawn with one `drawImage`; without
   `document.createElement` (QA harness) a plain fill is used.
@@ -208,3 +241,10 @@ makes every suite and `qa/pace.mjs` load another `game.js` (base vs candidate).
 
 Done in NC-BASIC-1: pure `sanitizeSave(data)` (NC-04/NC-05) and the i18n
 table `STRINGS.en/pl` (NC-07), both visible to the harness.
+
+Done in NC-AI-RECOVERY-1: `Game.defenseFromLevel` (default 3; `Infinity`
+turns the AI's reaction off — `qa/sim-compare.mjs --no-defense` proves the
+rest of the simulation bit-identical to a base build); readable state
+`defense`, `exposed`, `defenseTimer`, `reroutes`, `shieldsBroken`,
+`playerBreaks`, `heart`. `qa/art-shots.mjs` reads the running game in the
+test page only, by wrapping `Game.prototype.update` (no runtime hook).

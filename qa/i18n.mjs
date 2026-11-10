@@ -7,7 +7,7 @@ import { loadGame, Reporter, isMain, readText } from './lib.mjs';
 
 /** Every element whose text the game sets (static labels + dynamic values). */
 const TEXT_IDS = ['labelCash', 'labelLevel', 'titleBuyBall', 'titleFireRate', 'titleDamage', 'statCash', 'statLevel', 'descBuyBall', 'costBuyBall', 'descFireRate', 'costFireRate', 'descDamage', 'costDamage'];
-const POLISH_CHARS = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]|\b(Kasa|Poziom|Kup|Kulki|Szybkość|Siła)\b/;
+const POLISH_CHARS = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]|\b(Kasa|Poziom|Sektor|Kup|Kulki|Drony|Nowy|Szybkość|Siła)\b/;
 
 function texts(h) {
   return Object.fromEntries(TEXT_IDS.map((id) => [id, h.el(id).textContent]));
@@ -62,7 +62,7 @@ export function run() {
   r.check('no navigator (harness default) -> English UI, <html lang="en">', en.game.lang === 'en' && en.context.document.documentElement.lang === 'en' && enTexts.labelCash === 'Cash' && enTexts.titleBuyBall === STRINGS.en.buyBall);
   const pl = loadGame({ navigator: { languages: ['pl-PL'], language: 'pl-PL' } }); pl.newGame();
   const plTexts = texts(pl);
-  r.check('Polish browser -> Polish UI, <html lang="pl">', pl.game.lang === 'pl' && pl.context.document.documentElement.lang === 'pl' && plTexts.labelCash === 'Kasa' && plTexts.titleBuyBall === 'Kup nową kulę' && plTexts.descBuyBall === 'Kulki: 1');
+  r.check('Polish browser -> Polish UI, <html lang="pl">', pl.game.lang === 'pl' && pl.context.document.documentElement.lang === 'pl' && plTexts.labelCash === 'Kasa' && plTexts.titleBuyBall === 'Nowy dron' && plTexts.descBuyBall === 'Drony: 1' && plTexts.labelLevel === 'Sektor');
   const blank = TEXT_IDS.filter((id) => !enTexts[id] || !plTexts[id]);
   r.check(`all ${TEXT_IDS.length} text elements are filled in both languages`, blank.length === 0, blank.join(', '));
   const leak = TEXT_IDS.filter((id) => POLISH_CHARS.test(enTexts[id]));
@@ -78,7 +78,7 @@ export function run() {
   {
     const h = loadGame(); const g = h.newGame();
     g.cash = 2500000; g.maxBalls = 12; g.damageLevel = 3; g.updateUI();
-    const ok = h.el('statCash').textContent === '$2,500,000' && h.el('descBuyBall').textContent === 'Balls: 12' && h.el('descDamage').textContent === 'Lvl 3' && /^\$[\d,]+$/.test(h.el('costBuyBall').textContent);
+    const ok = h.el('statCash').textContent === '$2,500,000' && h.el('descBuyBall').textContent === 'Drones: 12' && h.el('descDamage').textContent === 'Lvl 3' && /^\$[\d,]+$/.test(h.el('costBuyBall').textContent);
     r.check('live UI after progress: cash, counters and costs formatted (en)', ok, JSON.stringify(texts(h)));
     const huge = loadGame(); const gh = huge.newGame(); gh.cash = 1e30; gh.updateUI();
     r.check('very large cash still renders as digits (no NaN/undefined)', /^\$[\d,]+$/.test(huge.el('statCash').textContent), huge.el('statCash').textContent);
