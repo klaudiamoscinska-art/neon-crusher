@@ -12,6 +12,7 @@ effect gets a cost note); sound → `nc-audio`.
 
 ## Read first
 - `docs/ARCHITECTURE.md` "Neon rendering convention".
+- `docs/VISUAL_IDENTITY.md` (element-by-element look) for the element you change.
 - `docs/RISKS.md` NC-13 (glow cost) before adding glow or particles.
 
 ## Rules

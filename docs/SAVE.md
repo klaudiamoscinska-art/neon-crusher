@@ -18,7 +18,10 @@ here. Tests: `qa/save.mjs` (+ save checks in `qa/browser-smoke.mjs`).
 Balls, blocks, block HP and turrets are **never** saved: a reload regenerates
 a full-HP core for the saved level and spawns one ball (turrets refill to
 `maxBalls`). Volley charge, the heart, relays and the session's hint state
-(NC-ORIGINAL-1) are not saved either: a reload starts at 70 % charge.
+(NC-ORIGINAL-1) are not saved either: a reload starts at 70 % charge. The
+AI's adaptive defense (NC-AI-RECOVERY-1: shield, firewall node, exposure,
+timers, counters) is session-only too: a reload starts unshielded and the
+first shield comes 8 s into the sector (`qa/recovery.mjs`).
 
 Separate preference (not progress): `localStorage["neonCrusher.audio.v1"]` =
 `"muted"` or `"on"`, written only when the player toggles sound; unreadable
