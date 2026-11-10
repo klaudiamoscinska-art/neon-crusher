@@ -69,4 +69,27 @@ so base and experiment start from the same layout (`qa/art-shots.mjs`).
 | `16` | shop icons: inline SVG vs PNG (DPR 2) |
 | `experiment-*.patch` | the exact code used for the experiments (sprite loader with fallback and pre-scaled cache, hooks) — not in the runtime |
 
-Frame cost and file size: see the stage PR (headless numbers, not a device).
+## Frame cost and size (test environment only)
+
+`qa/art-shots.mjs` frame probe (JS + forced raster per rAF callback),
+headless Chromium, software raster, DPR 1, seeded, two runs each (run 1 /
+run 2). Not a device: Chromebook 4 GB, phones and GPU raster NOT VERIFIED.
+
+| Scenario | main (= this PR) p50 / p95 ms | Experiment 1 (hero sprites) | Experiment 2 (armour, orb, arena) |
+|---|---|---|---|
+| 1920×1080 level 13, 60 balls | 13.0 / 17.6, 13.5 / 18.9 (297–299 frames / 5 s) | 11.1 / 16.9, 10.5 / 15.1 (300–301) | 16.0 / 21.6, 16.3 / 23.2 (**269–279**, frames dropped) |
+| 800×450 level 14, 60 balls | 6.8 / 10.6, 6.2 / 9.7 | 5.1 / 7.5, 5.2 / 7.0 | 5.0 / 7.2, 4.9 / 7.8 |
+| 907×510 level 1, fresh | 1.8 / 2.6, 1.7 / 2.7 | 1.3 / 1.9, 1.3 / 1.8 | 2.6 / 3.5, 2.5 / 3.4 |
+| 1216×684 level 8, 60 balls | 8.2 / 13.0, 7.9 / 10.9 | 6.7 / 9.6, 7.3 / 10.4 | 8.2 / 11.1, 8.7 / 13.0 |
+
+Pre-scaled cached sprites are cheaper than the shadowed vector heart/relays/
+turrets, so cost was not the reason to drop them; the full-screen JPG
+background and 60 ball sprites were more expensive at 1920×1080.
+
+Size: runtime today 3 files, ~132 KB. Experiment 1 would add 11 PNG files,
+567 KB (relays alone 2 files, 110 KB); the whole pack 27 PNG + 2 JPG ≈
+1.24 MB. All far inside CrazyGames Basic limits (≤ 250 MB, ≤ 1 500 files,
+≤ 50 MB initial / ≤ 20 MB mobile homepage; without the SDK the total counts
+as initial — docs.crazygames.com/requirements/technical, read 2026-11-10).
+Simulation: `qa/sim-compare.mjs` identical for this PR and for both
+experiment builds (the sprite code never touches the simulation).
