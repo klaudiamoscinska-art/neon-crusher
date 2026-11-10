@@ -18,6 +18,7 @@ submission / Full Launch. Size S/M/L.
 | 3a | NC-CORE-1A | first minute: world scale (NC-09), turrets aim at the core, on-field hint, floating +$, core progress (NC-11 part) | done (merged, PR #6) | M |
 | 3b | NC-ORIGINAL-1 (replaces NC-CORE-1B) | breach: heart, relays, aimed multi-turret volley, autopilot, shatter (NC-12 twist); Volley charge (NC-10); audio + mute (was NC-AUDIO-1); feedback | done (PR, review) | L |
 | 3c | NC-ART-1 | visual identity "Fractured Intelligence" (rogue-AI organism: scale-plate armour, neural lattice, heart sigil, relays, fork turrets, breach finale), HUD/shop restyle; simulation unchanged | QUALITY (PR, review) | L |
+| 3d | NC-ART-ASSETS-INTEGRATION-1 | owner's candidate sprite pack tried in game: DROP for runtime, NC-ART-1 kept; optional MODIFY (port motifs procedurally / regenerate at game scale) = owner decision (`docs/art/nc-art-assets-1/README.md`) | QUALITY (PR, review) | M |
 | 4 | NC-ID-1 *(owner)* | name uniqueness check on CrazyGames/web; keep or rename before covers | BLOCKER | S |
 | 5 | ~~NC-AUDIO-1~~ | done inside NC-ORIGINAL-1; owner listens on a device | QUALITY | — |
 | 6 | NC-PERF-1 | glow budget / ball cap; 4 GB Chromebook and a phone (NC-13) | QUALITY | M |

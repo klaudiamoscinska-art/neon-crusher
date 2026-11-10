@@ -181,6 +181,8 @@ of passive (`qa/economy.mjs` pins all three).
 
 Owner decisions that change this file are recorded here with a date.
 
+- 2026-11-10 (NC-ART-ASSETS-INTEGRATION-1, PR pending GPT review + owner approval): the owner's candidate sprite pack NC-ART-ASSETS-1 (27 sprites, 2 backgrounds) was tried inside the running game and dropped for runtime — none clearly improved readability at 20–50 px (heart, turrets, armour, balls, icons became darker or less legible; relays lost brightness). The visual identity above stays procedural. Evidence and the MODIFY options: `docs/art/nc-art-assets-1/README.md`. No runtime change.
+
 - 2026-11-09 (NC-ART-1, PR pending GPT review + owner approval; the stage prompt set the direction "Neon Breach — Signal Fracture", refined by the owner the same day to "Fractured Intelligence" (rogue AI, title unchanged), and the palette graphite/cyan/magenta/amber, green as an accent): visual identity above; drawing, colours, HUD/shop styling only. Simulation bit-identical to the base (same seeds, same inputs: `qa/sim-compare.mjs`); no change to mechanics, numbers, save, text or layout sizes.
 - 2026-11-09 (NC-FOUNDATION-1): baseline documented; no gameplay change.
 - 2026-11-09 (NC-ORIGINAL-1, PR pending GPT review + owner approval; the stage prompt authorised the concept choice and balance tuning): breach mechanic (heart, relays, aimed volley, autopilot, shatter), Fire rate → Volley charge (NC-10), ball refill fixed 700 ms, new income sources (above), audio + sound toggle, first-purchase target 20–45 s → 15–45 s. Prices, block HP, money per hit and the save format unchanged.

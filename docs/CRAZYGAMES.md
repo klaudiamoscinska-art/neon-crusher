@@ -25,7 +25,7 @@ rules change. No SDK, ads or monetization are implemented in this repo yet.
 
 | Requirement | Basic/Full | Status | Evidence |
 |---|---|---|---|
-| Initial download ≤ 50 MB (≤ 20 MB for the mobile homepage); without SDK total size counts | Basic | PASS | 3 runtime files ~26 KB |
+| Initial download ≤ 50 MB (≤ 20 MB for the mobile homepage); without SDK total size counts | Basic | PASS | 3 runtime files ~132 KB (2026-11-10; no images, fonts or audio files) |
 | ≤ 1 500 files, total ≤ 250 MB | Basic | PASS | 3 files |
 | Relative paths only | Basic | PASS | `qa/integrity.mjs` |
 | Works in Chrome and Edge | Basic | PASS (Chromium headless) / Edge NOT RUN | `qa/browser-smoke.mjs` |
