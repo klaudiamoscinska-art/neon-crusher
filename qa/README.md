@@ -60,6 +60,7 @@ node qa/sim-compare.mjs /tmp/base-game.js        # simulation bit-identical to t
 node qa/sim-compare.mjs /tmp/base-game.js --no-defense   # NC-AI-RECOVERY-1: identical with the AI's reaction off
 node qa/art-shots.mjs --root /tmp/base --out qa/out/art/before   # base folder with index.html/style.css/game.js
 node qa/art-shots.mjs --out qa/out/art/after                     # 14 scenes (NC-AI-RECOVERY-1 set) + frame cost (rAF + forced raster)
+node qa/art-shots.mjs --dpr 2 --out qa/out/art/after-dpr2        # same scenes and probe at device pixel ratio 2
 node qa/art-shots.mjs --sheet qa/out/art/before qa/out/art/after --out qa/out/art/sheets
 ```
 

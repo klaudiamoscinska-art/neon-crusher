@@ -73,6 +73,14 @@ Note: GitHub Pages currently publishes the whole repo root (`docs/RELEASE.md`).
   Cosmetic only: `recovered` (cells broken this sector), `alert`,
   `uiProgress` (recovery tint), `toasts` (`addToast`), `drawDefense`,
   `drawRecovered`, `drawBrackets`, `mixColor`.
+- Sprites (R3): `SPRITE_SVG` (embedded SVG bodies + shared `SPRITE_DEFS`),
+  `SPRITE_USE` (core, node, drone), `SpriteAtlas` (decodes `data:` URIs,
+  rasterises per device-pixel size, cache ≤ 300 rasters; `get()` returns
+  null until loaded), shared with static drawing code as `Block.atlas` /
+  `Block.pxScale` (= dpr × viewScale, set in `resize`). Every sprite path
+  falls back to the Canvas code; the QA harness has no `Image`, so suites
+  always exercise the Canvas path. `SVG_NS` is the one http literal
+  `qa/integrity.mjs` allows (an XML namespace, never fetched).
 - HUD (R2): `hudLayout()` returns the CSS-pixel rects of every HUD text
   (meters, AI alert, toasts) and is the only place that positions them;
   `drawHud` draws from it and `qa/recovery.mjs` checks it for overlaps.
