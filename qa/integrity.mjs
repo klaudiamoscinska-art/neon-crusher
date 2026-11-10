@@ -8,7 +8,7 @@ import { execFileSync } from 'node:child_process';
 import { ROOT, Reporter, isMain, readText } from './lib.mjs';
 
 /** Files the game loads at runtime. Changing this list is a release decision. */
-export const RUNTIME_FILES = ['index.html', 'style.css', 'game.js'];
+export const RUNTIME_FILES = ['index.html', 'style.css', 'game.js', 'assets/brand/wordmark-480.png', 'assets/brand/symbol-small-editable.svg'];
 
 function git(args) {
   return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -46,8 +46,9 @@ export function run({ base = null, noRuntimeChange = false } = {}) {
   // The SVG namespace is an XML identifier, never fetched: allowed exactly
   // once, as the SVG_NS constant of game.js (embedded sprites, R3).
   const SVG_NS_DECL = "const SVG_NS = 'http://www.w3.org/2000/svg';";
-  for (const f of RUNTIME_FILES) {
+  for (const f of RUNTIME_FILES.filter(f => /\.(html|css|js|svg)$/.test(f))) {
     let t = readText(f);
+    if (f.endsWith('.svg')) t = t.replace('http://www.w3.org/2000/svg', '');
     if (f === 'game.js' && t.split(SVG_NS_DECL).length === 2) t = t.replace(SVG_NS_DECL, '');
     for (const m of t.matchAll(/(?:https?:)?\/\/[a-z0-9.-]+\.[a-z]{2,}[^\s"'`)]*/gi)) ext.push(`${f}: ${m[0]}`);
     if (/@import|url\(\s*['"]?https?:/i.test(t)) ext.push(`${f}: @import/url()`);

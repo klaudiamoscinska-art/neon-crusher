@@ -6,13 +6,16 @@ NC-FOUNDATION-1 with `qa/`). Gameplay rules and numbers live in
 
 ## Files
 
-Three runtime files, plain HTML/CSS/JS, no dependencies, no bundler, no build:
+Three code files plus two local brand assets, no dependencies, bundler or build:
 
 | File | Role |
 |---|---|
 | `index.html` | canvas `#gameCanvas` inside `#gameArea`, top bar (`#statCash`, `#statLevel`), shop (`#btnBuyBall`, `#btnFireRate`, `#btnDamage` with `desc*`/`cost*` spans), loads `style.css` and `game.js` (classic script, relative paths) |
 | `style.css` | neon dark theme, flex column `#app` (`100dvh` with `100%` fallback), 3-column shop grid, `env(safe-area-inset-bottom)` padding, breakpoints 640 px / 900 px |
 | `game.js` | all logic, vanilla ES classes, `'use strict'`, started on `DOMContentLoaded` |
+
+The approved local wordmark PNG and small-symbol SVG live in `assets/brand/`.
+Power supply topology and campaign rules: `docs/KERNELFALL_BASIC.md`.
 
 Everything else in the repo (`docs/`, `qa/`, `.claude/`, `.github/`) is dev-only.
 Note: GitHub Pages currently publishes the whole repo root (`docs/RELEASE.md`).

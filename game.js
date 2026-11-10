@@ -191,6 +191,7 @@ const STRINGS = {
     shieldBroken: 'SHIELD BROKEN',
     levelUp: 'SECTOR {n}',
     collapse: 'NEURAL COLLAPSE',
+    destabilized: 'DESTABILIZED',
     victory: 'AI NEUTRALIZED',
     destroyed: 'AI CORE DESTROYED',
     soundOn: 'Sound on',
@@ -221,6 +222,7 @@ const STRINGS = {
     shieldBroken: 'OSŁONA PRZEŁAMANA',
     levelUp: 'SEKTOR {n}',
     collapse: 'ROZPAD NEURONOWY',
+    destabilized: 'DESTABILIZACJA',
     victory: 'AI ZNEUTRALIZOWANA',
     destroyed: 'RDZEŃ AI ZNISZCZONY',
     soundOn: 'Dźwięk włączony',
@@ -2521,6 +2523,7 @@ class Game {
     if (newlyOffline && this.time - (this.lastCollapseToast ?? -10) > 2) {
       this.lastCollapseToast = this.time;
       this.addToast(this.t('collapse'), COLORS.cyan);
+      this.addToast(this.t('destabilized'), COLORS.cyan);
     }
     this.collapseClock += dt;
     if (this.collapseClock < COLLAPSE_INTERVAL) return;
@@ -2539,6 +2542,7 @@ class Game {
     if (!this.collapseEnabled) return;
     ctx.save();
     ctx.lineWidth = 1.2;
+    ctx.shadowBlur = 0;
     // Three readable core silhouettes: firewall bars, memory banks, neural halo.
     const heart = this.heart;
     if (heart?.alive) {
@@ -2553,14 +2557,23 @@ class Game {
       }
       ctx.stroke();
     }
-    for (const {a,b} of this.powerEdges) {
-      if (!b.alive) continue;
-      ctx.strokeStyle = b.offline ? COLORS.cyan : 'rgba(255,196,0,0.32)';
-      ctx.beginPath(); ctx.moveTo(a.cx,a.cy); ctx.lineTo(b.cx,b.cy); ctx.stroke();
-      if (b.criticalPower || b.offline) {
-        ctx.strokeStyle = b.offline ? COLORS.cyan : COLORS.amber;
-        ctx.strokeRect(b.x-2,b.y-2,b.size+4,b.size+4);
+    // Batch links and rims by state; inherited heart glow must not blur
+    // every supply edge separately on a large 60-drone field.
+    ctx.shadowBlur = 0;
+    for (const offline of [false, true]) {
+      ctx.strokeStyle = offline ? COLORS.cyan : 'rgba(255,196,0,0.32)';
+      ctx.beginPath();
+      for (const {a,b} of this.powerEdges) {
+        if (!b.alive || b.offline !== offline) continue;
+        ctx.moveTo(a.cx,a.cy); ctx.lineTo(b.cx,b.cy);
       }
+      ctx.stroke();
+      ctx.strokeStyle = offline ? COLORS.cyan : COLORS.amber;
+      ctx.beginPath();
+      for (const {b} of this.powerEdges) {
+        if (b.alive && b.offline === offline && (b.criticalPower || offline)) ctx.rect(b.x-2,b.y-2,b.size+4,b.size+4);
+      }
+      ctx.stroke();
     }
     ctx.restore();
   }

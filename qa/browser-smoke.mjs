@@ -102,11 +102,11 @@ export async function run() {
     r.check('[NC-17] no text overflows its box in the top bar or the shop (both languages)', overflow.length === 0, overflow.slice(0, 4).join(' | '));
     r.check('first-minute hint on a fresh save: visible, inside the field, not cut off, taps pass through to the game (both languages)', hintBad.length === 0, hintBad.slice(0, 2).join(' | ') || `en: ${[...hintTexts['en-US']]} | pl: ${[...hintTexts['pl-PL']]}`);
     r.check('[NC-17] smallest text >= 11 px at DPR 1', Math.min(...fonts) >= 11, `${Math.min(...fonts)} px`);
-    // Layout guard: canvas sizes stay pinned to the NC-FOUNDATION-1 baseline;
-    // a layout change (NC-17) is its own decision. Since NC-CORE-1A the world
-    // scale keeps the pace nearly independent of the canvas size (NC-09).
-    const BASELINE = '907x510->907x339 1216x684->1216x513 1077x606->1077x435 821x462->821x291 1366x768->1366x597 1920x1080->1920x909 1536x864->1536x693 1280x720->1280x549 800x450->800x279 1080x607->1080x436';
-    r.check('canvas size at every frame and language unchanged vs baseline (gameplay pace unaffected)', sizes.join(' ') === `${BASELINE} ${BASELINE}`, sizes.filter((x) => !BASELINE.split(' ').includes(x)).join(' '));
+    // Layout guard for the owner-authorized KERNELFALL UI (Chromium/Linux).
+    // Measured main on this machine is 343 px at 907x510; the new deck
+    // leaves 344 px. World scaling and the base/candidate bots test pace.
+    const BASELINE = '907x510->907x344 1216x684->1216x518 1077x606->1077x440 821x462->821x296 1366x768->1366x602 1920x1080->1920x914 1536x864->1536x698 1280x720->1280x554 800x450->800x284 1080x607->1080x441';
+    r.check('canvas size at every frame and language matches the KERNELFALL deck contract', sizes.join(' ') === `${BASELINE} ${BASELINE}`, sizes.filter((x) => !BASELINE.split(' ').includes(x)).join(' '));
     r.info('[NC-17] canvas share of the iframe height below 70 % (open, see docs/RISKS.md)', smallCanvas.length ? smallCanvas.join(', ') : 'none');
     r.check('[NC-08] body has user-select: none (CrazyGames technical requirement for mobile)', userSelect === 'none', `computed: ${userSelect}`);
     r.check('[NC-18] stylesheet pads all four safe-area insets (env(safe-area-inset-*))', safeArea && safeArea.length === 4, `found: ${safeArea}`);

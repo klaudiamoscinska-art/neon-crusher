@@ -87,10 +87,13 @@ plain screenshot, consistent across the three sizes, no copyrighted visuals.
 7. Keep the package builder a script with a validator (file list, sizes,
    relative paths, no dev files, no external requests) — never a hand-made zip.
 
-## Package (stage NC-RELEASE-1 builds the script)
+## Package (KERNELFALL Basic)
 
-`game.zip` with `index.html` at the root + `style.css` + `game.js` only;
-no `docs/`, `qa/`, `.claude/`, `.github/`, no source maps or dev hooks;
+`kernelfall-basic.zip` with `index.html` at the root, `style.css`, `game.js`
+and the two approved local files in `assets/brand/`;
+builder and validator: `node qa/package-basic.mjs`. Both an HTML5 folder and
+a ZIP are provided (the portal may ask for folder contents rather than ZIP).
+No `docs/`, `qa/`, `.claude/`, `.github/`, source maps or dev hooks;
 checked by a validator (files, sizes, relative paths, zero external URLs,
 SHA-256 manifest in the stage report). Never committed to `main`.
 
