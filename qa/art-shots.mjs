@@ -21,6 +21,10 @@ const pw = (() => { for (const id of ['playwright', 'playwright-core']) { try { 
 const args = process.argv.slice(2);
 const opt = (name, def) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : def; };
 
+// --dpr 2 captures the same scenes at device pixel ratio 2 (R3: sprite
+// rasters must stay sharp on high-DPR screens).
+const DPR = Number(opt('--dpr', 1));
+
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg' };
 function serve(root) {
   return new Promise((resolve) => {
@@ -92,7 +96,7 @@ async function capture(root, out) {
   const log = [];
   try {
     for (const s of SCENES) {
-      const ctx = await browser.newContext({ viewport: { width: s.vp[0], height: s.vp[1] }, deviceScaleFactor: 1, locale: s.locale || 'en-US', hasTouch: !!s.touch, isMobile: !!s.touch, reducedMotion: s.reducedMotion ? 'reduce' : 'no-preference' });
+      const ctx = await browser.newContext({ viewport: { width: s.vp[0], height: s.vp[1] }, deviceScaleFactor: DPR, locale: s.locale || 'en-US', hasTouch: !!s.touch, isMobile: !!s.touch, reducedMotion: s.reducedMotion ? 'reduce' : 'no-preference' });
       await ctx.addInitScript((save) => {
         localStorage.setItem('neonCrusher.audio.v1', 'muted');
         if (save) localStorage.setItem('neonCrusher.save.v1', JSON.stringify(save));
@@ -151,7 +155,7 @@ async function perf(root, out) {
   const rows = [];
   try {
     for (const [w, h, level] of [[1920, 1080, 13], [800, 450, 14], [907, 510, 1]]) {
-      const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
+      const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: DPR });
       await ctx.addInitScript(RAF_PROBE);
       const save = level === 1 ? null : { cash: 9000, level, maxBalls: 60, fireRateLevel: 10, damageLevel: 12 };
       await ctx.addInitScript((sv) => { localStorage.setItem('neonCrusher.audio.v1', 'muted'); if (sv) localStorage.setItem('neonCrusher.save.v1', JSON.stringify(sv)); }, save);

@@ -858,47 +858,64 @@ class Block {
   }
 
   /** The AI's corrupted inlay on the top face, one of three hardware
-   *  kinds (by `variant`): a socket, a memory bank (two bars), a port. */
+   *  kinds (by `variant`), redrawn in R3 from the motifs of the
+   *  NC-NETWORK-RECOVERY-ART-V2 tile sources: a socket (frame + window), a
+   *  memory bank (frame + three cells), a port (hexagon). Closed shapes:
+   *  filled translucent and stroked in the layer colour. */
   inlayPath(ctx) {
-    const w = this.wall;
-    const k = (this.size - w) * 0.36;
-    const cx = this.x + (this.size - w) / 2;
-    const cy = this.y + (this.size - w) / 2;
-    if (this.variant === 1) {
-      ctx.rect(cx - k * 0.6, cy - k * 0.42, k * 1.2, k * 0.3);
-      ctx.rect(cx - k * 0.6, cy + k * 0.12, k * 1.2, k * 0.3);
-    } else if (this.variant === 2) {
-      ctx.moveTo(cx + k * 0.52, cy);
-      ctx.arc(cx, cy, k * 0.52, 0, Math.PI * 2);
+    const t = this.size - this.wall;
+    const cx = this.x + t / 2;
+    const cy = this.y + t / 2;
+    if (this.variant === 2) {
+      polygonPath(ctx, cx, cy, t * 0.27, 6, Math.PI / 6);
     } else {
-      ctx.rect(cx - k / 2, cy - k / 2, k, k);
+      const w = t * 0.56;
+      const h = t * 0.42;
+      chamferPath(ctx, cx - w / 2, cy - h / 2, w, h, [h * 0.18, h * 0.18, h * 0.18, h * 0.18]);
     }
   }
 
-  /** Micro-circuit: the plate's node (where the neural lattice attaches:
-   *  Game.drawNetwork) and one of three slot patterns. Armour only. */
+  /** The inlay's hot parts (bright fill): the socket's window with a
+   *  white-hot dot, the memory bank's three cells, the port's contact. */
+  inlayCorePath(ctx) {
+    const t = this.size - this.wall;
+    const cx = this.x + t / 2;
+    const cy = this.y + t / 2;
+    if (this.variant === 1) {
+      const bw = t * 0.09;
+      for (const dx of [-0.15, 0, 0.15]) ctx.rect(cx + dx * t - bw / 2, cy - t * 0.12, bw, t * 0.24);
+    } else if (this.variant === 2) {
+      ctx.moveTo(cx + t * 0.07, cy);
+      ctx.arc(cx, cy, t * 0.07, 0, Math.PI * 2);
+    } else {
+      ctx.rect(cx - t * 0.16, cy - t * 0.1, t * 0.32, t * 0.2);
+    }
+  }
+
+  /** Corrupted edge light: an L along the face's left and bottom edges
+   *  (the asset set's signature line), plus the port's trace. */
+  glowPath(ctx) {
+    const t = this.size - this.wall;
+    const i = Math.max(1.2, t * 0.08);
+    ctx.moveTo(this.x + i, this.y + t * 0.18);
+    ctx.lineTo(this.x + i, this.y + t - i);
+    ctx.lineTo(this.x + t * 0.88, this.y + t - i);
+    if (this.variant === 2) {
+      const cx = this.x + t / 2;
+      const cy = this.y + t / 2;
+      ctx.moveTo(this.x + i, cy);
+      ctx.lineTo(cx - t * 0.27, cy);
+    }
+  }
+
+  /** Micro-circuit: two short contact slots on the face's top edge, away
+   *  from the inlay (R3; the lattice attaches at the tile centre). */
   tracePath(ctx) {
-    const s = this.size - this.wall;
-    const cx = this.x + s / 2;
-    const cy = this.y + s / 2;
-    // Inward axis (toward the heart), snapped to the plate's major axis.
-    const horiz = Math.abs(this.offsetX) >= Math.abs(this.offsetY);
-    const ix = horiz ? -Math.sign(this.offsetX || 1) : 0;
-    const iy = horiz ? 0 : -Math.sign(this.offsetY || 1);
-    const px = -iy;
-    const py = ix;
-    const n = s * 0.07;
-    ctx.rect(cx - n, cy - n, n * 2, n * 2);
-    const slot = (d, w) => {
-      ctx.moveTo(cx - ix * s * d + px * s * w, cy - iy * s * d + py * s * w);
-      ctx.lineTo(cx - ix * s * d - px * s * w, cy - iy * s * d - py * s * w);
-    };
-    if (this.variant === 0) { slot(0.2, 0.22); slot(0.3, 0.16); }
-    else if (this.variant === 1) { slot(0.26, 0.26); }
-    else {
-      ctx.moveTo(cx + px * n, cy + py * n);
-      ctx.lineTo(cx + px * s * 0.26, cy + py * s * 0.26);
-      ctx.lineTo(cx + px * s * 0.26 - ix * s * 0.24, cy + py * s * 0.26 - iy * s * 0.24);
+    const t = this.size - this.wall;
+    const y = this.y + t * 0.14;
+    for (const fx of [0.3, 0.7]) {
+      ctx.moveTo(this.x + t * fx - t * 0.08, y);
+      ctx.lineTo(this.x + t * fx + t * 0.08, y);
     }
   }
 
@@ -981,13 +998,15 @@ class Block {
     }
     ctx.save();
     ctx.lineJoin = 'round';
-    if (tiles.length) {
+    const canvasTiles = tiles;
+    const canvasArmour = armour;
+    if (canvasTiles.length) {
       // 1. Floor shadows (the tiles stand on the network floor): only the
       //    L-shaped strip that shows beside the tile is filled (a full rect
       //    under every tile cost ~1 Mpx of blending per frame at 1920x1080).
       ctx.fillStyle = COLORS.shadow;
       ctx.beginPath();
-      for (const b of tiles) {
+      for (const b of canvasTiles) {
         const s = b.size;
         const x1 = b.x + s;
         const y1 = b.y + s;
@@ -1004,11 +1023,11 @@ class Block {
       //    bottom wall a step lighter, so every tile reads as a solid block.
       ctx.fillStyle = COLORS.tileSide;
       ctx.beginPath();
-      for (const b of tiles) b.bodyPath(ctx);
+      for (const b of canvasTiles) b.bodyPath(ctx);
       ctx.fill();
       ctx.fillStyle = COLORS.tileWall;
       ctx.beginPath();
-      for (const b of tiles) {
+      for (const b of canvasTiles) {
         const w = b.wall;
         const y0 = b.y + b.size - w;
         ctx.moveTo(b.x, y0);
@@ -1022,7 +1041,7 @@ class Block {
       //    red outer, rust inner) and drains to neutral steel as it takes
       //    damage; relays get a dark neutral top for their capacitor.
       const faces = new Map();
-      for (const b of tiles) {
+      for (const b of canvasTiles) {
         const key = b.kind === 'relay' ? COLORS.tileTop : b.shatter !== null ? '#1d4654'
           : (b.color === COLORS.ember ? Block.EMBER_FACES : Block.HOSTILE_FACES)[b.damageStage];
         if (!faces.has(key)) faces.set(key, []);
@@ -1039,18 +1058,18 @@ class Block {
       ctx.fillStyle = COLORS.white;
       ctx.globalAlpha = 0.06;
       ctx.beginPath();
-      for (const b of tiles) { const t = b.size - b.wall; ctx.rect(b.x + 1, b.y + 1, t - 2, t * 0.38); }
+      for (const b of canvasTiles) { const t = b.size - b.wall; ctx.rect(b.x + 1, b.y + 1, t - 2, t * 0.38); }
       ctx.fill();
       ctx.strokeStyle = COLORS.tileHi;
       ctx.lineWidth = 1;
       ctx.globalAlpha = 0.85;
       ctx.beginPath();
-      for (const b of tiles) b.bevelPath(ctx);
+      for (const b of canvasTiles) b.bevelPath(ctx);
       ctx.stroke();
       ctx.strokeStyle = '#05060a';
       ctx.globalAlpha = 0.8;
       ctx.beginPath();
-      for (const b of tiles) {
+      for (const b of canvasTiles) {
         const t = b.size - b.wall;
         ctx.moveTo(b.x + t, b.y + 1.5);
         ctx.lineTo(b.x + t, b.y + t);
@@ -1064,7 +1083,7 @@ class Block {
     //    the structure (4 brightness steps, so it stays batched) — the
     //    system is alive. Static with prefers-reduced-motion.
     const groups = new Map();
-    for (const b of armour) {
+    for (const b of canvasArmour) {
       if (b.shatter !== null) continue;
       const wave = reducedMotion ? 0.7 : 0.5 + 0.5 * Math.sin(time * 2.2 - Math.hypot(b.offsetX, b.offsetY) * 0.09);
       const key = `${b.color}|${b.damageStage}|${Math.min(3, Math.floor(wave * 4))}`;
@@ -1086,11 +1105,22 @@ class Block {
       // Inlay: a glowing socket = a translucent wide stroke under a thin one.
       ctx.beginPath();
       for (const b of list) b.inlayPath(ctx);
-      ctx.globalAlpha = 0.3 * light;
+      ctx.globalAlpha = 0.22 * light;
       ctx.fill();
       ctx.lineWidth = 1.3;
       ctx.globalAlpha = Math.min(1, 1.05 * light);
       ctx.stroke();
+      ctx.beginPath();
+      for (const b of list) b.glowPath(ctx);
+      ctx.lineWidth = 1.6;
+      ctx.globalAlpha = Math.min(1, 0.9 * light);
+      ctx.stroke();
+      ctx.beginPath();
+      for (const b of list) b.inlayCorePath(ctx);
+      ctx.fillStyle = COLORS.coreHot;
+      ctx.globalAlpha = Math.min(1, 1.05 * light);
+      ctx.fill();
+      ctx.fillStyle = color;
       // Edge of the collision square in the layer colour.
       ctx.lineWidth = 1;
       ctx.globalAlpha = 0.5 * light;
@@ -1102,7 +1132,7 @@ class Block {
     if (underlay) underlay(ctx);
     // 6. Cracks: the player's recovery (cyan, white-hot core) breaking in.
     const cracked = new Map();
-    for (const b of armour) {
+    for (const b of canvasArmour) {
       const stage = b.damageStage;
       if (stage === 0 || b.shatter !== null) continue;
       if (!cracked.has(stage)) cracked.set(stage, []);
@@ -1123,7 +1153,7 @@ class Block {
       ctx.stroke();
     }
     // 7. Recovered by the shatter wave (pending): the tile turns cyan.
-    const flipped = armour.filter((b) => b.shatter !== null);
+    const flipped = canvasArmour.filter((b) => b.shatter !== null);
     if (flipped.length) {
       ctx.fillStyle = COLORS.cyan;
       ctx.strokeStyle = COLORS.ice;
@@ -1273,6 +1303,57 @@ class Block {
     ctx.restore();
   }
 
+  /** AI core from the atlas (R3): sealed above half HP, fractured below
+   *  (the set's "exposed" sprite shows a check mark, read as already
+   *  recovered: not used; exposure keeps its magenta ring); a Canvas guard ring
+   *  of six segments turns around it (one lost per sixth of HP, the state
+   *  the three sprites cannot show), plus the hit flash. */
+  drawHeartSprite(ctx, time, reducedMotion) {
+    const hp = clamp(this.hp / this.maxHp, 0, 1);
+    const id = hp > 0.5 ? 'heart_sealed' : 'heart_fractured';
+    const S = this.size;
+    if (!Block.atlas.get(id, S * Block.pxScale)) return false;
+    const cx = this.cx;
+    const cy = this.cy;
+    const pulse = reducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(time * 3.2);
+    ctx.save();
+    ctx.fillStyle = COLORS.shadow;
+    ctx.fillRect(this.x + S * 0.08, this.y + S * 0.12, S, S);
+    Block.atlas.draw(ctx, id, this.x, this.y, S, Block.pxScale);
+    const segments = Math.ceil(hp * 6 - 1e-9);
+    const spin = reducedMotion ? 0 : time * 0.6;
+    const R = S * 0.72;
+    const color = Block.exposedHeart ? COLORS.magenta : COLORS.hostile;
+    ctx.strokeStyle = color;
+    ctx.lineCap = 'butt';
+    ctx.lineWidth = Math.max(1.4, S * 0.055);
+    ctx.globalAlpha = 0.2;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 0.75 + 0.25 * pulse;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 6;
+    ctx.beginPath();
+    for (let i = 0; i < segments; i++) {
+      const a = spin + (i / 6) * Math.PI * 2;
+      ctx.moveTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+      ctx.arc(cx, cy, R, a, a + 0.78);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    if (this.hitFlash > 0) {
+      ctx.globalAlpha = this.hitFlash;
+      ctx.strokeStyle = COLORS.white;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      this.bodyPath(ctx);
+      ctx.stroke();
+    }
+    ctx.restore();
+    return true;
+  }
+
   /**
    * The rogue AI's core (NC-AI-RECOVERY-1): a processor die on a socket —
    * a square silhouette that is exactly its collision box, unlike any tile.
@@ -1284,6 +1365,7 @@ class Block {
    * A geometric sign, deliberately no eye, face or skull.
    */
   drawHeart(ctx, time, reducedMotion) {
+    if (SPRITE_USE.core && Block.atlas && this.drawHeartSprite(ctx, time, reducedMotion)) return;
     const hp = clamp(this.hp / this.maxHp, 0, 1);
     const open = 1 - hp;
     const S = this.size;
@@ -1434,6 +1516,10 @@ class Block {
 // Top-face tints of AI-held tiles by damage stage 0..3 (R2): saturated
 // wine/rust while intact, draining to neutral steel as recovery breaks in.
 Block.HOSTILE_FACES = ['#57233a', '#4a2739', '#3a2c3d', '#2e3346'];
+// Sprite atlas globals (R3; set by Game).
+Block.atlas = null;
+Block.pxScale = 1;
+Block.exposedHeart = false;
 Block.EMBER_FACES = ['#58301f', '#4b2f26', '#3c2e30', '#2e3346'];
 
 class Ball {
@@ -1566,6 +1652,37 @@ class Ball {
       ctx.arc(b.x + 2.5, b.y + 4, b.radius * 0.9, 0, Math.PI * 2);
     }
     ctx.fill();
+    // R3: on big screens / high DPR the drone sprite (one cached raster for
+    // all drones; below DRONE_SPRITE_MIN_PX the Canvas drone reads better),
+    // trail and shadow stay batched Canvas; a white disc marks the Breach
+    // power flash.
+    const atlas = Block.atlas;
+    const size = balls[0].radius * 2.4;
+    if (SPRITE_USE.drone && atlas && size * Block.pxScale >= DRONE_SPRITE_MIN_PX && atlas.get('drone_player', size * Block.pxScale)) {
+      ctx.strokeStyle = COLORS.cyan;
+      ctx.globalAlpha = 0.22;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      for (const b of balls) {
+        ctx.moveTo(b.x - b.vx * 0.012, b.y - b.vy * 0.012);
+        ctx.lineTo(b.x - b.vx * 0.034, b.y - b.vy * 0.034);
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      for (const b of balls) atlas.draw(ctx, 'drone_player', b.x - size / 2, b.y - size / 2, size, Block.pxScale);
+      ctx.fillStyle = COLORS.white;
+      ctx.beginPath();
+      let flashing = false;
+      for (const b of balls) {
+        if (b.flash <= 0) continue;
+        flashing = true;
+        ctx.moveTo(b.x + b.radius, b.y);
+        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+      }
+      if (flashing) { ctx.globalAlpha = 0.8; ctx.fill(); }
+      ctx.restore();
+      return;
+    }
     const byColor = new Map();
     for (const b of balls) {
       const key = b.flash > 0 ? COLORS.white : b.color;
@@ -1643,6 +1760,32 @@ class Turret {
     }
   }
 
+  /** Four-segment override charge ring (magenta) at radius `r`, in the
+   *  turret's rotated frame; pulses when ready. */
+  drawChargeRing(ctx, charge, ready, pulse, r) {
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = COLORS.magenta;
+    ctx.shadowColor = COLORS.magenta;
+    for (let i = 0; i < 4; i++) {
+      const fill = clamp(charge * 4 - i, 0, 1);
+      const a = Math.PI + i * (Math.PI / 2) + 0.12;
+      ctx.globalAlpha = 0.18;
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, a, a + Math.PI / 2 - 0.24);
+      ctx.stroke();
+      if (fill > 0) {
+        ctx.globalAlpha = ready ? 0.6 + 0.4 * pulse : 0.9;
+        ctx.shadowBlur = ready ? 10 : 4;
+        ctx.beginPath();
+        ctx.arc(0, 0, r, a, a + (Math.PI / 2 - 0.24) * fill);
+        ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+  }
+
   /** `charge` 0..1 = the volley meter: the turret glows brighter while it
    *  charges and pulses white when the volley is ready. */
   /**
@@ -1680,27 +1823,7 @@ class Turret {
     ctx.globalAlpha = 0.75;
     ctx.stroke();
     ctx.globalAlpha = 1;
-    // Charge ring: four quarter segments around the base (breach magenta).
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = COLORS.magenta;
-    ctx.shadowColor = COLORS.magenta;
-    for (let i = 0; i < 4; i++) {
-      const fill = clamp(charge * 4 - i, 0, 1);
-      const a = Math.PI + i * (Math.PI / 2) + 0.12;
-      ctx.globalAlpha = 0.18;
-      ctx.shadowBlur = 0;
-      ctx.beginPath();
-      ctx.arc(0, 0, 13, a, a + Math.PI / 2 - 0.24);
-      ctx.stroke();
-      if (fill > 0) {
-        ctx.globalAlpha = ready ? 0.6 + 0.4 * pulse : 0.9;
-        ctx.shadowBlur = ready ? 10 : 4;
-        ctx.beginPath();
-        ctx.arc(0, 0, 13, a, a + (Math.PI / 2 - 0.24) * fill);
-        ctx.stroke();
-      }
-    }
-    ctx.globalAlpha = 1;
+    this.drawChargeRing(ctx, charge, ready, pulse, 13);
     // Rails.
     ctx.fillStyle = COLORS.tileSide;
     ctx.strokeStyle = COLORS.ice;
@@ -1758,6 +1881,83 @@ class Turret {
     ctx.restore();
   }
 }
+
+// SVG namespace identifier for the embedded sprites (an XML name, never
+// fetched; the one http literal qa/integrity.mjs allows).
+const SVG_NS = 'http://www.w3.org/2000/svg';
+// Which elements draw from the sprite atlas — the winners of the in-game A/B
+// (R3, docs/VISUAL_IDENTITY.md): the AI core, the firewall node and, from 30
+// device pixels up (big screens, high DPR), the drones. Tiles, relays and
+// uplinks lost the A/B and stay Canvas. Every element is drawn by the Canvas
+// code until its sprite has loaded, and where images are unavailable (QA
+// harness).
+const SPRITE_USE = { core: true, node: true, drone: true };
+// Drones switch to the sprite only from this size on screen (device px).
+const DRONE_SPRITE_MIN_PX = 30;
+
+/**
+ * Sprite atlas (NC-AI-RECOVERY-1 R3): the embedded SVG sources are decoded
+ * once from data: URIs (no network request) and rasterised on demand at the
+ * device-pixel size they are drawn at (rounded up to 4 px), so they stay
+ * sharp at DPR 1 and 2 and every world scale. Drawing only: nothing here
+ * touches the simulation or its RNG.
+ */
+class SpriteAtlas {
+  constructor() {
+    this.images = new Map();
+    this.cache = new Map();
+    if (typeof Image === 'undefined' || typeof document === 'undefined' || typeof document.createElement !== 'function') return;
+    for (const id of Object.keys(SPRITE_SVG)) {
+      try {
+        const img = new Image();
+        img.onload = () => this.images.set(id, img);
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="${SVG_NS}" viewBox="0 0 128 128" width="128" height="128">${SPRITE_DEFS}${SPRITE_SVG[id]}</svg>`);
+      } catch (err) {
+        // No sprite: the Canvas fallback draws this element.
+      }
+    }
+  }
+
+  /** Raster of sprite `id` at about `px` device pixels, or null. */
+  get(id, px) {
+    const img = this.images.get(id);
+    if (!img) return null;
+    const n = Math.max(8, Math.min(512, Math.ceil(px / 4) * 4));
+    const key = `${id}|${n}`;
+    if (this.cache.has(key)) return this.cache.get(key);
+    let c = null;
+    try {
+      c = document.createElement('canvas');
+      c.width = n;
+      c.height = n;
+      c.getContext('2d').drawImage(img, 0, 0, n, n);
+    } catch (err) {
+      c = null;
+    }
+    if (this.cache.size > 300) this.cache.clear();
+    this.cache.set(key, c);
+    return c;
+  }
+
+  /** Draws sprite `id` over the world box (x, y, size); false if unavailable. */
+  draw(ctx, id, x, y, size, pxScale) {
+    const r = this.get(id, size * pxScale);
+    if (!r) return false;
+    ctx.drawImage(r, x, y, size, size);
+    return true;
+  }
+}
+
+// >>> SPRITES (generated from NC-NETWORK-RECOVERY-ART-V2/svg, 128x128 viewBox; see docs/VISUAL_IDENTITY.md)
+const SPRITE_DEFS = '<defs><linearGradient id="metal" x1="0" y1="0" x2=".95" y2="1"><stop stop-color="#73859f"/><stop offset=".32" stop-color="#404d65"/><stop offset=".72" stop-color="#202a3d"/><stop offset="1" stop-color="#45546d"/></linearGradient><linearGradient id="face" x1=".07" y1="0" x2=".90" y2="1"><stop stop-color="#4c5972"/><stop offset=".45" stop-color="#29334a"/><stop offset="1" stop-color="#1d273b"/></linearGradient><linearGradient id="dark" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#22283f"/><stop offset="1" stop-color="#0e182a"/></linearGradient><linearGradient id="red" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#ffb8c5"/><stop offset=".16" stop-color="#ff4a72"/><stop offset=".60" stop-color="#b81e4a"/><stop offset="1" stop-color="#6a1732"/></linearGradient><linearGradient id="cyan" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#eeffff"/><stop offset=".28" stop-color="#41f9fc"/><stop offset=".65" stop-color="#0cb1c9"/><stop offset="1" stop-color="#05738c"/></linearGradient><linearGradient id="amber" x1=".1" y1="0" x2=".9" y2="1"><stop stop-color="#fff3bc"/><stop offset=".32" stop-color="#ffc558"/><stop offset=".73" stop-color="#ca6328"/><stop offset="1" stop-color="#7b3826"/></linearGradient><linearGradient id="magenta" x1=".2" y1="0" x2=".9" y2="1"><stop stop-color="#ffe6ff"/><stop offset=".38" stop-color="#ff5ce1"/><stop offset="1" stop-color="#962c91"/></linearGradient><radialGradient id="core"><stop stop-color="#fffce9"/><stop offset=".19" stop-color="#ff76a2"/><stop offset=".61" stop-color="#e22b59"/><stop offset="1" stop-color="#83102d"/></radialGradient></defs>';
+const SPRITE_SVG = {
+  heart_sealed: '<rect x="5" y="13" width="118" height="108" rx="13" fill="#090e1b" stroke="#0a1120" stroke-width="5"/><rect x="4" y="8" width="120" height="100" rx="10" fill="url(#metal)" stroke="#9dacc6" stroke-width="5"/><rect x="12" y="15" width="104" height="88" rx="7" fill="#171e30" stroke="#e6c4d6" stroke-width="4"/><circle cx="19" cy="24" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><circle cx="19" cy="92" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><circle cx="109" cy="24" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><circle cx="109" cy="92" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><path d="M12 35 H28 M100 35 H116" stroke="#ff4e69" stroke-width="5"/><path d="M12 55 H28 M100 55 H116" stroke="#ff4e69" stroke-width="5"/><path d="M12 75 H28 M100 75 H116" stroke="#ff4e69" stroke-width="5"/><path d="M37 25 H92 L107 44 V80 L92 98 H37 L21 80 V44 Z" fill="#080c19" stroke="#f4647a" stroke-width="7"/><path d="M40 31 H88 L100 46 V77 L88 91 H40 L28 77 V46Z" fill="#4b172c" stroke="#ffb9c0" stroke-width="3"/><path d="M65 32 L88 55 L64 87 L39 55 Z" fill="url(#red)" stroke="#ffcad3" stroke-width="6"/><path d="M65 36 L65 81 L81 56Z" fill="#7c1632" opacity=".68"/><path d="M44 56 L64 35 L64 79Z" fill="#ff91a8" opacity=".5"/><path d="M64 42 L76 56 L64 78 L51 56Z" fill="url(#core)" /><rect x="31" y="6" width="15" height="7" fill="#ff3f61"/><rect x="82" y="6" width="15" height="7" fill="#ff3f61"/>',
+  heart_fractured: '<rect x="5" y="13" width="118" height="108" rx="13" fill="#090e1b" stroke="#0a1120" stroke-width="5"/><rect x="4" y="8" width="120" height="100" rx="10" fill="url(#metal)" stroke="#9dacc6" stroke-width="5"/><rect x="12" y="15" width="104" height="88" rx="7" fill="#171e30" stroke="#e6c4d6" stroke-width="4"/><circle cx="19" cy="24" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><circle cx="19" cy="92" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><circle cx="109" cy="24" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><circle cx="109" cy="92" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><path d="M12 35 H28 M100 35 H116" stroke="#ff4e69" stroke-width="5"/><path d="M12 55 H28 M100 55 H116" stroke="#ff4e69" stroke-width="5"/><path d="M12 75 H28 M100 75 H116" stroke="#ff4e69" stroke-width="5"/><path d="M37 25 H92 L107 44 V80 L92 98 H37 L21 80 V44 Z" fill="#080c19" stroke="#f4647a" stroke-width="7"/><path d="M40 31 H88 L100 46 V77 L88 91 H40 L28 77 V46Z" fill="#4b172c" stroke="#ffb9c0" stroke-width="3"/><path d="M62 30 L82 47 L67 57 L55 45 Z" fill="url(#red)" stroke="#ffc7d4" stroke-width="5"/><path d="M42 52 L57 61 L55 82 L34 67 Z" fill="url(#red)" stroke="#f6abc4" stroke-width="5"/><path d="M73 59 L95 53 L92 77 L70 89 Z" fill="url(#red)" stroke="#f6abc4" stroke-width="5"/><path d="M64 36 L63 87 M43 61 L91 54" fill="none" stroke="#17e6ee" stroke-width="8" stroke-linejoin="round" stroke-linecap="round" /><rect x="31" y="6" width="15" height="7" fill="#ff3f61"/><rect x="82" y="6" width="15" height="7" fill="#ff3f61"/>',
+  firewall_locked: '<rect x="3" y="7" width="122" height="117" rx="5" fill="#0c1020" stroke="#20253a" stroke-width="4"/><rect x="3" y="5" width="121" height="111" rx="5" fill="url(#metal)" stroke="#c0c7d6" stroke-width="5"/><rect x="16" y="18" width="95" height="87" rx="4" fill="#2f1e38" stroke="#b34e8c" stroke-width="5"/><path d="M44 60 V47 Q44 24 64 24 Q84 24 84 47 V60" fill="none" stroke="#ffd9ee" stroke-width="9"/><rect x="37" y="53" width="55" height="39" rx="6" fill="url(#magenta)" stroke="#ffcbf7" stroke-width="6"/><circle cx="64" cy="68" r="6" fill="#631747"/><path d="M64 72 V82" stroke="#631747" stroke-width="6"/><path d="M6 31 V13 H26" fill="none" stroke="#fa42c8" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" /><path d="M102 13 H122 V31" fill="none" stroke="#fa42c8" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" /><path d="M6 93 V112 H26" fill="none" stroke="#fa42c8" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" /><path d="M102 112 H122 V93" fill="none" stroke="#fa42c8" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" />',
+  firewall_broken: '<rect x="3" y="7" width="122" height="117" rx="5" fill="#0c1020" stroke="#20253a" stroke-width="4"/><rect x="3" y="5" width="121" height="111" rx="5" fill="url(#metal)" stroke="#c0c7d6" stroke-width="5"/><rect x="16" y="18" width="95" height="87" rx="4" fill="#2f1e38" stroke="#b34e8c" stroke-width="5"/><path d="M41 58 L59 77 L93 36" fill="none" stroke="#e9ffff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 58 L59 77 L93 36" fill="none" stroke="#17e6ee" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" /><path d="M10 10 H118 V109 H10 Z" fill="none" stroke="#23e5f3" stroke-width="6"/>',
+  drone_player: '<circle cx="64" cy="66" r="54" fill="#001a2a" stroke="#126e8a" stroke-width="6"/><circle cx="64" cy="62" r="47" fill="url(#cyan)" stroke="#e0ffff" stroke-width="8"/><circle cx="64" cy="59" r="29" fill="#046c90" stroke="#78fbff" stroke-width="5"/><circle cx="64" cy="54" r="20" fill="#f9ffff"/><path d="M38 48 L47 40" stroke="#fff" stroke-width="7" stroke-linecap="round"/>',
+};
+// <<< SPRITES
 
 class Game {
   constructor(canvas) {
@@ -1845,6 +2045,9 @@ class Game {
     this.reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
       && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.sound = new Sound();
+    // Sprite atlas (R3) shared with the static Block drawing code.
+    this.sprites = new SpriteAtlas();
+    Block.atlas = this.sprites;
 
     this.uiTimer = 0;
     this.saveTimer = 0;
@@ -2031,6 +2234,8 @@ class Game {
     this.canvas.style.width = width + 'px';
     this.canvas.style.height = height + 'px';
     this.ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+    // Device pixels per world unit, for sprite rasters (R3).
+    Block.pxScale = dpr * scale;
 
     this.viewScale = scale;
     this.dpr = dpr;
@@ -2640,7 +2845,7 @@ class Game {
     if (this.lanceManual) this.playerBreaks += 1;
     if (this.lanceManual) this.volleyCharge = Math.min(1, this.volleyCharge + BREAK_RECHARGE);
     this.endDefense();
-    this.exposed = { t: EXPOSE_TIME, blocks: [heart, ...d.path.filter((b) => b.alive)], node: { x: node.cx, y: node.cy } };
+    this.exposed = { t: EXPOSE_TIME, blocks: [heart, ...d.path.filter((b) => b.alive)], node: { x: node.cx, y: node.cy, size: node.size } };
     const bonus = OVERRIDE_BONUS * node.moneyPerHit;
     this.cash += bonus;
     this.addToast(`${this.t('shieldBroken')} +${formatMoney(bonus, this.lang)}`, COLORS.magenta);
@@ -2901,6 +3106,7 @@ class Game {
     this.drawFieldMarks(ctx);
     this.drawRecovered(ctx);
     this.drawAimPreview(ctx);
+    Block.exposedHeart = !!(this.exposed && this.heart && this.heart.alive);
     Block.drawCore(ctx, this.visibleBlocks(), this.time, this.reducedMotion, (c) => {
       this.drawNetwork(c);
       this.drawConduits(c);
@@ -3058,8 +3264,12 @@ class Game {
       n.bodyPath(ctx);
       ctx.stroke();
       // White lock on a dark plate: the one white glyph on the core, so the
-      // node never reads as an amber relay.
+      // node never reads as an amber relay (R3: the magenta lock sprite when
+      // the atlas is ready).
       ctx.globalAlpha = 1;
+      if (SPRITE_USE.node && this.sprites.draw(ctx, 'firewall_locked', n.x, n.y, n.size, Block.pxScale)) {
+        // drawn
+      } else {
       ctx.fillStyle = COLORS.tileSide;
       ctx.fillRect(n.x + top * 0.16, n.y + top * 0.16, top * 0.68, top * 0.68);
       ctx.fillStyle = COLORS.white;
@@ -3071,6 +3281,7 @@ class Game {
       ctx.stroke();
       ctx.fillStyle = COLORS.tileSide;
       ctx.fillRect(nx - L * 0.07, ny + L * 0.05, L * 0.14, L * 0.3);
+      }
       // Rotating magenta target reticle (the player's action colour): four
       // brackets and four ticks pointing in, slowly turning.
       const RR = n.size * 0.78 + pulse * 2;
@@ -3094,6 +3305,13 @@ class Game {
     if (e) {
       const h = this.heart;
       const k = clamp(e.t / EXPOSE_TIME, 0, 1);
+      // R3: the broken firewall sprite fades out where the node stood.
+      const ghost = (e.t - (EXPOSE_TIME - 0.7)) / 0.7;
+      if (SPRITE_USE.node && ghost > 0 && e.node.size) {
+        ctx.globalAlpha = ghost;
+        this.sprites.draw(ctx, 'firewall_broken', e.node.x - e.node.size / 2, e.node.y - e.node.size / 2, e.node.size, Block.pxScale);
+        ctx.globalAlpha = 1;
+      }
       if (h && h.alive) {
         ctx.strokeStyle = COLORS.magenta;
         ctx.globalAlpha = 0.45 + 0.45 * k;
@@ -3752,24 +3970,33 @@ class Game {
    */
   hudLayout() {
     const fieldW = this.width * this.viewScale;
-    const colW = Math.min(150, (fieldW - 40) / 2);
-    const meterW = Math.min(120, colW);
+    // HUD scale (R3): 1 up to 907x510, growing with the world scale to 1.5
+    // on big screens, so the text keeps its weight next to the field.
+    const u = this.hudScale;
+    const meterH = Math.round(22 * u);
+    const colW = Math.min(150 * u, (fieldW - 40) / 2);
+    const meterW = Math.min(120 * u, colW);
     const rects = [
-      { id: 'progress', x: 10, y: 10, w: meterW, h: 22 },
-      { id: 'override', x: fieldW - 10 - meterW, y: 10, w: meterW, h: 22 },
+      { id: 'progress', x: 10, y: 10, w: meterW, h: meterH, u },
+      { id: 'override', x: fieldW - 10 - meterW, y: 10, w: meterW, h: meterH, u },
     ];
+    const below = 10 + meterH + 8;
     const e = this.exposed && this.heart && this.heart.alive ? this.exposed : null;
-    if (this.defense || e) rects.push({ id: 'alert', x: fieldW - 10 - colW, y: 40, w: colW, h: 22 });
-    const maxW = Math.max(colW, Math.min(fieldW * 0.42, 230));
-    let y = 40;
+    if (this.defense || e) rects.push({ id: 'alert', x: fieldW - 10 - colW, y: below, w: colW, h: meterH, u });
+    const maxW = Math.max(colW, Math.min(fieldW * 0.42, 230 * u));
+    let y = below;
     for (const t of this.toasts) {
-      let size = t.big ? 15 : 12;
+      let size = Math.round((t.big ? 15 : 12) * u);
       let w = this.hudTextWidth(t.text, size) + 18;
       if (w > maxW) { size = Math.max(10, Math.floor(size * (maxW - 18) / (w - 18))); w = Math.min(maxW, this.hudTextWidth(t.text, size) + 18); }
       rects.push({ id: 'toast', x: 10, y, w, h: size + 8, size, toast: t });
       y += size + 12;
     }
     return rects;
+  }
+
+  get hudScale() {
+    return clamp(this.viewScale * 0.5, 1, 1.5);
   }
 
   /** Text width in CSS px for HUD layout (bold UI font); an upper estimate
@@ -3829,13 +4056,13 @@ class Game {
           textColor = blink ? COLORS.white : color;
           ctx.textAlign = 'right';
         }
-        ctx.font = 'bold 12px "Segoe UI", Arial, sans-serif';
+        ctx.font = `bold ${Math.round(12 * r.u)}px "Segoe UI", Arial, sans-serif`;
         ctx.fillStyle = textColor || color;
         ctx.shadowColor = color;
         ctx.shadowBlur = 6;
         const tx = ctx.textAlign === 'left' ? r.x : ctx.textAlign === 'right' ? r.x + r.w : r.x + r.w / 2;
         ctx.fillText(label, tx, r.y, r.w);
-        this.drawSegmentBar(ctx, r.x, r.y + 16, r.w, 5, value, color, glow);
+        this.drawSegmentBar(ctx, r.x, r.y + Math.round(16 * r.u), r.w, Math.round(5 * r.u), value, color, glow);
       } else if (r.id === 'toast') {
         const t = r.toast;
         const a = clamp(t.life / 0.3, 0, 1);
