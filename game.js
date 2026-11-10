@@ -1,12 +1,22 @@
 'use strict';
 
-// Palette "Fractured Intelligence" (NC-ART-1, docs/GAME_DESIGN.md "Visual
-// identity"). Every colour has one meaning: graphite = the AI's material,
-// cyan = its outer armour circuits and the player's balls, violet = its inner
-// shield, amber = the AI's energy (the heart/prime module, relays, conduits),
-// magenta = the player's breach (volley, lances, aim, cracks it opens),
-// green = money only, white = impacts and hot cores.
+// Palette "Network Recovery" (NC-AI-RECOVERY-1, docs/GAME_DESIGN.md "Visual
+// identity"). Every colour has one meaning: gunmetal = the network's
+// hardware, red/ember = the rogue AI (its corrupted circuits, lattice and
+// core), amber = the AI's power (relays, power lines, shields), cyan = the
+// player's recovery drones and everything already recovered, magenta = the
+// player's OVERRIDE (pulses, aim, target brackets), green = money only,
+// white = impacts and hot cores.
 const COLORS = {
+  // The rogue AI (NC-AI-RECOVERY-1): corrupted circuits and its core.
+  hostile: '#ff3b4e',
+  ember: '#ff7a2a',
+  coreHot: '#ff9a8a',
+  // 2.5D hardware tones: tile tops, side walls, bevel light, floor shadow.
+  tileTop: '#262d42',
+  tileSide: '#10131d',
+  tileHi: '#56628a',
+  shadow: 'rgba(0, 0, 0, 0.5)',
   cyan: '#00f3ff',
   ice: '#9ff8ff',
   pink: '#ff007f',
@@ -110,6 +120,38 @@ const SHATTER_PAY = 1;
 const SHATTER_SPEED = 240;
 const MAX_LANCES = 8;
 const MAX_RINGS = 12;
+
+// ---------------------------------------------------------------------------
+// Adaptive defense (NC-AI-RECOVERY-1, docs/GAME_DESIGN.md "Adaptive
+// defense"). From sector DEFENSE_FROM_LEVEL the rogue AI periodically
+// reroutes power from one outer FIREWALL NODE to shield its core: while the
+// shield holds, the core takes SHIELD_FACTOR of any damage. The node is an
+// ordinary armour block in a turret's line of fire, marked as breakable;
+// destroying it (drone, override pulse, shockwave or autopilot) collapses the
+// shield and EXPOSES the core and the blocks on the power line for
+// EXPOSE_TIME (EXPOSE_FACTOR damage). A shield never restores HP, never takes
+// cash back and always ends by itself after SHIELD_TIME, so an idle player
+// is never blocked. Deterministic: the node is picked with hash01, never with
+// the simulation RNG.
+// ---------------------------------------------------------------------------
+const DEFENSE_FROM_LEVEL = 3;
+// Seconds after a sector starts before the first reroute, and between the
+// end of one reroute (or exposure) and the next.
+const DEFENSE_FIRST_DELAY = 8;
+const DEFENSE_COOLDOWN = 10;
+// Seconds a shield holds when nobody breaks its node.
+const SHIELD_TIME = 7;
+const SHIELD_FACTOR = 0.5;
+const EXPOSE_TIME = 5;
+const EXPOSE_FACTOR = 2.5;
+// Bonus cash for breaking a node, in multiples of the sector's money per hit.
+const OVERRIDE_BONUS = 3;
+// A node broken by the player's own override pulse spills the rerouted
+// power into the turrets: this much override charge (the autopilot's
+// pulses and the drones break nodes too, without this refund).
+const BREAK_RECHARGE = 0.5;
+// Retry delay when no node can be chosen (no armour in a turret's line).
+const DEFENSE_RETRY = 2;
 // Audio preference (not part of the progress save; docs/SAVE.md).
 const AUDIO_PREF_KEY = 'neonCrusher.audio.v1';
 
@@ -122,44 +164,52 @@ const STRINGS = {
   en: {
     locale: 'en-US',
     cash: 'Cash',
-    level: 'Level',
-    buyBall: 'Buy new ball',
-    balls: 'Balls: {n}',
-    fireRate: 'Volley charge',
+    level: 'Sector',
+    buyBall: 'New drone',
+    balls: 'Drones: {n}',
+    fireRate: 'Override charge',
     chargeDesc: 'Lvl {n} · {s} s',
-    damage: 'Hit power',
+    damage: 'Breach power',
     upgradeLevel: 'Lvl {n}',
-    core: 'Core',
-    volley: 'Volley',
-    volleyReady: 'VOLLEY READY',
-    hintStart: 'Hits pay cash · break the heart to shatter the core',
-    hintBuy: 'Buy a new ball!',
-    hintVolley: 'Click or tap the core to fire a volley',
-    breached: 'CORE SHATTERED',
-    relay: 'RECHARGED',
-    levelUp: 'LEVEL {n}',
+    core: 'Recovered',
+    volley: 'Override',
+    volleyReady: 'OVERRIDE READY',
+    hintStart: 'Drones break the AI\'s defences · reach its core',
+    hintBuy: 'Deploy a new drone!',
+    hintVolley: 'Click or tap the core to fire an override',
+    hintDefense: 'AI shield up · hit the marked node to break it',
+    breached: 'SECTOR RECOVERED',
+    relay: 'RELAY CAPTURED',
+    shieldUp: 'AI SHIELD',
+    exposed: 'CORE EXPOSED',
+    shieldBroken: 'SHIELD BROKEN',
+    levelUp: 'SECTOR {n}',
     soundOn: 'Sound on',
     soundOff: 'Sound off',
   },
   pl: {
     locale: 'pl-PL',
     cash: 'Kasa',
-    level: 'Poziom',
-    buyBall: 'Kup nową kulę',
-    balls: 'Kulki: {n}',
-    fireRate: 'Ładowanie salwy',
+    level: 'Sektor',
+    buyBall: 'Nowy dron',
+    balls: 'Drony: {n}',
+    fireRate: 'Ładowanie przejęcia',
     chargeDesc: 'Lvl {n} · {s} s',
-    damage: 'Siła uderzenia',
+    damage: 'Siła przełamania',
     upgradeLevel: 'Lvl {n}',
-    core: 'Rdzeń',
-    volley: 'Salwa',
-    volleyReady: 'SALWA GOTOWA',
-    hintStart: 'Trafienia dają kasę · rozbij serce, by skruszyć rdzeń',
-    hintBuy: 'Kup nową kulę!',
-    hintVolley: 'Kliknij lub dotknij rdzeń, by oddać salwę',
-    breached: 'RDZEŃ ROZBITY',
-    relay: 'PRZEŁADOWANIE',
-    levelUp: 'POZIOM {n}',
+    core: 'Odzyskano',
+    volley: 'Przejęcie',
+    volleyReady: 'PRZEJĘCIE GOTOWE',
+    hintStart: 'Drony łamią zabezpieczenia AI · dotrzyj do rdzenia',
+    hintBuy: 'Wyślij nowego drona!',
+    hintVolley: 'Kliknij lub dotknij rdzeń — impuls przejęcia',
+    hintDefense: 'Osłona AI · traf oznaczony węzeł, by ją przełamać',
+    breached: 'SEKTOR ODZYSKANY',
+    relay: 'PRZEKAŹNIK PRZEJĘTY',
+    shieldUp: 'OSŁONA AI',
+    exposed: 'RDZEŃ ODSŁONIĘTY',
+    shieldBroken: 'OSŁONA PRZEŁAMANA',
+    levelUp: 'SEKTOR {n}',
     soundOn: 'Dźwięk włączony',
     soundOff: 'Dźwięk wyłączony',
   },
@@ -241,6 +291,15 @@ function hash01(n) {
   x = Math.imul(x, 0xc2b2ae35);
   x ^= x >>> 16;
   return (x >>> 0) / 4294967296;
+}
+
+/** Linear mix of two '#rrggbb' colours (t 0..1) as an 'rgb()' string
+ *  (drawing only: the sector-recovery tint of the arena lights). */
+function mixColor(a, b, t) {
+  const p = (c, i) => parseInt(c.slice(1 + i * 2, 3 + i * 2), 16);
+  const k = clamp(t, 0, 1);
+  const ch = (i) => Math.round(p(a, i) + (p(b, i) - p(a, i)) * k);
+  return `rgb(${ch(0)}, ${ch(1)}, ${ch(2)})`;
 }
 
 /** Adds a chamfered rectangle to the current path. `c` = corner cuts
@@ -583,12 +642,13 @@ class Lance {
 /** Relay surge (NC-ART-1): a jagged amber arc from a broken relay to a
  *  turret — the visible link between a relay and the volley recharge. */
 class Arc {
-  constructor(x0, y0, x1, y1, seed) {
+  constructor(x0, y0, x1, y1, seed, color) {
     this.x0 = x0;
     this.y0 = y0;
     this.x1 = x1;
     this.y1 = y1;
     this.seed = seed;
+    this.color = color || COLORS.cyan;
     this.life = 0.4;
   }
 
@@ -605,8 +665,8 @@ class Arc {
     const seed = this.seed + Math.floor(t * 12) * 977;
     ctx.save();
     ctx.globalAlpha = t;
-    ctx.strokeStyle = COLORS.amber;
-    ctx.shadowColor = COLORS.amber;
+    ctx.strokeStyle = this.color;
+    ctx.shadowColor = this.color;
     ctx.shadowBlur = 10;
     ctx.lineWidth = 1.6;
     ctx.lineJoin = 'round';
@@ -695,7 +755,7 @@ class Sound {
 
   play(name) {
     if (this.muted || !this.ctx || this.ctx.state !== 'running') return;
-    const gaps = { hit: 0.07, break: 0.06, volley: 0.1, ready: 0.5, relay: 0.15, shatter: 0.5, buy: 0.05, deny: 0.25, level: 0.5 };
+    const gaps = { hit: 0.07, break: 0.06, volley: 0.1, ready: 0.5, relay: 0.15, shatter: 0.5, buy: 0.05, deny: 0.25, level: 0.5, shield: 0.5, override: 0.3 };
     const now = this.ctx.currentTime;
     if (now - (this.lastPlayed[name] || -1) < (gaps[name] || 0.05)) return;
     this.lastPlayed[name] = now;
@@ -712,6 +772,10 @@ class Sound {
         case 'buy': this.tone('square', 520, 520, 0.06, 0.05); this.tone('square', 780, 780, 0.09, 0.05, 0.06); break;
         case 'deny': this.tone('sine', 180, 140, 0.08, 0.05); break;
         case 'level': [523, 659, 784, 1047].forEach((f, i) => this.tone('triangle', f, f, 0.12, 0.07, i * 0.07)); break;
+        // The AI raises a shield: a low rising hum; the player breaks it: a
+        // falling glitch and a bright confirmation chirp.
+        case 'shield': this.tone('sawtooth', 90, 180, 0.35, 0.05); this.tone('triangle', 240, 360, 0.3, 0.05, 0.05); break;
+        case 'override': this.tone('square', 900, 120, 0.18, 0.05); this.tone('triangle', 880, 1760, 0.16, 0.07, 0.12); break;
         default: break;
       }
     } catch (err) {
@@ -741,6 +805,8 @@ class Block {
     this.kind = 'armor';
     // Seconds until the shatter wave breaks this block (null = not shattering).
     this.shatter = null;
+    // The AI's current firewall node (NC-AI-RECOVERY-1; Game.defense).
+    this.firewall = false;
     // Cosmetic only (NC-ART-1): armour layer (0 = outer, 1 = inner shield
     // around the heart), a stable seed for its circuit pattern and cracks,
     // and the plate corner that points away from the heart (cut deeper, so
@@ -759,85 +825,61 @@ class Block {
     return r > 0.75 ? 0 : r > 0.5 ? 1 : r > 0.25 ? 2 : 3;
   }
 
-  /** Corner cuts of the armour plate (world units) for chamferPath. */
-  plateCuts(inset) {
-    const s = this.size - inset * 2;
-    const c = [s * 0.08, s * 0.08, s * 0.08, s * 0.08];
-    c[this.outCorner] = s * 0.24;
-    return c;
+  /** 2.5D tile geometry (NC-AI-RECOVERY-1): the tile's footprint is exactly
+   *  its collision square (NC-21 closed: no cut corners beyond a 1.5-unit
+   *  bevel); its raised top face sits in the top-left of the footprint, so
+   *  the side walls show at the bottom and right (light from the top-left,
+   *  true top-down view). */
+  get wall() {
+    return Math.max(1.6, this.size * 0.13);
   }
 
-  platePath(ctx, inset) {
-    chamferPath(ctx, this.x + inset, this.y + inset, this.size - inset * 2, this.size - inset * 2, this.plateCuts(inset));
+  bodyPath(ctx) {
+    const c = Math.min(1.5, this.size * 0.08);
+    chamferPath(ctx, this.x, this.y, this.size, this.size, [c, c, c, c]);
   }
 
-  /** The slab's raised top face: inset and nudged toward the top-left. */
-  facePath(ctx) {
-    const i = Math.max(1.5, this.size * 0.11);
-    const d = this.size * 0.05;
-    chamferPath(ctx, this.x + i - d, this.y + i - d, this.size - i * 2, this.size - i * 2, this.plateCuts(i));
+  topPath(ctx) {
+    const w = this.wall;
+    const c = Math.min(1.5, this.size * 0.08);
+    chamferPath(ctx, this.x, this.y, this.size - w, this.size - w, [c, c, c, c]);
   }
 
-  /** Honeycomb cell texture in `color` (cached; null where an offscreen
-   *  canvas or patterns are unavailable, e.g. the QA harness). */
-  static cellPattern(ctx, color) {
-    Block.patterns = Block.patterns || new Map();
-    if (Block.patterns.has(color)) return Block.patterns.get(color);
-    let pattern = null;
-    try {
-      if (typeof document !== 'undefined' && typeof document.createElement === 'function' && typeof ctx.createPattern === 'function') {
-        const r = 3;
-        const w = r * 3;
-        const h = Math.sqrt(3) * r;
-        const scale = 4;
-        const c = document.createElement('canvas');
-        c.width = Math.round(w * scale);
-        c.height = Math.round(h * scale);
-        const g = c.getContext('2d');
-        g.scale(c.width / w, c.height / h);
-        g.strokeStyle = color;
-        g.globalAlpha = 0.35;
-        g.lineWidth = 0.35;
-        g.beginPath();
-        for (const [ox, oy] of [[0, 0], [w, 0], [0, h], [w, h], [1.5 * r, h / 2]]) polygonPath(g, ox, oy, r * 0.92, 6, 0);
-        g.stroke();
-        pattern = ctx.createPattern(c, 'repeat') || null;
-        if (pattern && typeof pattern.setTransform === 'function' && typeof DOMMatrix !== 'undefined') {
-          pattern.setTransform(new DOMMatrix().scale(w / c.width, h / c.height));
-        }
-      }
-    } catch (err) {
-      pattern = null;
-    }
-    Block.patterns.set(color, pattern);
-    return pattern;
+  /** Lit bevel: the top face's top and left edges. */
+  bevelPath(ctx) {
+    const w = this.wall;
+    const x = this.x + 0.6;
+    const y = this.y + 0.6;
+    ctx.moveTo(x, y + this.size - w - 1.5);
+    ctx.lineTo(x, y + 1);
+    ctx.lineTo(x + 1, y);
+    ctx.lineTo(x + this.size - w - 1.5, y);
   }
 
-  /** The plate's lit rim: the two edges around its outward corner (the side
-   *  that faces the turrets), drawn brighter than the rest of the outline. */
-  litPath(ctx, inset) {
-    const x = this.x + inset;
-    const y = this.y + inset;
-    const s = this.size - inset * 2;
-    const c = this.plateCuts(inset);
-    const p = [
-      x + c[0], y, x + s - c[1], y, x + s, y + c[1], x + s, y + s - c[2],
-      x + s - c[2], y + s, x + c[3], y + s, x, y + s - c[3], x, y + c[0],
-    ];
-    const k = this.outCorner;
-    for (let i = 0; i < 4; i++) {
-      const j = ((2 * k - 2 + i) % 8 + 8) % 8;
-      if (i === 0) ctx.moveTo(p[j * 2], p[j * 2 + 1]);
-      else ctx.lineTo(p[j * 2], p[j * 2 + 1]);
+  /** The AI's corrupted inlay on the top face, one of three hardware
+   *  kinds (by `variant`): a socket, a memory bank (two bars), a port. */
+  inlayPath(ctx) {
+    const w = this.wall;
+    const k = (this.size - w) * 0.36;
+    const cx = this.x + (this.size - w) / 2;
+    const cy = this.y + (this.size - w) / 2;
+    if (this.variant === 1) {
+      ctx.rect(cx - k * 0.6, cy - k * 0.42, k * 1.2, k * 0.3);
+      ctx.rect(cx - k * 0.6, cy + k * 0.12, k * 1.2, k * 0.3);
+    } else if (this.variant === 2) {
+      ctx.moveTo(cx + k * 0.52, cy);
+      ctx.arc(cx, cy, k * 0.52, 0, Math.PI * 2);
+    } else {
+      ctx.rect(cx - k / 2, cy - k / 2, k, k);
     }
   }
 
   /** Micro-circuit: the plate's node (where the neural lattice attaches:
    *  Game.drawNetwork) and one of three slot patterns. Armour only. */
   tracePath(ctx) {
-    const s = this.size;
-    const cx = this.cx;
-    const cy = this.cy;
+    const s = this.size - this.wall;
+    const cx = this.x + s / 2;
+    const cy = this.y + s / 2;
     // Inward axis (toward the heart), snapped to the plate's major axis.
     const horiz = Math.abs(this.offsetX) >= Math.abs(this.offsetY);
     const ix = horiz ? -Math.sign(this.offsetX || 1) : 0;
@@ -909,14 +951,20 @@ class Block {
   }
 
   /**
-   * Draws a set of blocks in batches (NC-ART-1): one path per pass and
-   * colour instead of a save/restore and a shadow per block (NC-13).
-   * Armour = graphite plates (chamfered, the outward corner cut deeper), an
-   * inner panel line, circuit traces, a glowing edge in the layer colour that
-   * dims with damage, cracks that grow with damage; relays and the heart have
-   * their own silhouettes; broken blocks split into four shards.
+   * Draws a set of blocks in batches (one path per pass and colour, no
+   * save/restore or shadow per block: NC-13). Look "Network Recovery"
+   * (NC-AI-RECOVERY-1, docs/GAME_DESIGN.md "Visual identity"): every block is
+   * a 2.5D hardware tile on the floor of the AI's network, its footprint
+   * exactly the collision square. Floor shadow, side walls, a raised top face
+   * with a lit bevel, the AI's corrupted inlay and circuits (red outer
+   * layer, ember inner layer), a thin outline on the true collision edge.
+   * Damage = the player's recovery breaking in: cyan cracks with white
+   * cores, the inlay dims, the last stage flickers. Pending shatter = the
+   * tile is already recovered (cyan). Relays and the AI core draw their own
+   * silhouette on the same tile base; broken tiles split into shards.
    */
   static drawCore(ctx, blocks, time, reducedMotion, underlay) {
+    const tiles = [];
     const armour = [];
     const relays = [];
     const hearts = [];
@@ -924,110 +972,136 @@ class Block {
     for (const b of blocks) {
       if (!b.alive) dying.push(b);
       else if (b.kind === 'heart') hearts.push(b);
-      else if (b.kind === 'relay') relays.push(b);
-      else armour.push(b);
+      else {
+        tiles.push(b);
+        if (b.kind === 'relay') relays.push(b);
+        else armour.push(b);
+      }
     }
     ctx.save();
     ctx.lineJoin = 'round';
-    if (armour.length || relays.length) {
-      // 1. Slab bodies: the dark sides of each armour slab (relays get a
-      //    darker housing).
-      ctx.fillStyle = COLORS.plateDark;
+    if (tiles.length) {
+      // 1. Floor shadows (the tiles stand on the network floor): only the
+      //    L-shaped strip that shows beside the tile is filled (a full rect
+      //    under every tile cost ~1 Mpx of blending per frame at 1920x1080).
+      ctx.fillStyle = COLORS.shadow;
       ctx.beginPath();
-      for (const b of armour) b.platePath(ctx, 0.5);
-      for (const b of relays) chamferPath(ctx, b.x + 0.5, b.y + 0.5, b.size - 1, b.size - 1, [b.size * 0.2, b.size * 0.2, b.size * 0.2, b.size * 0.2]);
+      for (const b of tiles) {
+        const s = b.size;
+        const x1 = b.x + s;
+        const y1 = b.y + s;
+        ctx.moveTo(x1, b.y + s * 0.16);
+        ctx.lineTo(x1 + s * 0.1, b.y + s * 0.16);
+        ctx.lineTo(x1 + s * 0.1, y1 + s * 0.16);
+        ctx.lineTo(b.x + s * 0.1, y1 + s * 0.16);
+        ctx.lineTo(b.x + s * 0.1, y1);
+        ctx.lineTo(x1, y1);
+        ctx.closePath();
+      }
       ctx.fill();
-      // 2. Raised top face, nudged toward the top-left so the bottom-right
-      //    wall shows (a faceted slab, not a flat tile), with a lit bevel.
-      ctx.fillStyle = COLORS.plateFace;
+      // 2. Body = side walls, 3. raised top face, 4. lit bevel.
+      ctx.fillStyle = COLORS.tileSide;
       ctx.beginPath();
-      for (const b of armour) b.facePath(ctx);
+      for (const b of tiles) b.bodyPath(ctx);
       ctx.fill();
-      ctx.strokeStyle = COLORS.plateHi;
+      ctx.fillStyle = COLORS.tileTop;
+      ctx.beginPath();
+      for (const b of tiles) b.topPath(ctx);
+      ctx.fill();
+      ctx.strokeStyle = COLORS.tileHi;
       ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.9;
+      ctx.beginPath();
+      for (const b of tiles) b.bevelPath(ctx);
       ctx.stroke();
+      ctx.globalAlpha = 1;
     }
-    // 3. Circuit traces and 4. glowing edges, per colour and damage stage.
+    // 5. The AI's corrupted inlay + circuits, per layer colour, damage and
+    //    "breath": a slow wave of light runs outward from the core through
+    //    the structure (4 brightness steps, so it stays batched) — the
+    //    system is alive. Static with prefers-reduced-motion.
     const groups = new Map();
     for (const b of armour) {
-      const key = `${b.color}|${b.damageStage}`;
+      if (b.shatter !== null) continue;
+      const wave = reducedMotion ? 0.7 : 0.5 + 0.5 * Math.sin(time * 2.2 - Math.hypot(b.offsetX, b.offsetY) * 0.09);
+      const key = `${b.color}|${b.damageStage}|${Math.min(3, Math.floor(wave * 4))}`;
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key).push(b);
     }
-    ctx.lineWidth = 1;
     for (const [key, list] of groups) {
-      const color = key.split('|')[0];
-      // Material: a honeycomb cell texture on the face (cached pattern, one
-      // fill per colour) and circuits in the layer colour (no glow: cheap).
-      const pattern = Block.cellPattern(ctx, color);
-      ctx.fillStyle = pattern || color;
-      ctx.globalAlpha = pattern ? 0.5 : 0.07;
-      ctx.beginPath();
-      for (const b of list) b.facePath(ctx);
-      ctx.fill();
+      const [color, stageText, breathText] = key.split('|');
+      const stage = Number(stageText);
+      const light = [1, 0.78, 0.58, 0.42][stage] * [0.62, 0.76, 0.9, 1.04][Number(breathText)] * (stage === 3 && !reducedMotion ? 0.8 + 0.2 * Math.sin(time * 9) : 1);
       ctx.strokeStyle = color;
-      ctx.globalAlpha = 0.34;
+      ctx.fillStyle = color;
+      // Circuits (no glow: cheap).
+      ctx.globalAlpha = 0.32 * light;
+      ctx.lineWidth = 1;
       ctx.beginPath();
       for (const b of list) b.tracePath(ctx);
       ctx.stroke();
-    }
-    // The neural lattice runs over the plate bodies, under their rims.
-    if (underlay) underlay(ctx);
-    // The glow is a wide translucent underlay stroked on the same path, not
-    // shadowBlur: a blurred core-sized batch cost ~3 ms per frame at
-    // 1920x1080 in software raster (NC-13).
-    ctx.shadowBlur = 0;
-    for (const [key, list] of groups) {
-      const [color, stageText] = key.split('|');
-      const stage = Number(stageText);
-      const light = [1, 0.8, 0.62, 0.48][stage] * (stage === 3 && !reducedMotion ? 0.85 + 0.15 * Math.sin(time * 9) : 1);
-      ctx.strokeStyle = color;
-      // Dim full outline, then the bright lit rim with its glow.
+      // Inlay: a glowing socket = a translucent wide stroke under a thin one.
+      ctx.beginPath();
+      for (const b of list) b.inlayPath(ctx);
+      ctx.globalAlpha = 0.24 * light;
+      ctx.fill();
+      ctx.lineWidth = 1.1;
+      ctx.globalAlpha = 0.95 * light;
+      ctx.stroke();
+      // Edge of the collision square in the layer colour.
       ctx.lineWidth = 1;
-      ctx.globalAlpha = light * 0.55;
+      ctx.globalAlpha = 0.42 * light;
       ctx.beginPath();
-      for (const b of list) b.platePath(ctx, 0.5);
+      for (const b of list) b.bodyPath(ctx);
       ctx.stroke();
-      ctx.beginPath();
-      for (const b of list) b.litPath(ctx, 0.5);
-      ctx.lineWidth = 5;
-      ctx.globalAlpha = light * 0.2;
-      ctx.stroke();
-      ctx.lineWidth = 1.8;
-      ctx.globalAlpha = light;
-      ctx.stroke();
-      if (stage > 0) {
-        // 5. Cracks: the breach (magenta) burning through, white-hot core.
-        ctx.beginPath();
-        for (const b of list) b.crackPath(ctx, stage);
-        ctx.strokeStyle = COLORS.magenta;
-        ctx.lineWidth = 3.5;
-        ctx.globalAlpha = 0.4;
-        ctx.stroke();
-        ctx.lineWidth = 1.3;
-        ctx.globalAlpha = 1;
-        ctx.stroke();
-        ctx.strokeStyle = COLORS.white;
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-      }
     }
-    // 6. Shatter wave pending: the plate's edge turns white.
-    ctx.globalAlpha = 0.9;
-    ctx.lineWidth = 1.6;
+    // The network lattice runs over the tile bodies, under the cracks.
+    if (underlay) underlay(ctx);
+    // 6. Cracks: the player's recovery (cyan, white-hot core) breaking in.
+    const cracked = new Map();
+    for (const b of armour) {
+      const stage = b.damageStage;
+      if (stage === 0 || b.shatter !== null) continue;
+      if (!cracked.has(stage)) cracked.set(stage, []);
+      cracked.get(stage).push(b);
+    }
+    for (const [stage, list] of cracked) {
+      ctx.beginPath();
+      for (const b of list) b.crackPath(ctx, stage);
+      ctx.strokeStyle = COLORS.cyan;
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.3;
+      ctx.stroke();
+      ctx.lineWidth = 1.2;
+      ctx.globalAlpha = 0.95;
+      ctx.stroke();
+      ctx.strokeStyle = COLORS.white;
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    }
+    // 7. Recovered by the shatter wave (pending): the tile turns cyan.
+    const flipped = armour.filter((b) => b.shatter !== null);
+    if (flipped.length) {
+      ctx.fillStyle = COLORS.cyan;
+      ctx.strokeStyle = COLORS.ice;
+      ctx.globalAlpha = 0.28;
+      ctx.beginPath();
+      for (const b of flipped) b.topPath(ctx);
+      ctx.fill();
+      ctx.globalAlpha = 0.9;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      for (const b of flipped) b.bodyPath(ctx);
+      ctx.stroke();
+    }
+    // 8. Hit flashes: a white edge that fades in 0.25 s.
     ctx.strokeStyle = COLORS.white;
-    ctx.beginPath();
-    let marked = false;
-    for (const b of armour) if (b.shatter !== null) { b.platePath(ctx, 0.5); marked = true; }
-    if (marked) ctx.stroke();
-    // 7. Hit flashes: a white edge that fades in 0.25 s.
-    ctx.shadowBlur = 0;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.8;
     for (const b of armour) {
       if (b.hitFlash <= 0) continue;
       ctx.globalAlpha = b.hitFlash * 0.9;
       ctx.beginPath();
-      b.platePath(ctx, 0.5);
+      b.bodyPath(ctx);
       ctx.stroke();
     }
     ctx.globalAlpha = 1;
@@ -1037,8 +1111,9 @@ class Block {
     ctx.restore();
   }
 
-  /** A broken block flies apart as four triangular shards (centre to each
-   *  edge), drifting outward while it fades (hitFlash 1 -> 0 in 0.25 s). */
+  /** A broken tile flies apart as four triangular shards (centre to each
+   *  edge), drifting outward while it fades (hitFlash 1 -> 0 in 0.25 s);
+   *  their edges turn cyan: the cell is recovered. */
   static drawShards(ctx, dying) {
     ctx.lineWidth = 1.2;
     ctx.shadowBlur = 0;
@@ -1050,8 +1125,8 @@ class Block {
       const cx = b.cx;
       const cy = b.cy;
       ctx.globalAlpha = t;
-      ctx.fillStyle = COLORS.plate;
-      ctx.strokeStyle = b.color;
+      ctx.fillStyle = COLORS.tileTop;
+      ctx.strokeStyle = b.kind === 'heart' ? COLORS.white : COLORS.cyan;
       ctx.beginPath();
       for (let i = 0; i < 4; i++) {
         const nx = i === 1 ? 1 : i === 3 ? -1 : 0;
@@ -1070,35 +1145,41 @@ class Block {
     ctx.globalAlpha = 1;
   }
 
-  /** Relay: a hexagonal capacitor in a dark chamfered housing, an amber
-   *  charge that pulses and three terminals; dims as it is damaged. */
+  /** Relay (the AI's power hub): an amber hexagonal capacitor standing on
+   *  its tile, a pulsing charge cell and three terminals; arcs crawl over it
+   *  when it is about to blow. */
   drawRelay(ctx, time, reducedMotion) {
+    const top = this.size - this.wall;
+    const cx = this.x + top / 2;
+    const cy = this.y + top / 2;
     const s = this.size;
-    const cx = this.cx;
-    const cy = this.cy;
     const stage = this.damageStage;
     const pulse = reducedMotion ? 0.6 : 0.5 + 0.5 * Math.sin(time * 5 + this.seed);
-    const r = s * 0.42;
+    const r = top * 0.44;
     ctx.save();
     ctx.lineJoin = 'round';
     ctx.strokeStyle = COLORS.amber;
     ctx.shadowColor = COLORS.amber;
-    // Housing edge (faint) and terminals.
-    ctx.globalAlpha = 0.45;
+    // Terminals to the tile's edge.
+    ctx.globalAlpha = 0.55;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    chamferPath(ctx, this.x + 0.5, this.y + 0.5, s - 1, s - 1, [s * 0.2, s * 0.2, s * 0.2, s * 0.2]);
     for (let i = 0; i < 6; i += 2) {
       const a = -Math.PI / 2 + (i / 6) * Math.PI * 2;
       ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
-      ctx.lineTo(cx + Math.cos(a) * s * 0.5, cy + Math.sin(a) * s * 0.5);
+      ctx.lineTo(cx + Math.cos(a) * top * 0.5, cy + Math.sin(a) * top * 0.5);
     }
+    ctx.stroke();
+    // Edge of the collision square.
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    this.bodyPath(ctx);
     ctx.stroke();
     // Hexagon shell.
     ctx.globalAlpha = [1, 0.85, 0.7, 0.55][stage];
     ctx.shadowBlur = 10 + this.hitFlash * 10;
     ctx.lineWidth = 1.7;
-    ctx.fillStyle = COLORS.plate;
+    ctx.fillStyle = COLORS.tileSide;
     ctx.beginPath();
     polygonPath(ctx, cx, cy, r, 6, -Math.PI / 2);
     ctx.fill();
@@ -1117,7 +1198,7 @@ class Block {
     ctx.fill();
     if (stage > 0) {
       ctx.shadowBlur = 4;
-      ctx.strokeStyle = COLORS.white;
+      ctx.strokeStyle = COLORS.cyan;
       ctx.lineWidth = 0.8;
       ctx.beginPath();
       this.crackPath(ctx, stage);
@@ -1150,107 +1231,136 @@ class Block {
   }
 
   /**
-   * The heart: the AI's prime module, a "fracture sigil" (NC-ART-1). An
-   * octagonal amber housing; a seal of six rotating segments that fall away
-   * as the heart loses HP; inside, a faceted amber crystal split in two
-   * halves around a seam of light holding three data cells. The halves part and the cells brighten as the heart weakens, so
-   * its state reads at a glance (closed = full HP, wide open = about to
-   * break). The rogue AI's prime module: a geometric sign, not a face or eye.
+   * The rogue AI's core (NC-AI-RECOVERY-1): a processor die on a socket —
+   * a square silhouette that is exactly its collision box, unlike any tile.
+   * Floor shadow; a dark socket with pins running from the die to every
+   * edge; the die with a crimson rim; a guard ring of six segments (one
+   * falls away per sixth of HP); at the centre a faceted red crystal whose
+   * four shards drift apart as the core weakens, the gaps filling with the
+   * player's cyan light (closed = full HP, open = about to be recovered).
+   * A geometric sign, deliberately no eye, face or skull.
    */
   drawHeart(ctx, time, reducedMotion) {
     const hp = clamp(this.hp / this.maxHp, 0, 1);
     const open = 1 - hp;
-    const s = this.size / 2;
-    const cx = this.x + s;
-    const cy = this.y + s;
+    const S = this.size;
+    const w = Math.max(2, S * 0.08);
+    const top = S - w;
+    const cx = this.x + top / 2;
+    const cy = this.y + top / 2;
     const pulse = reducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(time * 3.2);
-    const c = this.size * 0.28;
     ctx.save();
     ctx.lineJoin = 'round';
-    // Housing.
-    ctx.fillStyle = COLORS.plateDark;
-    ctx.strokeStyle = COLORS.amber;
-    ctx.shadowColor = COLORS.amber;
-    ctx.shadowBlur = 12 + pulse * 6 + this.hitFlash * 18;
-    ctx.lineWidth = 1.8;
+    // Floor shadow and socket (side walls + top).
+    ctx.fillStyle = COLORS.shadow;
+    ctx.fillRect(this.x + S * 0.1, this.y + S * 0.14, S, S);
+    ctx.fillStyle = COLORS.tileSide;
     ctx.beginPath();
-    chamferPath(ctx, this.x + 0.5, this.y + 0.5, this.size - 1, this.size - 1, [c, c, c, c]);
+    this.bodyPath(ctx);
+    ctx.fill();
+    ctx.fillStyle = '#1a1d2b';
+    ctx.fillRect(this.x, this.y, top, top);
+    // Pins: from the die to every edge of the socket.
+    const die = top * 0.62;
+    const d0 = (top - die) / 2;
+    const pins = S >= 30 ? 5 : 3;
+    ctx.strokeStyle = COLORS.hostile;
+    ctx.globalAlpha = 0.75;
+    ctx.lineWidth = Math.max(0.8, top * 0.035);
+    ctx.beginPath();
+    for (let i = 0; i < pins; i++) {
+      const f = this.y + d0 + die * ((i + 0.5) / pins);
+      const g = this.x + d0 + die * ((i + 0.5) / pins);
+      ctx.moveTo(this.x + 1.2, f); ctx.lineTo(this.x + d0, f);
+      ctx.moveTo(this.x + top - 1.2, f); ctx.lineTo(this.x + top - d0, f);
+      ctx.moveTo(g, this.y + 1.2); ctx.lineTo(g, this.y + d0);
+      ctx.moveTo(g, this.y + top - 1.2); ctx.lineTo(g, this.y + top - d0);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    // Collision edge.
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = COLORS.hostile;
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath();
+    this.bodyPath(ctx);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    // Die: dark, crimson rim with glow.
+    const c = die * 0.18;
+    ctx.fillStyle = '#0c0d15';
+    ctx.strokeStyle = COLORS.hostile;
+    ctx.shadowColor = COLORS.hostile;
+    ctx.shadowBlur = 10 + pulse * 6 + this.hitFlash * 16;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    chamferPath(ctx, this.x + d0, this.y + d0, die, die, [c, c, c, c]);
     ctx.fill();
     ctx.stroke();
-    // Seal: six segments, one lost per sixth of HP.
+    // Guard ring: six segments, one lost per sixth of HP.
     const segments = Math.ceil(hp * 6 - 1e-9);
     const spin = reducedMotion ? 0 : time * 0.6;
-    ctx.lineWidth = Math.max(1.2, s * 0.1);
+    const R = die * 0.4;
+    ctx.lineWidth = Math.max(1, die * 0.06);
     ctx.lineCap = 'butt';
+    ctx.shadowBlur = 6;
     ctx.beginPath();
     for (let i = 0; i < segments; i++) {
       const a = spin + (i / 6) * Math.PI * 2;
-      ctx.moveTo(cx + Math.cos(a) * s * 0.74, cy + Math.sin(a) * s * 0.74);
-      ctx.arc(cx, cy, s * 0.74, a, a + 0.72);
+      ctx.moveTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R);
+      ctx.arc(cx, cy, R, a, a + 0.72);
     }
     ctx.stroke();
-    // Split crystal: two faceted amber halves (light upper facets, deep
-    // lower facets: a solid, glowing energy crystal).
-    const H = s * 0.6;
-    const W = s * 0.42;
-    const g = s * (0.05 + 0.3 * open);
+    // Crystal: four facets around the centre (upper ones lit, lower ones
+    // deep), drifting apart as HP falls; cyan light fills the gaps.
+    const r = die * 0.27;
+    const g = r * (0.06 + 0.5 * open);
+    if (open > 0.02) {
+      ctx.strokeStyle = COLORS.cyan;
+      ctx.shadowColor = COLORS.cyan;
+      ctx.shadowBlur = 6 + 10 * open;
+      ctx.globalAlpha = 0.4 + 0.6 * open;
+      ctx.lineWidth = Math.max(0.6, g * 0.9);
+      ctx.beginPath();
+      ctx.moveTo(cx - r - g, cy); ctx.lineTo(cx + r + g, cy);
+      ctx.moveTo(cx, cy - r - g); ctx.lineTo(cx, cy + r + g);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    ctx.shadowColor = COLORS.hostile;
     ctx.shadowBlur = 8 + 6 * pulse;
-    ctx.fillStyle = '#ffd25a';
-    ctx.beginPath();
-    for (const sx of [-1, 1]) {
-      ctx.moveTo(cx + sx * g, cy - H);
-      ctx.lineTo(cx + sx * (g + W), cy);
-      ctx.lineTo(cx + sx * g, cy);
+    const facet = (sx, sy, color) => {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      const ox = cx + sx * g;
+      const oy = cy + sy * g;
+      ctx.moveTo(ox, oy);
+      ctx.lineTo(ox + sx * r, oy);
+      ctx.lineTo(ox, oy + sy * r);
       ctx.closePath();
-    }
-    ctx.fill();
+      ctx.fill();
+    };
+    facet(-1, -1, COLORS.coreHot);
+    facet(1, -1, '#ff6b6b');
     ctx.shadowBlur = 0;
-    ctx.fillStyle = '#b8650a';
-    ctx.beginPath();
-    for (const sx of [-1, 1]) {
-      ctx.moveTo(cx + sx * g, cy);
-      ctx.lineTo(cx + sx * (g + W), cy);
-      ctx.lineTo(cx + sx * g, cy + H);
-      ctx.closePath();
-    }
-    ctx.fill();
-    ctx.strokeStyle = '#fff1c4';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (const sx of [-1, 1]) {
-      ctx.moveTo(cx + sx * g, cy - H);
-      ctx.lineTo(cx + sx * (g + W), cy);
-      ctx.lineTo(cx + sx * g, cy + H);
-      ctx.closePath();
-    }
-    ctx.stroke();
-    ctx.shadowColor = COLORS.amber;
-    // In the fracture: the module's three data cells on a light seam
-    // (a column of nodes, deliberately not an eye). They brighten and drift
-    // apart as the heart opens.
-    const cell = Math.max(0.8, s * (0.1 + 0.06 * open));
-    const gapY = H * (0.42 + 0.2 * open);
-    ctx.globalAlpha = 0.5 + 0.5 * open;
-    ctx.strokeStyle = COLORS.white;
-    ctx.lineWidth = Math.max(0.6, g * 0.35);
-    ctx.shadowBlur = 8 + 14 * open;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - H * 0.92);
-    ctx.lineTo(cx, cy + H * 0.92);
-    ctx.stroke();
-    ctx.globalAlpha = 0.75 + 0.25 * open;
+    facet(-1, 1, '#c21d3a');
+    facet(1, 1, '#7d0f24');
+    // Hot centre.
     ctx.fillStyle = COLORS.white;
-    ctx.shadowBlur = 10 + 16 * open + pulse * 4;
+    ctx.shadowColor = open > 0.5 ? COLORS.cyan : COLORS.hostile;
+    ctx.shadowBlur = 8 + 10 * open + pulse * 4;
+    ctx.globalAlpha = 0.7 + 0.3 * pulse;
     ctx.beginPath();
-    for (const k of [-1, 0, 1]) polygonPath(ctx, cx, cy + k * gapY, cell * (k === 0 ? 1.35 : 1), 4, 0);
+    polygonPath(ctx, cx, cy, Math.max(0.9, r * 0.28), 4, 0);
     ctx.fill();
+    ctx.globalAlpha = 1;
     if (this.hitFlash > 0) {
       ctx.globalAlpha = this.hitFlash;
       ctx.shadowBlur = 0;
       ctx.strokeStyle = COLORS.white;
       ctx.lineWidth = 2;
       ctx.beginPath();
-      chamferPath(ctx, this.x + 0.5, this.y + 0.5, this.size - 1, this.size - 1, [c, c, c, c]);
+      this.bodyPath(ctx);
       ctx.stroke();
     }
     ctx.restore();
@@ -1368,16 +1478,24 @@ class Ball {
     Ball.drawAll(ctx, [this]);
   }
 
-  /** All balls in batched passes (NC-ART-1): a short motion trail, a soft
-   *  halo, a rim in the ball's colour and a white-hot centre. The glow is a
-   *  translucent halo instead of shadowBlur: a blurred batch spanning the
-   *  whole field cost ~22 ms per frame at 1920x1080 with 60 balls in software
-   *  raster (NC-13); the halo costs almost nothing and looks the same at
-   *  this size. Balls stay the brightest small objects on the field. */
+  /** All drones in batched passes (NC-AI-RECOVERY-1: the balls are the
+   *  player's autonomous recovery drones). A floor shadow offset down-right
+   *  (they fly above the network), a short motion trail, a soft halo, a cyan
+   *  hull, a dark band and a white-hot core. No shadowBlur: a blurred batch
+   *  spanning the whole field cost ~22 ms per frame at 1920x1080 with 60
+   *  balls in software raster (NC-13). Drones stay the brightest small
+   *  objects on the field. */
   static drawAll(ctx, balls) {
     if (!balls.length) return;
     ctx.save();
     ctx.lineCap = 'round';
+    ctx.fillStyle = COLORS.shadow;
+    ctx.beginPath();
+    for (const b of balls) {
+      ctx.moveTo(b.x + 2.5 + b.radius * 0.9, b.y + 4);
+      ctx.arc(b.x + 2.5, b.y + 4, b.radius * 0.9, 0, Math.PI * 2);
+    }
+    ctx.fill();
     const byColor = new Map();
     for (const b of balls) {
       const key = b.flash > 0 ? COLORS.white : b.color;
@@ -1387,27 +1505,20 @@ class Ball {
     for (const [color, list] of byColor) {
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
-      ctx.globalAlpha = 0.35;
-      ctx.lineWidth = 3;
+      ctx.globalAlpha = 0.22;
+      ctx.lineWidth = 2.2;
       ctx.beginPath();
       for (const b of list) {
-        ctx.moveTo(b.x, b.y);
-        ctx.lineTo(b.x - b.vx * 0.04, b.y - b.vy * 0.04);
+        ctx.moveTo(b.x - b.vx * 0.012, b.y - b.vy * 0.012);
+        ctx.lineTo(b.x - b.vx * 0.034, b.y - b.vy * 0.034);
       }
       ctx.stroke();
-      const halo = color === COLORS.white ? 2.8 : 1.95;
-      ctx.globalAlpha = 0.13;
+      const halo = color === COLORS.white ? 2.6 : 1.9;
+      ctx.globalAlpha = 0.16;
       ctx.beginPath();
       for (const b of list) {
         ctx.moveTo(b.x + b.radius * halo, b.y);
         ctx.arc(b.x, b.y, b.radius * halo, 0, Math.PI * 2);
-      }
-      ctx.fill();
-      ctx.globalAlpha = 0.24;
-      ctx.beginPath();
-      for (const b of list) {
-        ctx.moveTo(b.x + b.radius * 1.4, b.y);
-        ctx.arc(b.x, b.y, b.radius * 1.4, 0, Math.PI * 2);
       }
       ctx.fill();
       ctx.globalAlpha = 1;
@@ -1418,11 +1529,22 @@ class Ball {
       }
       ctx.fill();
     }
+    // Dark band (the drone's casing) and white-hot core.
+    ctx.strokeStyle = COLORS.tileSide;
+    ctx.globalAlpha = 0.85;
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    for (const b of balls) {
+      ctx.moveTo(b.x + b.radius * 0.72, b.y);
+      ctx.arc(b.x, b.y, b.radius * 0.72, 0, Math.PI * 2);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
     ctx.fillStyle = COLORS.white;
     ctx.beginPath();
     for (const b of balls) {
-      ctx.moveTo(b.x + b.radius * 0.55, b.y);
-      ctx.arc(b.x, b.y, b.radius * 0.55, 0, Math.PI * 2);
+      ctx.moveTo(b.x + b.radius * 0.45, b.y);
+      ctx.arc(b.x, b.y, b.radius * 0.45, 0, Math.PI * 2);
     }
     ctx.fill();
     ctx.restore();
@@ -1475,18 +1597,27 @@ class Turret {
     const ready = charge >= 1;
     const pulse = reducedMotion ? 0.7 : 0.5 + 0.5 * Math.sin(time * 6);
     ctx.save();
+    // Floor shadow and the pad's side wall (2.5D, light from the top-left;
+    // drawn before the rotation so they always fall down-right).
+    ctx.fillStyle = COLORS.shadow;
+    ctx.beginPath();
+    ctx.arc(this.x + 2.5, this.y + 3.5, 12.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = COLORS.tileSide;
+    ctx.beginPath();
+    ctx.arc(this.x + 0.8, this.y + 1.4, 11.2, 0, Math.PI * 2);
+    ctx.fill();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angle);
     ctx.lineJoin = 'round';
-    // Pad: a round graphite platform with a cyan rim.
-    ctx.fillStyle = COLORS.plateDark;
+    // Pad: the player's uplink, a round platform with a cyan rim.
+    ctx.fillStyle = COLORS.tileTop;
     ctx.strokeStyle = COLORS.cyan;
-    ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.9;
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.arc(0, 0, 11, 0, Math.PI * 2);
     ctx.fill();
-    ctx.globalAlpha = 0.5;
+    ctx.globalAlpha = 0.75;
     ctx.stroke();
     ctx.globalAlpha = 1;
     // Charge ring: four quarter segments around the base (breach magenta).
@@ -1511,7 +1642,7 @@ class Turret {
     }
     ctx.globalAlpha = 1;
     // Rails.
-    ctx.fillStyle = COLORS.plate;
+    ctx.fillStyle = COLORS.tileSide;
     ctx.strokeStyle = COLORS.ice;
     ctx.shadowColor = COLORS.cyan;
     ctx.shadowBlur = 6 + this.flash * 12;
@@ -1611,6 +1742,22 @@ class Game {
     this.coresShattered = 0;
     this.lances = [];
     this.rings = [];
+    // Adaptive defense (NC-AI-RECOVERY-1; session only, never saved).
+    // `defenseFromLevel` is a test seam: Infinity turns the AI's reaction off
+    // (qa/sim-compare.mjs proves the rest of the simulation is unchanged).
+    this.defenseFromLevel = DEFENSE_FROM_LEVEL;
+    this.heart = null;
+    this.defense = null;
+    this.exposed = null;
+    this.defenseTimer = DEFENSE_FIRST_DELAY;
+    this.reroutes = 0;
+    this.shieldsBroken = 0;
+    this.playerBreaks = 0;
+    this.lanceManual = false;
+    // Cosmetic: cells recovered in this sector (faint cyan floor marks) and
+    // the AI-alert label at the top of the field.
+    this.recovered = [];
+    this.alert = 0;
     // Cosmetic effects (NC-ART-1): relay surge arcs, the breach finale, the
     // moment the current core was generated (assembly animation), the cached
     // background.
@@ -1624,6 +1771,8 @@ class Game {
     // with the UI tick, so a hit never makes the pulses jump).
     this.netPhase = 0;
     this.netSpeed = 0.35;
+    // Recovery progress as of the last UI tick (drawing only).
+    this.uiProgress = 0;
     this.coreBornAt = -10;
     this.bgCanvas = null;
     this.bgKey = '';
@@ -1941,7 +2090,7 @@ class Game {
     const layout = useGrid ? this.gridLayout(level) : this.circleLayout(level);
 
     for (const p of layout.points) {
-      this.blocks.push(new Block(p.x, p.y, layout.size, maxHp, moneyPerHit, COLORS.cyan));
+      this.blocks.push(new Block(p.x, p.y, layout.size, maxHp, moneyPerHit, COLORS.hostile));
     }
     this.blockHp = maxHp;
     this.blockMoney = moneyPerHit;
@@ -1950,6 +2099,11 @@ class Game {
     this.markInnerShield(layout, useGrid);
     this.placeRelays(level);
     this.buildNetwork();
+    this.heart = this.blocks.find((b) => b.kind === 'heart') || null;
+    this.defense = null;
+    this.exposed = null;
+    this.defenseTimer = DEFENSE_FIRST_DELAY;
+    this.recovered = [];
     this.coreBornAt = this.time;
     this.coreTotalHp = this.blocks.reduce((sum, b) => sum + b.maxHp, 0);
 
@@ -1979,15 +2133,15 @@ class Game {
     } else {
       size = Math.round(layout.size * 1.4);
     }
-    const heart = new Block(0, 0, size, HEART_HP * maxHp, moneyPerHit, COLORS.amber);
+    const heart = new Block(0, 0, size, HEART_HP * maxHp, moneyPerHit, COLORS.coreHot);
     heart.kind = 'heart';
     this.blocks.push(heart);
   }
 
-  /** Cosmetic (NC-ART-1): the armour layer touching the heart is its inner
-   *  shield, edged violet; the rest is cyan. Only cores with at least two
-   *  layers have one (a 3x3 core stays all cyan, so on level 1 the amber
-   *  heart stands alone in the middle). */
+  /** Cosmetic (NC-ART-1, recoloured in NC-AI-RECOVERY-1): the armour layer
+   *  touching the heart is its inner layer, ember; the rest is AI red. Only
+   *  cores with at least two layers have one (a 3x3 core stays all red, so
+   *  on sector 1 the core stands alone in the middle). */
   markInnerShield(layout, useGrid) {
     const heart = this.blocks.find((b) => b.kind === 'heart');
     if (!heart) return;
@@ -1995,18 +2149,18 @@ class Game {
       if (layout.n < 5) return;
       const reach = heart.size / 2 + layout.size + 6;
       for (const b of this.blocks) {
-        if (b.kind === 'armor' && Math.max(Math.abs(b.offsetX), Math.abs(b.offsetY)) <= reach) { b.layer = 1; b.color = COLORS.violet; }
+        if (b.kind === 'armor' && Math.max(Math.abs(b.offsetX), Math.abs(b.offsetY)) <= reach) { b.layer = 1; b.color = COLORS.ember; }
       }
     } else {
       let maxR = 0;
       for (const b of this.blocks) if (b.kind === 'armor') maxR = Math.max(maxR, Math.hypot(b.offsetX, b.offsetY));
       for (const b of this.blocks) {
-        if (b.kind === 'armor' && Math.hypot(b.offsetX, b.offsetY) < maxR - layout.size * 0.5) { b.layer = 1; b.color = COLORS.violet; }
+        if (b.kind === 'armor' && Math.hypot(b.offsetX, b.offsetY) < maxR - layout.size * 0.5) { b.layer = 1; b.color = COLORS.ember; }
       }
     }
   }
 
-  /** Cosmetic (NC-ART-1, "Fractured Intelligence"): the core is drawn as one
+  /** Cosmetic (NC-ART-1): the core is drawn as one
    *  digital organism, a lattice linking every block to its direct
    *  neighbours (grid: up/down/left/right; rings: along and between rings)
    *  and the innermost blocks to the heart. It mirrors the real structure
@@ -2215,10 +2369,12 @@ class Game {
     this.volleyReadyFor = 0;
     if (manual) this.manualVolleys += 1;
     else this.autoVolleys += 1;
+    this.lanceManual = !!manual;
     for (const turret of this.turrets) {
       this.castLance(turret, x, y);
       turret.flash = 1;
     }
+    this.lanceManual = false;
     this.addRing(x, y, 14, COLORS.white, 0.3, 2);
     this.syncFlash = 1;
     this.shake = Math.max(this.shake, 0.12);
@@ -2232,6 +2388,9 @@ class Game {
   /** Autopilot target for an unused volley: a random armour block (not the
    *  heart, not a relay), so aiming by hand is clearly better. */
   autoTarget() {
+    // The recovery units answer the AI on their own: an active firewall node
+    // is the autopilot's first target (NC-AI-RECOVERY-1).
+    if (this.defense && this.defense.node.alive) return { x: this.defense.node.cx, y: this.defense.node.cy };
     const armour = this.blocks.filter((b) => b.alive && b.kind === 'armor');
     const pool = armour.length ? armour : this.blocks.filter((b) => b.alive);
     if (!pool.length) return { x: this.width / 2, y: this.height / 2 };
@@ -2264,10 +2423,14 @@ class Game {
     for (const { b, t } of crossed) {
       if (power <= 0) break;
       if (!b.alive) continue; // broken by a relay shockwave from this lance
-      const dmg = Math.min(power, b.hp);
-      power -= dmg;
-      this.hitBlock(b, dmg, turret.x + dx * t, turret.y + dy * t, 'lance');
-      if (power <= 0) endT = t + b.size * 0.5;
+      // A shielded core soaks more of the pulse, an exposed block less
+      // (the factor is read per block: breaking the firewall node with this
+      // very pulse exposes the blocks behind it at once).
+      const f = this.damageFactor(b, 'lance');
+      const dmg = Math.min(power * f, b.hp);
+      power -= dmg / f;
+      this.hitBlock(b, dmg, turret.x + dx * t, turret.y + dy * t, 'lance', true);
+      if (power <= 1e-9) { power = 0; endT = t + b.size * 0.5; }
     }
     if (this.lances.length < MAX_LANCES) {
       this.lances.push(new Lance(turret.x, turret.y, turret.x + dx * endT, turret.y + dy * endT, turret.color));
@@ -2280,7 +2443,8 @@ class Game {
 
   /** One hit on a block from any source: pays the block's money per hit,
    *  deals damage, shows feedback and resolves a destruction. */
-  hitBlock(block, damage, x, y, source) {
+  hitBlock(block, damage, x, y, source, scaled) {
+    if (!scaled) damage *= this.damageFactor(block, source);
     this.cash += block.moneyPerHit;
     this.addFloatText(x, y, block.moneyPerHit, COLORS.green);
     this.particles.burst(x, y, block.color, source === 'ball' ? 6 : 10, {
@@ -2295,8 +2459,127 @@ class Game {
       minSpeed: 60, maxSpeed: 220, minLife: 0.4, maxLife: 0.9, minRadius: 2, maxRadius: 4,
     });
     this.sound.play('break');
+    if (block.kind !== 'heart') this.recovered.push(block);
+    if (this.defense && block === this.defense.node) this.breakDefense(block);
     if (block.kind === 'relay') this.triggerRelay(block);
     else if (block.kind === 'heart') this.shatterCore(block);
+  }
+
+  /** Damage multiplier for a block (NC-AI-RECOVERY-1): the AI's shield on
+   *  its core softens every hit; after its firewall node was broken, the
+   *  exposed core and power line take EXPOSE_FACTOR from override pulses
+   *  and relay shockwaves (the drones keep their normal damage). */
+  damageFactor(block, source) {
+    if (this.defense && block === this.defense.target) return SHIELD_FACTOR;
+    if (source !== 'ball' && this.exposed && this.exposed.blocks.includes(block)) return EXPOSE_FACTOR;
+    return 1;
+  }
+
+  /** The AI's reaction, advanced every fixed step (deterministic). */
+  updateDefense(dt) {
+    if (this.alert > 0) this.alert = Math.max(0, this.alert - dt);
+    if (this.exposed) {
+      this.exposed.t -= dt;
+      if (this.exposed.t <= 0) this.exposed = null;
+    }
+    const heart = this.heart;
+    if (this.level < this.defenseFromLevel || !heart || !heart.alive) {
+      if (this.defense) this.endDefense();
+      return;
+    }
+    if (this.defense) {
+      this.defense.t += dt;
+      if (this.defense.t >= SHIELD_TIME) this.endDefense();
+      return;
+    }
+    if (this.exposed) return;
+    this.defenseTimer -= dt;
+    if (this.defenseTimer > 0) return;
+    const node = this.pickDefenseNode();
+    if (!node) {
+      this.defenseTimer = DEFENSE_RETRY;
+      return;
+    }
+    this.reroutes += 1;
+    node.firewall = true;
+    this.defense = { node, target: heart, t: 0, path: this.blocksBetween(node, heart) };
+    this.alert = 1.6;
+    this.addRing(heart.cx, heart.cy, heart.size * 0.9, COLORS.amber, 0.45, 2);
+    this.sound.play('shield');
+  }
+
+  /** The firewall node: an alive armour block that some turret can hit
+   *  first (nothing in front of it on the turret's line), so drones and
+   *  pulses can always reach it. Chosen with hash01 from the sector and the
+   *  reroute count: no simulation RNG is consumed. */
+  pickDefenseNode() {
+    const alive = this.blocks.filter((b) => b.alive);
+    const candidates = [];
+    for (const b of alive) {
+      if (b.kind !== 'armor') continue;
+      for (const t of this.turrets) {
+        let dx = b.cx - t.x;
+        let dy = b.cy - t.y;
+        const len = Math.hypot(dx, dy) || 1;
+        dx /= len;
+        dy /= len;
+        const tb = rayBoxEnter(t.x, t.y, dx, dy, b.x, b.y, b.x + b.size, b.y + b.size);
+        if (tb === null) continue;
+        let blocked = false;
+        for (const o of alive) {
+          if (o === b) continue;
+          const to = rayBoxEnter(t.x, t.y, dx, dy, o.x, o.y, o.x + o.size, o.y + o.size);
+          if (to !== null && to < tb) { blocked = true; break; }
+        }
+        if (!blocked) { candidates.push(b); break; }
+      }
+    }
+    if (!candidates.length) return null;
+    return candidates[Math.floor(hash01(this.level * 7919 + this.reroutes * 104729) * candidates.length)];
+  }
+
+  /** Alive blocks crossed by the straight power line from `a` to `b`. */
+  blocksBetween(a, b) {
+    let dx = b.cx - a.cx;
+    let dy = b.cy - a.cy;
+    const len = Math.hypot(dx, dy) || 1;
+    dx /= len;
+    dy /= len;
+    const out = [];
+    for (const o of this.blocks) {
+      if (!o.alive || o === a || o === b) continue;
+      const t = rayBoxEnter(a.cx, a.cy, dx, dy, o.x, o.y, o.x + o.size, o.y + o.size);
+      if (t !== null && t < len) out.push(o);
+    }
+    return out;
+  }
+
+  /** The shield runs out (or the sector ends): the AI waits, then tries again. */
+  endDefense() {
+    if (!this.defense) return;
+    this.defense.node.firewall = false;
+    this.defense = null;
+    this.defenseTimer = DEFENSE_COOLDOWN;
+  }
+
+  /** The firewall node was destroyed: the shield collapses, the core and the
+   *  blocks on the power line are exposed, a small bonus is paid. */
+  breakDefense(node) {
+    const d = this.defense;
+    const heart = d.target;
+    this.shieldsBroken += 1;
+    if (this.lanceManual) this.playerBreaks += 1;
+    if (this.lanceManual) this.volleyCharge = Math.min(1, this.volleyCharge + BREAK_RECHARGE);
+    this.endDefense();
+    this.exposed = { t: EXPOSE_TIME, blocks: [heart, ...d.path.filter((b) => b.alive)], node: { x: node.cx, y: node.cy } };
+    const bonus = OVERRIDE_BONUS * node.moneyPerHit;
+    this.cash += bonus;
+    const top = this.height / 2 - this.coreRadius * this.coreScale - 14;
+    this.addBigText(this.width / 2, Math.max(14, top), `${this.t('shieldBroken')} +${formatMoney(bonus, this.lang)}`, COLORS.magenta);
+    this.addRing(heart.cx, heart.cy, heart.size * 1.6, COLORS.magenta, 0.5, 3);
+    if (this.arcs.length < MAX_ARCS) this.arcs.push(new Arc(node.cx, node.cy, heart.cx, heart.cy, node.seed, COLORS.cyan));
+    this.alert = 0;
+    this.sound.play('override');
   }
 
   /** Relay: bonus cash, full volley charge and a shockwave that damages every
@@ -2307,7 +2590,7 @@ class Game {
     // Above the core (never over the heart); chained relays stack upward.
     const stacked = this.floatTexts.filter((f) => f.big && f.life > FLOAT_TEXT_LIFE * 0.8).length;
     const top = this.height / 2 - this.coreRadius * this.coreScale - 14 - stacked * 16 / Math.max(1, this.viewScale);
-    this.addBigText(this.width / 2, Math.max(14, top), `${this.t('relay')} +${formatMoney(bonus, this.lang)}`, COLORS.amber);
+    this.addBigText(this.width / 2, Math.max(14, top), `${this.t('relay')} +${formatMoney(bonus, this.lang)}`, COLORS.cyan);
     if (this.volleyCharge < 1) {
       this.volleyCharge = 1;
       this.volleyReadyFor = 0;
@@ -2329,13 +2612,15 @@ class Game {
   /** Heart destroyed: the rest of the core breaks in a wave from the centre;
    *  each block pays SHATTER_PAY x money per hit, the heart HEART_BONUS x. */
   shatterCore(heart) {
+    this.endDefense();
+    this.exposed = null;
     const bonus = HEART_BONUS * heart.moneyPerHit;
     this.cash += bonus;
     this.coresShattered += 1;
     // Below the core: not on top of the breaking plates, nor under the
     // level banner that follows (NC-ART-1).
     const below = heart.cy + this.coreRadius * this.coreScale + 16;
-    this.addBigText(heart.cx, Math.min(this.height - 14, below), `${this.t('breached')} +${formatMoney(bonus, this.lang)}`, COLORS.amber);
+    this.addBigText(heart.cx, Math.min(this.height - 14, below), `${this.t('breached')} +${formatMoney(bonus, this.lang)}`, COLORS.cyan);
     for (const b of this.blocks) {
       if (b.alive && b.shatter === null) b.shatter = Math.hypot(b.cx - heart.cx, b.cy - heart.cy) / SHATTER_SPEED;
     }
@@ -2423,15 +2708,19 @@ class Game {
   updateHint() {
     const hint = this.ui.hint;
     const volleyHint = this.manualVolleys === 0 && this.volleyReady;
+    // NC-AI-RECOVERY-1: while the AI's shield is up, until the player has
+    // broken one node with their own pulse this session.
+    const defenseHint = !volleyHint && this.defense !== null && this.playerBreaks === 0;
     const newPlayer = this.isNewPlayer;
     const canBuy = newPlayer && this.cash >= this.ballCost;
-    const show = volleyHint || newPlayer;
+    const show = volleyHint || defenseHint || newPlayer;
     hint.hidden = !show;
     if (show) {
-      const text = this.t(volleyHint ? 'hintVolley' : (canBuy ? 'hintBuy' : 'hintStart'));
+      const text = this.t(volleyHint ? 'hintVolley' : defenseHint ? 'hintDefense' : (canBuy ? 'hintBuy' : 'hintStart'));
       if (hint.textContent !== text) hint.textContent = text;
     }
     hint.classList.toggle('hint--action', volleyHint);
+    hint.classList.toggle('hint--alert', defenseHint);
     this.ui.buyBall.classList.toggle('shop-btn--suggested', canBuy && !volleyHint);
   }
 
@@ -2483,6 +2772,7 @@ class Game {
   update(dt) {
     this.time += dt;
     this.updateVolley(dt);
+    this.updateDefense(dt);
     for (const turret of this.turrets) turret.update(dt, this);
 
     for (const ball of this.balls) {
@@ -2532,7 +2822,8 @@ class Game {
     if (this.uiTimer >= 0.15) {
       this.uiTimer = 0;
       this.updateUI();
-      this.netSpeed = 0.35 + 1.4 * this.coreProgress;
+      this.uiProgress = this.coreProgress;
+      this.netSpeed = 0.35 + 1.4 * this.uiProgress;
     }
 
     this.saveTimer += dt;
@@ -2555,11 +2846,13 @@ class Game {
       ctx.translate(Math.sin(this.time * 91) * a, Math.cos(this.time * 77) * a);
     }
     this.drawFieldMarks(ctx);
+    this.drawRecovered(ctx);
     this.drawAimPreview(ctx);
     Block.drawCore(ctx, this.visibleBlocks(), this.time, this.reducedMotion, (c) => {
       this.drawNetwork(c);
       this.drawConduits(c);
     });
+    this.drawDefense(ctx);
     this.drawHeartLock(ctx);
     this.drawSync(ctx);
     for (const turret of this.turrets) turret.draw(ctx, this.volleyCharge, this.time, this.reducedMotion);
@@ -2577,7 +2870,7 @@ class Game {
       // much weaker with prefers-reduced-motion.
       ctx.save();
       ctx.globalAlpha = this.screenFlash * (this.reducedMotion ? 0.06 : 0.2);
-      ctx.fillStyle = COLORS.magenta;
+      ctx.fillStyle = COLORS.cyan;
       ctx.fillRect(0, 0, this.width, this.height);
       ctx.globalAlpha = this.screenFlash * (this.reducedMotion ? 0.04 : 0.12);
       ctx.fillStyle = COLORS.white;
@@ -2586,7 +2879,197 @@ class Game {
     }
     this.drawCoreProgress(ctx);
     this.drawVolleyMeter(ctx);
+    this.drawDefenseAlert(ctx);
     this.drawBanner(ctx);
+  }
+
+  /** Cells recovered in this sector (NC-AI-RECOVERY-1, cosmetic): every
+   *  broken tile leaves a faint cyan outline and node on the floor, so the
+   *  recovered part of the sector grows visibly under the AI's structure. */
+  drawRecovered(ctx) {
+    if (!this.recovered.length) return;
+    const cx = this.width / 2;
+    const cy = this.height / 2;
+    const k = this.coreScale;
+    ctx.save();
+    ctx.strokeStyle = COLORS.cyan;
+    ctx.globalAlpha = 0.24;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (const b of this.recovered) {
+      const s = b.baseSize * k * 0.78;
+      ctx.rect(cx + b.baseOffsetX * k - s / 2, cy + b.baseOffsetY * k - s / 2, s, s);
+    }
+    ctx.stroke();
+    ctx.fillStyle = COLORS.cyan;
+    ctx.globalAlpha = 0.55;
+    ctx.beginPath();
+    for (const b of this.recovered) ctx.rect(cx + b.baseOffsetX * k - 1, cy + b.baseOffsetY * k - 1, 2, 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /** Four corner brackets around (x, y): the "breakable / target" mark. */
+  drawBrackets(ctx, x, y, r, k, color, alpha) {
+    ctx.strokeStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
+    ctx.lineWidth = 1.6;
+    ctx.globalAlpha = alpha;
+    ctx.beginPath();
+    for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      ctx.moveTo(x + sx * r, y + sy * (r - k));
+      ctx.lineTo(x + sx * r, y + sy * r);
+      ctx.lineTo(x + sx * (r - k), y + sy * r);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  /**
+   * The AI's reaction made visible (NC-AI-RECOVERY-1). While a shield is
+   * up: an amber power line from the firewall node into the core with
+   * energy flowing along it, an amber hexagonal shield around the core whose
+   * six sides go out as its time runs down, and the node itself marked with
+   * an amber lock and magenta target brackets (breakable). While the core is
+   * exposed: a magenta breach line where the power line ran, magenta edges
+   * on the exposed blocks and target brackets on the core.
+   */
+  drawDefense(ctx) {
+    const d = this.defense;
+    const e = this.exposed;
+    if (!d && !e) return;
+    const pulse = this.reducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(this.time * 7);
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (d) {
+      const n = d.node;
+      const h = d.target;
+      const left = clamp(1 - d.t / SHIELD_TIME, 0, 1);
+      ctx.beginPath();
+      ctx.moveTo(n.cx, n.cy);
+      ctx.lineTo(h.cx, h.cy);
+      ctx.strokeStyle = COLORS.amber;
+      ctx.globalAlpha = 0.2;
+      ctx.lineWidth = 6;
+      ctx.stroke();
+      ctx.globalAlpha = 0.9;
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+      ctx.strokeStyle = COLORS.white;
+      ctx.lineWidth = 1.3;
+      if (ctx.setLineDash) ctx.setLineDash([2, 6]);
+      ctx.lineDashOffset = this.reducedMotion ? 0 : -this.time * 40;
+      ctx.stroke();
+      if (ctx.setLineDash) ctx.setLineDash([]);
+      // Shield around the core: six sides = time left.
+      const R = h.size * 0.72 + 4;
+      const sides = Math.ceil(left * 6 - 1e-9);
+      ctx.fillStyle = COLORS.amber;
+      ctx.globalAlpha = 0.07 + 0.05 * pulse;
+      ctx.beginPath();
+      polygonPath(ctx, h.cx, h.cy, R, 6, -Math.PI / 2);
+      ctx.fill();
+      // Glow = a wide translucent underlay, not shadowBlur (a blurred
+      // core-sized hexagon is expensive in software raster: NC-13).
+      ctx.strokeStyle = COLORS.amber;
+      ctx.beginPath();
+      for (let i = 0; i < sides; i++) {
+        const a0 = -Math.PI / 2 + (i * Math.PI) / 3;
+        const a1 = a0 + Math.PI / 3;
+        ctx.moveTo(h.cx + Math.cos(a0) * R, h.cy + Math.sin(a0) * R);
+        ctx.lineTo(h.cx + Math.cos(a1) * R, h.cy + Math.sin(a1) * R);
+      }
+      ctx.lineWidth = 6;
+      ctx.globalAlpha = 0.18;
+      ctx.stroke();
+      ctx.lineWidth = 2.2;
+      ctx.globalAlpha = 0.75 + 0.25 * pulse;
+      ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.35;
+      ctx.beginPath();
+      polygonPath(ctx, h.cx, h.cy, R, 6, -Math.PI / 2);
+      polygonPath(ctx, h.cx, h.cy, R * 0.8, 6, -Math.PI / 2);
+      ctx.stroke();
+      // The firewall node: amber edge, a lock, magenta target brackets.
+      const top = n.size - n.wall;
+      const nx = n.x + top / 2;
+      const ny = n.y + top / 2;
+      const L = Math.max(4, top * 0.36);
+      ctx.globalAlpha = 0.55 + 0.45 * pulse;
+      ctx.strokeStyle = COLORS.amber;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      n.bodyPath(ctx);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = COLORS.amber;
+      ctx.fillRect(nx - L / 2, ny - L * 0.1, L, L * 0.62);
+      ctx.lineWidth = Math.max(1, L * 0.16);
+      ctx.beginPath();
+      ctx.arc(nx, ny - L * 0.1, L * 0.3, Math.PI, 0);
+      ctx.stroke();
+      ctx.fillStyle = COLORS.tileSide;
+      ctx.fillRect(nx - L * 0.07, ny + L * 0.05, L * 0.14, L * 0.3);
+      this.drawBrackets(ctx, n.cx, n.cy, n.size / 2 + 3 + pulse * 2, Math.max(4, n.size * 0.3), COLORS.magenta, 0.95);
+    }
+    if (e) {
+      const h = this.heart;
+      const k = clamp(e.t / EXPOSE_TIME, 0, 1);
+      if (h && h.alive) {
+        ctx.strokeStyle = COLORS.magenta;
+        ctx.globalAlpha = 0.35 + 0.45 * k;
+        ctx.lineWidth = 1.4;
+        if (ctx.setLineDash) ctx.setLineDash([4, 4]);
+        ctx.lineDashOffset = this.reducedMotion ? 0 : this.time * 30;
+        ctx.beginPath();
+        ctx.moveTo(e.node.x, e.node.y);
+        ctx.lineTo(h.cx, h.cy);
+        ctx.stroke();
+        if (ctx.setLineDash) ctx.setLineDash([]);
+        ctx.globalAlpha = 0.55 + 0.45 * pulse;
+        ctx.beginPath();
+        for (const b of e.blocks) if (b.alive) b.bodyPath(ctx);
+        ctx.stroke();
+        this.drawBrackets(ctx, h.cx, h.cy, h.size / 2 + 6 + pulse * 3, Math.max(5, h.size * 0.28), COLORS.magenta, 1);
+      }
+    }
+    ctx.restore();
+  }
+
+  /** Top-centre HUD while the AI reacts: "AI SHIELD n s" (amber) with a
+   *  draining bar, or "CORE EXPOSED n s" (magenta). Screen pixels; on a
+   *  narrow field it sits below the two corner meters. */
+  drawDefenseAlert(ctx) {
+    const d = this.defense;
+    const e = this.exposed;
+    if (!d && !(e && this.heart && this.heart.alive)) return;
+    const fieldW = this.width * this.viewScale;
+    const meterW = Math.min(120, fieldW * 0.3);
+    const room = fieldW - 2 * (meterW + 24);
+    const narrow = room < 100;
+    const W = narrow ? Math.min(140, fieldW * 0.44) : Math.min(140, room);
+    const x = (fieldW - W) / 2;
+    const y = narrow ? 42 : 10;
+    const locale = (STRINGS[this.lang] || STRINGS[DEFAULT_LANGUAGE]).locale;
+    const secs = (v) => Math.max(0, v).toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    const color = d ? COLORS.amber : COLORS.magenta;
+    const label = d ? `${this.t('shieldUp')} ${secs(SHIELD_TIME - d.t)} s` : `${this.t('exposed')} ${secs(e.t)} s`;
+    const value = d ? 1 - d.t / SHIELD_TIME : e.t / EXPOSE_TIME;
+    const blink = this.alert > 0 && !this.reducedMotion && Math.floor(this.alert * 5) % 2 === 0;
+    ctx.save();
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    ctx.font = 'bold 12px "Segoe UI", Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = blink ? COLORS.white : color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
+    ctx.fillText(label, x + W / 2, y);
+    this.drawSegmentBar(ctx, x, y + 16, W, 5, value, color, 6);
+    ctx.restore();
   }
 
   /** Blocks to draw: while a new core assembles (CORE_ASSEMBLY_TIME after
@@ -2646,11 +3129,25 @@ class Game {
     g.fillStyle = COLORS.void;
     g.fillRect(0, 0, w, h);
     const glow = g.createRadialGradient(cx, cy, 0, cx, cy, far);
-    glow.addColorStop(0, '#15142a');
-    glow.addColorStop(0.45, '#0c0c18');
-    glow.addColorStop(1, '#05050a');
+    glow.addColorStop(0, '#141a2e');
+    glow.addColorStop(0.45, '#0a0d19');
+    glow.addColorStop(1, '#04050a');
     g.fillStyle = glow;
     g.fillRect(0, 0, w, h);
+    // The network floor (NC-AI-RECOVERY-1): large dark floor panels with
+    // bevelled seams (light top-left edge, dark bottom-right), the 2.5D
+    // ground everything else stands on. Fixed, low contrast.
+    const panel = 46;
+    g.lineWidth = 1;
+    for (const [color, dx] of [['#03040a', 0.5], ['#151b2c', -0.5]]) {
+      g.strokeStyle = color;
+      g.globalAlpha = 0.9;
+      g.beginPath();
+      for (let x = (cx % panel) - panel; x < w + panel; x += panel) { g.moveTo(x + dx, 0); g.lineTo(x + dx, h); }
+      for (let y = (cy % panel) - panel; y < h + panel; y += panel) { g.moveTo(0, y + dx); g.lineTo(w, y + dx); }
+      g.stroke();
+    }
+    g.globalAlpha = 1;
     // Dot field.
     g.fillStyle = '#2a3a52';
     const step = 14;
@@ -2665,8 +3162,9 @@ class Game {
     // The AI's wider infrastructure: a few dark circuit routes run in from
     // the field edges toward the core (orthogonal, one 45-degree bend, a pad
     // at the end). Fixed layout, very low contrast: depth, not a grid.
-    g.strokeStyle = '#141d2d';
-    g.fillStyle = '#1a2538';
+    // Routes are still the AI's: dim red.
+    g.strokeStyle = '#2a1420';
+    g.fillStyle = '#3d1826';
     g.lineWidth = 1.2;
     g.lineJoin = 'round';
     const stopR = short * 0.5;
@@ -2717,46 +3215,52 @@ class Game {
     // off, with a few dim light strips (cyan sides, amber bottom corners).
     const m = 3;
     const cut = Math.min(22, short * 0.08);
-    g.strokeStyle = '#1d2236';
+    g.strokeStyle = '#1b2134';
     g.lineWidth = 2;
     g.beginPath();
     chamferPath(g, m, m, w - m * 2, h - m * 2, [cut, cut, cut, cut]);
-    g.stroke();
-    g.lineWidth = 2;
-    g.globalAlpha = 0.45;
-    g.strokeStyle = COLORS.cyan;
-    g.beginPath();
-    for (const fy of [0.38, 0.62]) {
-      g.moveTo(m, h * fy - 6); g.lineTo(m, h * fy + 6);
-      g.moveTo(w - m, h * fy - 6); g.lineTo(w - m, h * fy + 6);
-    }
-    g.stroke();
-    g.strokeStyle = COLORS.amber;
-    g.beginPath();
-    g.moveTo(m + cut + 6, h - m); g.lineTo(m + cut + 18, h - m);
-    g.moveTo(w - m - cut - 6, h - m); g.lineTo(w - m - cut - 18, h - m);
     g.stroke();
     g.globalAlpha = 1;
     return canvas;
   }
 
   /** Live layer of the backdrop: a slow scanning arc on the outer
-   *  containment ring (static with prefers-reduced-motion). */
+   *  containment ring and the arena's light strips. Both show the sector's
+   *  owner (NC-AI-RECOVERY-1): AI red at the start, shifting to recovery
+   *  cyan with the sector's recovery progress (static scan with
+   *  prefers-reduced-motion). */
   drawFieldMarks(ctx) {
     const cx = this.width / 2;
     const cy = this.height / 2;
-    const r = Math.min(this.width, this.height) * 0.47;
+    const w = this.width;
+    const h = this.height;
+    const r = Math.min(w, h) * 0.47;
     const a = this.reducedMotion ? -Math.PI / 2 : this.time * 0.35;
+    const tint = mixColor(COLORS.hostile, COLORS.cyan, this.uiProgress || 0);
     ctx.save();
-    ctx.strokeStyle = COLORS.cyan;
-    ctx.globalAlpha = 0.16;
+    ctx.strokeStyle = tint;
+    ctx.globalAlpha = 0.2;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(cx, cy, r, a, a + 0.9);
     ctx.stroke();
-    ctx.globalAlpha = 0.08;
+    ctx.globalAlpha = 0.1;
     ctx.beginPath();
     ctx.arc(cx, cy, r, a + Math.PI, a + Math.PI + 0.5);
+    ctx.stroke();
+    const m = 3;
+    const cut = Math.min(22, Math.min(w, h) * 0.08);
+    ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath();
+    for (const fy of [0.38, 0.62]) {
+      ctx.moveTo(m, h * fy - 7); ctx.lineTo(m, h * fy + 7);
+      ctx.moveTo(w - m, h * fy - 7); ctx.lineTo(w - m, h * fy + 7);
+    }
+    ctx.moveTo(m + cut + 6, h - m); ctx.lineTo(m + cut + 22, h - m);
+    ctx.moveTo(w - m - cut - 6, h - m); ctx.lineTo(w - m - cut - 22, h - m);
+    ctx.moveTo(m + cut + 6, m); ctx.lineTo(m + cut + 22, m);
+    ctx.moveTo(w - m - cut - 6, m); ctx.lineTo(w - m - cut - 22, m);
     ctx.stroke();
     ctx.restore();
   }
@@ -2827,12 +3331,13 @@ class Game {
   }
 
   /**
-   * The core's neural lattice (NC-ART-1, "Fractured Intelligence"): thin
-   * links between neighbouring blocks' nodes and magenta axons into the
-   * heart, with signal pulses flowing inward. The organism reacts: a hit
+   * The AI's lattice (NC-ART-1, recoloured in NC-AI-RECOVERY-1): thin red
+   * links between neighbouring tiles' nodes and brighter red axons into the
+   * core, with ember pulses flowing inward. The system reacts: a hit
    * lights the struck block's links; as the core loses HP the lattice
    * brightens and its pulses speed up; a link to a destroyed block is cut to
-   * a sparking stub; links ahead of the shatter wave flicker white.
+   * a cyan sparking stub (recovered); links ahead of the recovery wave
+   * flicker white.
    */
   drawNetwork(ctx) {
     if (!this.links.length) return;
@@ -2877,14 +3382,14 @@ class Game {
     ctx.save();
     ctx.lineCap = 'round';
     ctx.lineWidth = 0.9;
-    ctx.strokeStyle = COLORS.cyan;
-    ctx.globalAlpha = 0.22 + 0.25 * stress;
+    ctx.strokeStyle = COLORS.hostile;
+    ctx.globalAlpha = 0.24 + 0.25 * stress;
     ctx.beginPath();
     seg(ctx, live);
     ctx.stroke();
-    ctx.strokeStyle = COLORS.amber;
-    ctx.lineWidth = 1.4;
-    ctx.globalAlpha = 0.55 + 0.3 * stress;
+    ctx.strokeStyle = COLORS.hostile;
+    ctx.lineWidth = 1.5;
+    ctx.globalAlpha = 0.6 + 0.3 * stress;
     ctx.beginPath();
     seg(ctx, axons);
     ctx.stroke();
@@ -2908,7 +3413,7 @@ class Game {
       const tick = this.reducedMotion ? 0 : Math.floor(this.time * 10);
       ctx.strokeStyle = COLORS.cyan;
       ctx.lineWidth = 1;
-      ctx.globalAlpha = 0.6;
+      ctx.globalAlpha = 0.55;
       ctx.beginPath();
       const ends = [];
       for (const [alive, dead] of stubs) {
@@ -2930,7 +3435,7 @@ class Game {
     }
     // Signal pulses toward the heart on about half of the links.
     ctx.globalAlpha = 0.9;
-    for (const [list, color] of [[live, COLORS.ice], [axons, '#fff1c4']]) {
+    for (const [list, color] of [[live, COLORS.ember], [axons, COLORS.coreHot]]) {
       ctx.fillStyle = color;
       ctx.beginPath();
       for (const l of list) {
@@ -3011,10 +3516,12 @@ class Game {
     ctx.restore();
   }
 
-  /** Breach finale (NC-ART-1), drawn from the heart's position while
-   *  `this.breach` lives: implosion of the seal (0-0.2 s), the two halves of
-   *  the sigil flying apart, ten fracture lines racing outward, and a
-   *  magenta front at the exact radius of the shatter wave. */
+  /** Sector recovery finale (NC-AI-RECOVERY-1), drawn from the core's
+   *  position while `this.breach` lives: the core's guard ring implodes
+   *  (0-0.2 s), its four red crystal shards fly apart, ten cyan recovery
+   *  lines race outward, a cyan front marks the exact radius of the shatter
+   *  wave (tiles it passes turn cyan, then break), and a cyan frame opens
+   *  around the whole sector: the network is back in the player's hands. */
   drawBreach(ctx) {
     const b = this.breach;
     if (!b) return;
@@ -3025,47 +3532,45 @@ class Game {
     ctx.save();
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
-    // Implosion: the seal collapses into the heart.
     if (t < 0.2) {
       const k = 1 - t / 0.2;
       ctx.strokeStyle = COLORS.white;
-      ctx.shadowColor = COLORS.amber;
+      ctx.shadowColor = COLORS.hostile;
       ctx.shadowBlur = 16;
       ctx.lineWidth = 2;
       ctx.globalAlpha = k;
       ctx.beginPath();
-      polygonPath(ctx, b.x, b.y, s * (0.4 + 1.6 * k), 6, t * 4);
+      ctx.arc(b.x, b.y, s * (0.3 + 1.4 * k), 0, Math.PI * 2);
       ctx.stroke();
     }
-    // The split sigil: two halves sliding apart.
-    const part = Math.min(1, t / 0.5);
+    // The core's crystal: four shards flying apart, turning from red to dark.
+    const part = Math.min(1, t / 0.55);
     if (part < 1) {
-      const off = s * (0.3 + 2.2 * part);
-      const H = s * 0.6 * (1 + part * 0.4);
-      const W = s * 0.42;
+      const off = s * (0.2 + 2.4 * part);
+      const r = s * 0.42;
       ctx.globalAlpha = 1 - part;
-      ctx.fillStyle = '#ffd25a';
-      ctx.strokeStyle = '#fff1c4';
-      ctx.shadowColor = COLORS.amber;
+      ctx.fillStyle = COLORS.hostile;
+      ctx.strokeStyle = COLORS.coreHot;
+      ctx.shadowColor = COLORS.hostile;
       ctx.shadowBlur = 10;
-      ctx.lineWidth = 1.4;
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.moveTo(b.x - off, b.y - H);
-      ctx.lineTo(b.x - off - W, b.y);
-      ctx.lineTo(b.x - off, b.y + H);
-      ctx.closePath();
-      ctx.moveTo(b.x + off, b.y - H);
-      ctx.lineTo(b.x + off + W, b.y);
-      ctx.lineTo(b.x + off, b.y + H);
-      ctx.closePath();
+      for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+        const ox = b.x + sx * off;
+        const oy = b.y + sy * off;
+        ctx.moveTo(ox, oy);
+        ctx.lineTo(ox + sx * r, oy);
+        ctx.lineTo(ox, oy + sy * r);
+        ctx.closePath();
+      }
       ctx.fill();
       ctx.stroke();
     }
-    // Fracture lines.
+    // Recovery lines racing outward.
     const len = Math.min(front, b.reach);
     if (len > 2) {
-      ctx.strokeStyle = COLORS.amber;
-      ctx.shadowColor = COLORS.amber;
+      ctx.strokeStyle = COLORS.cyan;
+      ctx.shadowColor = COLORS.cyan;
       ctx.shadowBlur = 12;
       ctx.lineWidth = 2;
       ctx.globalAlpha = fade;
@@ -3073,7 +3578,7 @@ class Game {
       for (let i = 0; i < BREACH_LINES; i++) {
         const a = (i / BREACH_LINES) * Math.PI * 2 + hash01(b.seed + i) * 0.5;
         const l = len * (0.65 + 0.35 * hash01(b.seed + i + 50));
-        jaggedPath(ctx, b.x, b.y, b.x + Math.cos(a) * l, b.y + Math.sin(a) * l, 5, 4, b.seed + i * 13);
+        jaggedPath(ctx, b.x, b.y, b.x + Math.cos(a) * l, b.y + Math.sin(a) * l, 5, 3, b.seed + i * 13);
       }
       ctx.stroke();
       ctx.shadowBlur = 0;
@@ -3081,11 +3586,11 @@ class Game {
       ctx.lineWidth = 0.8;
       ctx.stroke();
     }
-    // Shatter front: exactly where the wave breaks blocks.
+    // Shatter front: exactly where the wave recovers tiles.
     if (front < b.reach * 1.4) {
       ctx.globalAlpha = fade * clamp(1 - front / (b.reach * 1.4), 0, 1);
-      ctx.strokeStyle = COLORS.magenta;
-      ctx.shadowColor = COLORS.magenta;
+      ctx.strokeStyle = COLORS.cyan;
+      ctx.shadowColor = COLORS.cyan;
       ctx.shadowBlur = 14;
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -3094,6 +3599,25 @@ class Game {
       ctx.lineWidth = 1;
       ctx.beginPath();
       polygonPath(ctx, b.x, b.y, Math.max(0.1, front * 0.85), 6, Math.PI / 6);
+      ctx.stroke();
+    }
+    // Sector frame: cyan corner brackets open around the recovered sector.
+    const open = clamp((t - 0.15) / 0.6, 0, 1);
+    if (open > 0) {
+      const ease = 1 - (1 - open) * (1 - open);
+      const R = b.reach * (0.75 + 0.35 * ease);
+      const k = R * 0.32;
+      ctx.globalAlpha = fade;
+      ctx.strokeStyle = COLORS.cyan;
+      ctx.shadowColor = COLORS.cyan;
+      ctx.shadowBlur = 10;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+        ctx.moveTo(b.x + sx * R, b.y + sy * (R - k));
+        ctx.lineTo(b.x + sx * R, b.y + sy * R);
+        ctx.lineTo(b.x + sx * (R - k), b.y + sy * R);
+      }
       ctx.stroke();
     }
     ctx.restore();
@@ -3213,8 +3737,8 @@ class Game {
     const open = this.reducedMotion ? 1 : Math.min(1, (1 - t) * 6);
     const half = tw / 2 + 14;
     const rule = 40 * open;
-    ctx.strokeStyle = COLORS.magenta;
-    ctx.shadowColor = COLORS.magenta;
+    ctx.strokeStyle = COLORS.cyan;
+    ctx.shadowColor = COLORS.cyan;
     ctx.shadowBlur = 10;
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -3248,11 +3772,11 @@ class Game {
     ctx.font = 'bold 12px "Segoe UI", Arial, sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillStyle = COLORS.amber;
-    ctx.shadowColor = COLORS.amber;
+    ctx.fillStyle = COLORS.cyan;
+    ctx.shadowColor = COLORS.cyan;
     ctx.shadowBlur = 6;
     ctx.fillText(label, x, y);
-    this.drawSegmentBar(ctx, x, y + 16, w, 5, progress, COLORS.amber, 6);
+    this.drawSegmentBar(ctx, x, y + 16, w, 5, progress, COLORS.cyan, 6);
     ctx.restore();
   }
 
