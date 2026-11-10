@@ -37,7 +37,7 @@ export function run({ base = null, noRuntimeChange = false } = {}) {
   // --- Runtime file set read from index.html.
   const html = readText('index.html');
   const refs = [...html.matchAll(/<(?:script[^>]*\ssrc|link[^>]*\shref)="([^"]+)"/g)].map((m) => m[1]);
-  r.check('index.html loads only style.css and game.js', JSON.stringify(refs.sort()) === JSON.stringify(['game.js', 'style.css']), refs.join(', '));
+  r.check('index.html loads stylesheet, script and approved local icon', JSON.stringify(refs.sort()) === JSON.stringify(['assets/brand/symbol-small-editable.svg', 'game.js', 'style.css']), refs.join(', '));
   r.check('runtime references are relative (CrazyGames: no absolute paths)', refs.every((u) => !/^(\/|[a-z]+:)/i.test(u)));
   r.check('every runtime file exists', RUNTIME_FILES.every((f) => fs.existsSync(path.join(ROOT, f))));
 

@@ -126,3 +126,15 @@ CI — run it locally; every other suite must execute checks or CI fails.
 
 Run from the repo root with `node qa\run-all.mjs`; paths are handled with
 `node:path`; line endings are normalised when files are read.
+
+KERNELFALL additions: `qa/collapse.mjs` is mandatory in run-all (supply graph,
+cut propagation, bounded/no-reward erosion, save continuity, equal fixed-step
+states at 60/144/165 Hz). `node qa/package-basic.mjs` creates and validates the
+HTML5 folder, ZIP and SHA-256 manifest. With a system Chromium use
+`NC_CHROMIUM=/usr/bin/chromium`; no browser dependency is added to the game.
+`qa/sim-compare.mjs <base-game.js> --no-collapse` disables only the new mechanic.
+
+For a long simulation run use `NC_QA_SIM_ONLY=1 node qa/run-all.mjs`:
+this skips only the harness's stub rendering calls, never fixed updates,
+inputs or assertions. Real Chromium smoke remains enabled and renders fully.
+The collapse suite separately proves render/no-render state equality.

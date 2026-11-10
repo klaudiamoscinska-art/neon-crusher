@@ -27,6 +27,8 @@ const MARKS = [1, 3, 5, 10];
 export function play({ seed, w, h, hz, minutes, bot }) {
   const hx = loadGame({ seed, width: w, height: h });
   const g = hx.newGame();
+  // This tool measures fixed-step progression, not rendering cost.
+  g.draw = () => {};
   let spent = 0;
   const at = {};
   const reach = {}; // sector -> seconds when first reached

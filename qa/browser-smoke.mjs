@@ -18,7 +18,7 @@ function loadPlaywright() {
   return null;
 }
 
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css' };
+const TYPES = { '.svg': 'image/svg+xml', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css' };
 function serve() {
   return new Promise((resolve) => {
     const server = http.createServer((req, res) => {
@@ -38,7 +38,7 @@ export async function run() {
   const pw = process.env.NC_QA_NO_BROWSER === '1' ? null : loadPlaywright();
   if (!pw) { r.envUnavailable('browser smoke (all checks)', 'Playwright not installed on this machine'); return r; }
   let browser;
-  try { browser = await pw.chromium.launch(); } catch (e) { r.envUnavailable('browser smoke (all checks)', `Chromium failed to launch: ${e.message.split('\n')[0]}`); return r; }
+  try { browser = await pw.chromium.launch(process.env.NC_CHROMIUM ? { executablePath: process.env.NC_CHROMIUM, args: ['--no-sandbox'] } : {}); } catch (e) { r.envUnavailable('browser smoke (all checks)', `Chromium failed to launch: ${e.message.split('\n')[0]}`); return r; }
   const server = await serve();
   const base = `http://127.0.0.1:${server.address().port}/`;
   const shots = path.join(OUT, 'shots'); fs.mkdirSync(shots, { recursive: true });

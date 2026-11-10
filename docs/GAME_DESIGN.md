@@ -7,23 +7,14 @@ Change this file together with any gameplay/balance/text change.
 
 ## Identity
 
-**Active idle about recovering a network taken over by a rogue AI**
-(owner decision, NC-AI-RECOVERY-1). The player's autonomous **recovery
-drones** (the balls) bounce around the canvas and break the AI's hardware
-tiles (the core blocks); every hit pays cash; cash buys upgrades. Each
-sector hides the **AI core** under its tiles; the player's **uplinks** (the
-turrets) charge a synchronised **override** pulse the player aims at the
-structure. The AI **reacts**: from sector 3 it reroutes power to shield its
-core, and a breakable **firewall node** shows where to strike. Breaking the
-core **recovers the sector** (it turns cyan and the next sector begins). The
-story is told by play only: no dialogue, characters or story screens. One
-screen, no menus. Title stays **Neon Crusher** until NC-ID-1. Target
-portal: CrazyGames (`docs/CRAZYGAMES.md`).
-
-Names in the UI (EN / PL): drones / drony, override / przejęcie, breach power
-/ siła przełamania, sector / sektor, recovered / odzyskano, AI shield / osłona
-AI, core exposed / rdzeń odsłonięty. Code names stay (`balls`, `volley`,
-`heart`, `level`) so saves and tests keep their meaning.
+**KERNELFALL — active idle about destroying a rogue AI.** Autonomous drones
+bounce and damage hardware; every normal hit earns cash for upgrades. The
+player aims OVERRIDE pulses at critical supply nodes or the heart. The AI
+reacts with temporary shields from sector 3; disconnected branches erode
+through their supply topology. Destroy the final core after twelve sectors,
+then continue endlessly. One screen, no menus, dialogue or blocking finale.
+Rules and source assets: `docs/KERNELFALL_BASIC.md`. Technical names (`balls`,
+`volley`, `heart`, `level`) and the v1 save contract stay unchanged.
 
 ## Breach (NC-ORIGINAL-1) — the core mechanic (now "override" in the UI)
 
@@ -203,3 +194,12 @@ Owner decisions that change this file are recorded here with a date.
 - 2026-11-09 (NC-ORIGINAL-1, merged PR #7): breach mechanic (heart, relays, aimed volley, autopilot, shatter), Fire rate → Volley charge (NC-10), ball refill fixed 700 ms, new income sources (above), audio + sound toggle, first-purchase target 20–45 s → 15–45 s. Prices, block HP, money per hit and the save format unchanged.
 - 2026-11-09 (NC-CORE-1A, merged PR #6 with scale 250): first minute — world scale 250 (NC-09), turrets aim at the core, core progress bar, `+$n` labels, first-minute hint; no price, reward, HP or save change. Alternative for the owner: world scale 280 (800×450 unchanged 1:1, slower mid-game). Active-play twist (NC-10/11/12) proposed, not implemented.
 - 2026-11-09 (NC-BASIC-1, fast track to Basic Launch): English UI added (Polish kept), save validation + backup; no gameplay, balance or canvas-size change. UI copy: Cash/Kasa, Level/Poziom, Buy new ball/Kup nową kulę, Balls: n/Kulki: n, Fire rate/Szybkość strzału, Hit power/Siła uderzenia, Lvl n.
+
+## KERNELFALL Basic package (2026-11-10)
+
+The owner-authorized rebrand replaces Network Recovery's player-facing recovery
+story with destruction of a rogue AI. Prices, base physics and v1 saves stay
+unchanged. Rules, tuning, three power-topology archetypes and the twelve-sector
+objective are specified in `docs/KERNELFALL_BASIC.md`; tests: `qa/collapse.mjs`.
+The campaign continues endlessly after sector 12; completion is derived from
+`level >= 13`. Power erosion has no cash reward and never kills the heart.

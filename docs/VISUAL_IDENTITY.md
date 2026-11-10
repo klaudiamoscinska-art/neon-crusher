@@ -51,3 +51,13 @@ loaded, or where images are missing, the Canvas version draws.
 Screens of every element in play: `qa/art-shots.mjs` (14 scenes, BEFORE/AFTER
 sheets in the NC-AI-RECOVERY-1 PR). The rejected NC-ART-ASSETS-1 raster
 sprites (PR #9, not merged) are not used anywhere.
+
+## KERNELFALL package
+
+Approved input: owner-supplied wordmark raster and simplified editable symbol
+SVG, local paths only. The command deck uses restrained graphite panels with
+thin functional accents; the proven PR #10 module/drone/core art is preserved.
+Four supply branches and three core ornaments express the archetypes. Amber
+edges carry power; cyan edges and borders mark disconnected modules. Twelve
+small HUD segments show the final-core objective without a separate screen.
+Asset sources and review limits: `docs/KERNELFALL_BASIC.md`.

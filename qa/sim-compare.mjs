@@ -20,6 +20,8 @@ function scenario(seed, hz, save, w, h) {
   const storage = new FakeStorage(save ? { 'neonCrusher.save.v1': JSON.stringify(save) } : {});
   const hh = loadGame({ width: w, height: h, seed, storage });
   const g = hh.newGame();
+  g.draw = () => {}; // progression comparison; drawWork below measures rendering separately.
+  if (process.env.NC_NO_COLLAPSE === '1') g.collapseEnabled = false;
   if (process.env.NC_NO_DEFENSE === '1') g.defenseFromLevel = Infinity;
   let t = 0;
   // 150 s: buy whatever is affordable every 2 s, aim a volley at the core
@@ -61,7 +63,7 @@ if (process.argv[2] === '--child') {
   const noDefense = process.argv.includes('--no-defense');
   const base = path.resolve(pos[0] || '');
   const cand = path.resolve(pos[1] || path.join(ROOT, 'game.js'));
-  const run = (file) => JSON.parse(spawnSync(process.execPath, [self, '--child'], { env: { ...process.env, NC_GAME_JS: file, NC_NO_DEFENSE: noDefense ? '1' : '0' }, encoding: 'utf8', maxBuffer: 1 << 26 }).stdout);
+  const run = (file) => JSON.parse(spawnSync(process.execPath, [self, '--child'], { env: { ...process.env, NC_GAME_JS: file, NC_NO_DEFENSE: noDefense ? '1' : '0', NC_NO_COLLAPSE: process.argv.includes('--no-collapse') ? '1' : '0' }, encoding: 'utf8', maxBuffer: 1 << 26 }).stdout);
   if (noDefense) console.log('adaptive defense OFF in both builds (defenseFromLevel = Infinity)');
   const a = run(base);
   const b = run(cand);

@@ -284,7 +284,13 @@ export function loadGame({ width = 900, height = 600, dpr = 1, seed = 1, storage
     ...api,
     context, canvas, ctx, storage, elements, consoleLog, winHandlers, docHandlers,
     /** Constructs the Game exactly like the DOMContentLoaded handler does. */
-    newGame() { h.game = new api.Game(canvas); return h.game; },
+    newGame() {
+      h.game = new api.Game(canvas);
+      // Optional simulation-only acceleration: every fixed update and assertion
+      // still runs. Browser smoke / art captures always render the real game.
+      if (process.env.NC_QA_SIM_ONLY === '1') h.game.draw = () => {};
+      return h.game;
+    },
     /** Fires window/document events the game listens to. */
     fireWindow(type) { for (const fn of winHandlers[type] || []) fn({ type }); },
     fireDocument(type) { for (const fn of docHandlers[type] || []) fn({ type }); },

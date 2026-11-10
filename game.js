@@ -42,6 +42,10 @@ const BREACH_LINES = 10;
 // Seconds the new core takes to assemble outward from the heart (draw only).
 const CORE_ASSEMBLY_TIME = 0.45;
 
+const COLLAPSE_INTERVAL = 0.45;
+const COLLAPSE_HP_FRACTION = 0.06;
+const COLLAPSE_DAMAGE_FACTOR = 2;
+
 const SAVE_KEY = 'neonCrusher.save.v1';
 // Copy of a save that could not be loaded exactly as written (unreadable JSON,
 // unknown format, invalid values). Written BEFORE the game's first save, so
@@ -165,52 +169,60 @@ const STRINGS = {
   en: {
     locale: 'en-US',
     cash: 'Cash',
-    level: 'Sector',
+    level: 'Sector / 12',
+    endless: 'Endless',
     buyBall: 'New drone',
     balls: 'Drones: {n}',
     fireRate: 'Override charge',
     chargeDesc: 'Lvl {n} · {s} s',
     damage: 'Breach power',
     upgradeLevel: 'Lvl {n}',
-    core: 'Recovered',
+    core: 'AI INTEGRITY',
     volley: 'Override',
     volleyReady: 'OVERRIDE READY',
     hintStart: 'Drones break the AI\'s defences · reach its core',
     hintBuy: 'Deploy a new drone!',
     hintVolley: 'Click or tap the core to fire an override',
     hintDefense: 'AI shield up · hit the marked node to break it',
-    breached: 'SECTOR RECOVERED',
-    relay: 'RELAY CAPTURED',
+    breached: 'SECTOR NEUTRALIZED',
+    relay: 'POWER DESTROYED',
     shieldUp: 'AI SHIELD',
     exposed: 'CORE EXPOSED',
     shieldBroken: 'SHIELD BROKEN',
     levelUp: 'SECTOR {n}',
+    collapse: 'NEURAL COLLAPSE',
+    victory: 'AI NEUTRALIZED',
+    destroyed: 'AI CORE DESTROYED',
     soundOn: 'Sound on',
     soundOff: 'Sound off',
   },
   pl: {
     locale: 'pl-PL',
     cash: 'Kasa',
-    level: 'Sektor',
+    level: 'Sektor / 12',
+    endless: 'Bez końca',
     buyBall: 'Nowy dron',
     balls: 'Drony: {n}',
     fireRate: 'Ładowanie przejęcia',
     chargeDesc: 'Lvl {n} · {s} s',
     damage: 'Siła przełamania',
     upgradeLevel: 'Lvl {n}',
-    core: 'Odzyskano',
+    core: 'INTEGRALNOŚĆ AI',
     volley: 'Przejęcie',
     volleyReady: 'PRZEJĘCIE GOTOWE',
     hintStart: 'Drony łamią zabezpieczenia AI · dotrzyj do rdzenia',
     hintBuy: 'Wyślij nowego drona!',
     hintVolley: 'Kliknij lub dotknij rdzeń — impuls przejęcia',
     hintDefense: 'Osłona AI · traf oznaczony węzeł, by ją przełamać',
-    breached: 'SEKTOR ODZYSKANY',
-    relay: 'PRZEKAŹNIK PRZEJĘTY',
+    breached: 'SEKTOR ZNEUTRALIZOWANY',
+    relay: 'ZASILANIE ZNISZCZONE',
     shieldUp: 'OSŁONA AI',
     exposed: 'RDZEŃ ODSŁONIĘTY',
     shieldBroken: 'OSŁONA PRZEŁAMANA',
     levelUp: 'SEKTOR {n}',
+    collapse: 'ROZPAD NEURONOWY',
+    victory: 'AI ZNEUTRALIZOWANA',
+    destroyed: 'RDZEŃ AI ZNISZCZONY',
     soundOn: 'Dźwięk włączony',
     soundOff: 'Dźwięk wyłączony',
   },
@@ -2365,6 +2377,7 @@ class Game {
     this.markInnerShield(layout, useGrid);
     this.placeRelays(level);
     this.buildNetwork();
+    this.buildPowerNetwork(level);
     this.heart = this.blocks.find((b) => b.kind === 'heart') || null;
     this.defense = null;
     this.exposed = null;
@@ -2454,6 +2467,101 @@ class Game {
       near = inner.filter((_, i) => i % Math.max(1, Math.floor(inner.length / 6)) === 0).slice(0, 6);
     }
     for (const b of near) this.links.push({ a: b, b: heart, axon: true });
+  }
+
+  /** Deterministic power trees. Geometry and collision bodies stay unchanged.
+   * Firewall: angular branches; memory: striped banks; neural: radial lobes.
+   * A parent is a real supply edge: dead parents disconnect descendants. */
+  buildPowerNetwork(level) {
+    this.collapseEnabled ??= true;
+    this.archetype = (level - 1) % 3;
+    this.powerEdges = [];
+    this.collapseClock = 0;
+    this.lastCollapseToast = -10;
+    const heart = this.blocks.find(b => b.kind === 'heart');
+    const groups = [[], [], [], []];
+    for (const b of this.blocks) {
+      b.powerParent = null;
+      b.offline = false;
+      if (b === heart) continue;
+      const x = b.baseOffsetX, y = b.baseOffsetY;
+      const angle = Math.atan2(y, x) + Math.PI;
+      const group = this.archetype === 1
+        ? (x < 0 ? 0 : 2) + (y < 0 ? 0 : 1)
+        : Math.min(3, Math.floor(angle / (Math.PI / 2)));
+      groups[group].push(b);
+    }
+    for (const group of groups) {
+      group.sort((a,b) => Math.hypot(a.baseOffsetX,a.baseOffsetY) - Math.hypot(b.baseOffsetX,b.baseOffsetY) || a.baseOffsetX-b.baseOffsetX || a.baseOffsetY-b.baseOffsetY);
+      const supplied = [heart];
+      for (const b of group) {
+        const liveBranch = supplied.length > 1 ? supplied.slice(1) : supplied;
+        const candidates = this.archetype === 0 ? liveBranch.slice(-1) : this.archetype === 1 ? liveBranch.slice(-2) : liveBranch;
+        const parent = candidates.reduce((a,c) => Math.hypot(b.baseOffsetX-c.baseOffsetX,b.baseOffsetY-c.baseOffsetY) < Math.hypot(b.baseOffsetX-a.baseOffsetX,b.baseOffsetY-a.baseOffsetY) ? c : a);
+        b.powerParent = parent;
+        this.powerEdges.push({a:parent,b});
+        supplied.push(b);
+      }
+      if (group.length) group[0].criticalPower = true;
+    }
+  }
+
+  /** One bounded erosion hit every 0.45 s, never a free board wipe.
+   * No cash, relay bonus or recharge is awarded by power erosion. */
+  updateCollapse(dt) {
+    if (!this.collapseEnabled || !this.heart?.alive) return;
+    let newlyOffline = false;
+    for (const {a,b} of this.powerEdges) {
+      if (b.alive && !b.offline && (!a.alive || a.offline)) {
+        b.offline = true;
+        newlyOffline = true;
+      }
+    }
+    if (newlyOffline && this.time - (this.lastCollapseToast ?? -10) > 2) {
+      this.lastCollapseToast = this.time;
+      this.addToast(this.t('collapse'), COLORS.cyan);
+    }
+    this.collapseClock += dt;
+    if (this.collapseClock < COLLAPSE_INTERVAL) return;
+    this.collapseClock -= COLLAPSE_INTERVAL;
+    const target = this.powerEdges.find(({a,b}) => b.alive && b.offline && !a.alive)?.b;
+    if (!target) return;
+    target.hitFlash = 0.5;
+    if (target.takeHit(Math.min(target.maxHp * COLLAPSE_HP_FRACTION, this.ballDamage * COLLAPSE_DAMAGE_FACTOR))) {
+      this.recovered.push(target);
+      if (this.defense?.node === target) this.breakDefense(target);
+      this.particles.burst(target.cx,target.cy,COLORS.cyan,10);
+    }
+  }
+
+  drawPowerNetwork(ctx) {
+    if (!this.collapseEnabled) return;
+    ctx.save();
+    ctx.lineWidth = 1.2;
+    // Three readable core silhouettes: firewall bars, memory banks, neural halo.
+    const heart = this.heart;
+    if (heart?.alive) {
+      const r = heart.size * 0.68;
+      ctx.strokeStyle = COLORS.amber;
+      ctx.beginPath();
+      if (this.archetype === 2) ctx.arc(heart.cx,heart.cy,r,0,Math.PI*2);
+      else for (const sign of [-1,1]) {
+        const x = heart.cx+sign*r;
+        ctx.moveTo(x,heart.cy-r); ctx.lineTo(x,heart.cy+r);
+        if (this.archetype === 1) {ctx.moveTo(x-sign*3,heart.cy-r);ctx.lineTo(x-sign*3,heart.cy+r);}
+      }
+      ctx.stroke();
+    }
+    for (const {a,b} of this.powerEdges) {
+      if (!b.alive) continue;
+      ctx.strokeStyle = b.offline ? COLORS.cyan : 'rgba(255,196,0,0.32)';
+      ctx.beginPath(); ctx.moveTo(a.cx,a.cy); ctx.lineTo(b.cx,b.cy); ctx.stroke();
+      if (b.criticalPower || b.offline) {
+        ctx.strokeStyle = b.offline ? COLORS.cyan : COLORS.amber;
+        ctx.strokeRect(b.x-2,b.y-2,b.size+4,b.size+4);
+      }
+    }
+    ctx.restore();
   }
 
   /** Energy relays: min(1 + floor((L-2)/3), 4) random armour blocks from
@@ -2889,7 +2997,7 @@ class Game {
     const bonus = HEART_BONUS * heart.moneyPerHit;
     this.cash += bonus;
     this.coresShattered += 1;
-    this.addToast(`${this.t('breached')} +${formatMoney(bonus, this.lang)}`, COLORS.cyan);
+    this.addToast(`${this.t(this.level === 12 ? 'destroyed' : 'breached')} +${formatMoney(bonus, this.lang)}`, COLORS.cyan);
     for (const b of this.blocks) {
       if (b.alive && b.shatter === null) b.shatter = Math.hypot(b.cx - heart.cx, b.cy - heart.cy) / SHATTER_SPEED;
     }
@@ -2944,6 +3052,7 @@ class Game {
   updateUI() {
     this.ui.cash.textContent = formatMoney(this.cash, this.lang);
     this.ui.level.textContent = String(this.level);
+    this.ui.levelLabel.textContent = this.t(this.level >= 13 ? 'endless' : 'level');
 
     this.ui.buyBallDesc.textContent = this.t('balls', { n: this.maxBalls });
     this.ui.buyBallCost.textContent = formatMoney(this.ballCost, this.lang);
@@ -3033,6 +3142,7 @@ class Game {
     this.time += dt;
     this.updateVolley(dt);
     this.updateDefense(dt);
+    this.updateCollapse(dt);
     for (const turret of this.turrets) turret.update(dt, this);
 
     for (const ball of this.balls) {
@@ -3050,7 +3160,7 @@ class Game {
     if (!aliveRemaining) {
       this.level += 1;
       this.generateCore(this.level);
-      this.addToast(this.t('levelUp', { n: this.level }), COLORS.cyan, true);
+      this.addToast(this.level === 13 ? this.t('victory') : this.t('levelUp', { n: this.level }), COLORS.cyan, true);
       this.sound.play('level');
     }
 
@@ -3111,6 +3221,7 @@ class Game {
       this.drawNetwork(c);
       this.drawConduits(c);
     });
+    this.drawPowerNetwork(ctx);
     this.drawDefense(ctx);
     this.drawHeartLock(ctx);
     this.drawSync(ctx);
@@ -3965,7 +4076,7 @@ class Game {
    * both read it). The uplinks sit on the axes (one at top centre) and the
    * core in the middle, so text lives in the two top corners only:
    * left column = recovery meter, then event toasts ("SECTOR n", "SHIELD
-   * BROKEN", "RELAY CAPTURED", "SECTOR RECOVERED"); right column = override
+   * BROKEN", "POWER DESTROYED", "SECTOR NEUTRALIZED"); right column = override
    * meter, then the AI alert ("AI SHIELD" / "CORE EXPOSED").
    */
   hudLayout() {
@@ -4016,7 +4127,7 @@ class Game {
   /** Event toast (cosmetic): newest at the bottom of the stack, at most 3. */
   addToast(text, color, big) {
     if (this.toasts.length >= 3) this.toasts.shift();
-    this.toasts.push({ text, color, life: big ? 1.6 : 1.8, big: !!big });
+    this.toasts.push({ text, color, life: text === this.t('victory') ? 4.5 : big ? 1.6 : 1.8, big: !!big });
   }
 
   /** Screen-space HUD: meters, AI alert, event toasts (hudLayout). */
@@ -4034,8 +4145,8 @@ class Game {
         let glow = 6;
         let textColor;
         if (r.id === 'progress') {
-          value = this.uiProgress || 0;
-          label = `${this.t('core')} ${Math.floor(this.coreProgress * 100)}%`;
+          value = 1 - (this.uiProgress || 0);
+          label = `${this.t('core')} ${Math.ceil((1 - this.coreProgress) * 100)}%`;
           color = COLORS.cyan;
           ctx.textAlign = 'left';
         } else if (r.id === 'override') {
@@ -4063,6 +4174,12 @@ class Game {
         const tx = ctx.textAlign === 'left' ? r.x : ctx.textAlign === 'right' ? r.x + r.w : r.x + r.w / 2;
         ctx.fillText(label, tx, r.y, r.w);
         this.drawSegmentBar(ctx, r.x, r.y + Math.round(16 * r.u), r.w, Math.round(5 * r.u), value, color, glow);
+        if (r.id === 'progress') {
+          for (let i=0;i<12;i++) {
+            ctx.fillStyle = i < Math.min(12,this.level-1) ? COLORS.cyan : i === this.level-1 ? COLORS.amber : '#334052';
+            ctx.fillRect(r.x+i*r.w/12,r.y+Math.round(24*r.u),r.w/12-2,3);
+          }
+        }
       } else if (r.id === 'toast') {
         const t = r.toast;
         const a = clamp(t.life / 0.3, 0, 1);
