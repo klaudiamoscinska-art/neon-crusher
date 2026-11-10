@@ -49,8 +49,16 @@ Visual changes (NC-ART-1), also tools, not suites:
 node qa/sim-compare.mjs /tmp/base-game.js        # simulation bit-identical to the base? + draw counters per frame
 node qa/art-shots.mjs --root /tmp/base --out qa/out/art/before   # base folder with index.html/style.css/game.js
 node qa/art-shots.mjs --out qa/out/art/after                     # 13 scenes + frame cost (rAF + forced raster)
-node qa/art-shots.mjs --sheet qa/out/art/before qa/out/art/after --out qa/out/art/sheets
+node qa/art-shots.mjs --sheet qa/out/art/before qa/out/art/after --out qa/out/art/sheets --labels "BEFORE (main)" "AFTER (stage)"
+node qa/art-shots.mjs --root /tmp/cand --out /tmp/shots --only 03,15 --no-perf   # a subset of scenes
+node qa/sprite-scale.mjs --sprites <folder of candidate PNGs> --out qa/out/art/scale   # procedural vs sprite at game scale
 ```
+
+`art-shots` (NC-ART-ASSETS-1): 17 scenes (adds 10 s into a fresh game,
+damaged relays, phone landscape, phone DPR 2), `Math.random` seeded per
+scene in the test page (base and candidate start from the same layout),
+every HTTP error and every request to another host logged per scene,
+frame probe on four scenarios (adds 1216×684 level 8, 60 balls).
 
 ## Harness (`qa/lib.mjs`)
 

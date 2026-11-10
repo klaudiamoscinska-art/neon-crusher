@@ -8,11 +8,17 @@
 // Saves are seeded before game.js runs (like qa/browser-smoke.mjs); frame
 // cost is measured by wrapping requestAnimationFrame in the test page only
 // (no runtime hook). Headless Chromium numbers are indicative, not a device.
+// NC-ART-ASSETS-1: the test page also seeds Math.random (mulberry32, per
+// scene) so a base and a candidate build start from the same core layout
+// (relay positions, ball angles); frame timing still differs slightly.
+// Every response is logged: a missing file (404) or a request to another
+// host is reported per scene. --labels "<before>" "<after>" names the sheet
+// columns.
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { ROOT } from './lib.mjs';
+import { ROOT, mulberry32 } from './lib.mjs';
 
 const require = createRequire(import.meta.url);
 const pw = (() => { for (const id of ['playwright', 'playwright-core']) { try { return require(id); } catch { /* next */ } } return null; })();
@@ -49,7 +55,16 @@ const SCENES = [
   { name: '11-phone-portrait-390x844', vp: [390, 844], save: null, wait: 2500, touch: true },
   { name: '12-tablet-1080x607', vp: [1080, 607], save: { cash: 60, level: 3, maxBalls: 3, fireRateLevel: 2, damageLevel: 2 }, wait: 2500, touch: true },
   { name: '13-reduced-motion-shatter-907x510', vp: [907, 510], save: { cash: 50, level: 5, maxBalls: 4, fireRateLevel: 1, damageLevel: 40 }, volley: 'click', after: 110, reducedMotion: true },
+  // NC-ART-ASSETS-1 additions: 10 s into a fresh game, damaged relays,
+  // phone landscape, a DPR 2 phone (sprite sharpness).
+  { name: '14-first-10s-907x510', vp: [907, 510], save: null, wait: 10000 },
+  { name: '15-relays-damaged-level8-907x510', vp: [907, 510], save: { cash: 50, level: 8, maxBalls: 10, fireRateLevel: 1, damageLevel: 8 }, wait: 4500 },
+  { name: '16-phone-landscape-844x390', vp: [844, 390], save: { cash: 60, level: 5, maxBalls: 5, fireRateLevel: 2, damageLevel: 3 }, wait: 2500, touch: true },
+  { name: '17-phone-dpr2-390x844-level5', vp: [390, 844], dpr: 2, save: { cash: 60, level: 5, maxBalls: 5, fireRateLevel: 2, damageLevel: 3 }, wait: 2500, touch: true },
 ];
+
+/** Seeds Math.random in the test page (not in the runtime). */
+const SEED_SCRIPT = ([src, seed]) => { const r = (0, eval)(`(${src})`)(seed); Math.random = r; };
 
 // Each rAF callback is timed together with a 1-pixel getImageData, which
 // forces the canvas to rasterise the frame inside the measurement (otherwise
@@ -73,8 +88,10 @@ async function capture(root, out) {
   const base = `http://127.0.0.1:${server.address().port}/`;
   const log = [];
   try {
-    for (const s of SCENES) {
-      const ctx = await browser.newContext({ viewport: { width: s.vp[0], height: s.vp[1] }, deviceScaleFactor: 1, locale: s.locale || 'en-US', hasTouch: !!s.touch, isMobile: !!s.touch, reducedMotion: s.reducedMotion ? 'reduce' : 'no-preference' });
+    const only = opt('--only', '');
+    for (const s of SCENES.filter((x) => !only || only.split(',').some((k) => x.name.startsWith(k)))) {
+      const ctx = await browser.newContext({ viewport: { width: s.vp[0], height: s.vp[1] }, deviceScaleFactor: s.dpr || 1, locale: s.locale || 'en-US', hasTouch: !!s.touch, isMobile: !!s.touch, reducedMotion: s.reducedMotion ? 'reduce' : 'no-preference' });
+      await ctx.addInitScript(SEED_SCRIPT, [mulberry32.toString(), SCENES.indexOf(s) + 1]);
       await ctx.addInitScript((save) => {
         localStorage.setItem('neonCrusher.audio.v1', 'muted');
         if (save) localStorage.setItem('neonCrusher.save.v1', JSON.stringify(save));
@@ -82,6 +99,8 @@ async function capture(root, out) {
       const page = await ctx.newPage();
       const errs = [];
       page.on('pageerror', (e) => errs.push(e.message));
+      page.on('response', (res) => { if (res.status() >= 400) errs.push(`HTTP ${res.status()} ${res.url()}`); });
+      page.on('request', (req) => { if (!req.url().startsWith(base) && !req.url().startsWith('data:')) errs.push(`external request ${req.url()}`); });
       await page.goto(base + 'index.html');
       const box = await page.locator('#gameCanvas').boundingBox();
       const cx = box.x + box.width / 2; const cy = box.y + box.height / 2;
@@ -112,8 +131,9 @@ async function perf(root, out) {
   const base = `http://127.0.0.1:${server.address().port}/`;
   const rows = [];
   try {
-    for (const [w, h, level] of [[1920, 1080, 13], [800, 450, 14], [907, 510, 1]]) {
+    for (const [w, h, level] of [[1920, 1080, 13], [800, 450, 14], [907, 510, 1], [1216, 684, 8]]) {
       const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
+      await ctx.addInitScript(SEED_SCRIPT, [mulberry32.toString(), level]);
       await ctx.addInitScript(RAF_PROBE);
       const save = level === 1 ? null : { cash: 9000, level, maxBalls: 60, fireRateLevel: 10, damageLevel: 12 };
       await ctx.addInitScript((sv) => { localStorage.setItem('neonCrusher.audio.v1', 'muted'); if (sv) localStorage.setItem('neonCrusher.save.v1', JSON.stringify(sv)); }, save);
@@ -138,7 +158,7 @@ async function perf(root, out) {
 }
 
 /** Side-by-side BEFORE | AFTER sheets (JPEG) from two capture folders. */
-async function sheets(beforeDir, afterDir, out) {
+async function sheets(beforeDir, afterDir, out, labels) {
   fs.mkdirSync(out, { recursive: true });
   const browser = await pw.chromium.launch();
   try {
@@ -147,8 +167,8 @@ async function sheets(beforeDir, afterDir, out) {
       const b = fs.readFileSync(path.join(afterDir, f)).toString('base64');
       const page = await browser.newPage({ viewport: { width: 400, height: 300 }, deviceScaleFactor: 1 });
       await page.setContent(`<body style="margin:0;background:#111;font:600 18px Arial;color:#ddd">
-        <div style="display:flex;gap:8px;padding:8px"><figure style="margin:0"><figcaption>BEFORE (main)</figcaption><img src="data:image/png;base64,${a}"></figure>
-        <figure style="margin:0"><figcaption>AFTER (NC-ART-1)</figcaption><img src="data:image/png;base64,${b}"></figure></div></body>`);
+        <div style="display:flex;gap:8px;padding:8px"><figure style="margin:0"><figcaption>${labels[0]}</figcaption><img src="data:image/png;base64,${a}"></figure>
+        <figure style="margin:0"><figcaption>${labels[1]}</figcaption><img src="data:image/png;base64,${b}"></figure></div></body>`);
       await page.waitForTimeout(100);
       const size = await page.evaluate(() => ({ w: document.body.scrollWidth, h: document.body.scrollHeight }));
       await page.setViewportSize({ width: size.w, height: size.h });
@@ -164,7 +184,8 @@ if (!pw) { console.log('NOT RUN: Playwright not installed'); process.exit(2); }
 const out = path.resolve(opt('--out', path.join(ROOT, 'qa', 'out', 'art', 'after')));
 if (args.includes('--sheet')) {
   const i = args.indexOf('--sheet');
-  await sheets(path.resolve(args[i + 1]), path.resolve(args[i + 2]), out);
+  const l = args.indexOf('--labels');
+  await sheets(path.resolve(args[i + 1]), path.resolve(args[i + 2]), out, l >= 0 ? [args[l + 1], args[l + 2]] : ['BEFORE (main)', 'AFTER (candidate)']);
 } else {
   const root = path.resolve(opt('--root', ROOT));
   if (!args.includes('--perf-only')) await capture(root, out);
