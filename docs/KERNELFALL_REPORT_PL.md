@@ -92,8 +92,8 @@ NOT RUN / NOT VERIFIED. Symulacja 60/144/165 Hz jest osobnym dowodem.
 
 ## HANDOFF
 
-STAN PRAC: implementacja i materiały lokalne; wyniki końcowego QA i wydajności
-zostaną dopisane poniżej. Zdalny PR blokuje HTTP 403 obu metod zapisu.
+STAN PRAC: implementacja, pełne QA i materiały lokalne gotowe.
+Zdalny PR blokuje HTTP 403 obu metod zapisu.
 REPO: klaudiamoscinska-art/neon-crusher, feature/kernelfall-basic-final;
 origin/main = c8542741296489324b7d235b682c7e5de78a9a42; PR: brak.
 ZMIANY: branding/UI, graf rozpadu, trzy archetypy, 12 sektorów/endless,
@@ -152,3 +152,56 @@ Nie obniżano liczby dronów, DPR ani jakości zaakceptowanych sprite'ów.
 To wskaźnik laboratoryjny, nie gwarancja FPS na urządzeniach. Rozrzut p95
 małego ekranu pozostaje widoczny; pomiar na iPhonie/Chromebooku NOT RUN.
 Wcześniejsze pomiary wykonywane podczas równoległych botów nie służą do oceny.
+
+
+## Końcowe wyniki QA i paczka
+
+Pełny zestaw: **255 PASS, 0 FAIL, 1 NOT RUN** (fizyczne safe areas).
+Testowany runtime: `a7b6fd1bbb622d165a56e2a7d79028b589e8f8bf`;
+późniejsze zmiany obejmują dokumentację, screenshoty i narzędzia deweloperskie.
+Komenda: `NC_QA_SIM_ONLY=1 NC_CHROMIUM=/usr/bin/chromium node qa/run-all.mjs --base origin/main`.
+Tryb symulacyjny pomija tylko pusty renderer harnessu. Pełny rzeczywisty
+renderer nadal działa w browser-smoke, scenach iframe i pomiarach wydajności;
+osobny test potwierdza identyczność stanów z rysowaniem i bez niego.
+
+| Zestaw | PASS | FAIL | Pozostałe |
+|---|---:|---:|---|
+| integrity | 9 | 0 | porównanie z origin/main wykonane |
+| instructions | 12 | 0 | |
+| runner | 18 | 0 | |
+| physics | 20 | 0 | 48 ziaren; 60/144/165 Hz |
+| levels | 25 | 0 | geometry/resize |
+| economy | 30 | 0 | pełny profil |
+| save | 24 | 0 | stary save, backup, reload |
+| i18n | 17 | 0 | EN/PL |
+| collapse | 64 | 0 | topologia, erozja, zapis, Hz i renderer |
+| recovery | 17 | 0 | osłony, idle, geometria HUD |
+| browser-smoke | 19 | 0 | NOT RUN: fizyczne safe areas |
+
+Dodatkowy rzeczywisty Chromium w iframe: 10/10; lokalne logo dekoduje się,
+cztery rozmiary mieszczą UI, wszystkie archetypy odłączają gałąź,
+finał przechodzi do endless, 0 błędów i 0 żądań zewnętrznych.
+Logi, JSON testów, manifest oraz wyniki bazowe są w pakiecie odbiorowym.
+
+HTML5: 5 plików, **279814 B**, ZIP **151634 B**. Rozmiar skompresowanego ZIP
+może zmienić się przy ponownym zbudowaniu; aktualny SHA-256 i listę plików
+zawsze wyznacza `qa/out/package-manifest.json`. Zweryfikowano CRC ZIP,
+kompletność lokalnych zasobów i względne odwołania. Brak plików dev w HTML5.
+
+## Pakiet do kontynuacji mimo 403
+
+Poza repo przygotowano `KERNELFALL-review.bundle`, `KERNELFALL_REVIEW.zip`,
+`KERNELFALL_PR_BODY_PL.md` i `KERNELFALL_GIT_STATUS.txt` z końcowym SHA gałęzi.
+Bundle zawiera commity tej gałęzi względem main; ZIP zawiera także raport,
+screenshoty, pełne logi i oba formaty HTML5. Przywrócenie w istniejącym repo:
+
+1. `git bundle verify /ścieżka/KERNELFALL-review.bundle`
+2. `git fetch /ścieżka/KERNELFALL-review.bundle feature/kernelfall-basic-final:feature/kernelfall-basic-final`
+3. Sprawdzić raport, SHA oraz `git diff origin/main...feature/kernelfall-basic-final`.
+4. Po uzyskaniu uprawnień: wysłać tylko gałąź feature i otworzyć jeden PR
+   do main z przygotowanym opisem. Nie scalać ani nie wdrażać automatycznie.
+
+Cel odbioru GPT: jakość nowego UI i logo przy DPR 1, czytelność rzeczywistych
+węzłów i efektów rozpadu, czy trzy archetypy są wystarczająco odmienne,
+pasywne tempo i finał 12 sektorów, zgodność starego save oraz gotowość CG.
+Status produkcji: bez zmian. Status PR: **NIE UTWORZONO — HTTP 403**.

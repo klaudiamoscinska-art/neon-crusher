@@ -5,7 +5,9 @@ import crypto from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {ROOT,OUT} from './lib.mjs';
 const files=['index.html','style.css','game.js','assets/brand/wordmark-480.png','assets/brand/symbol-small-editable.svg'];
-const dir=path.join(OUT,'crazygames-html5');fs.mkdirSync(dir,{recursive:true});
+const dir=path.join(OUT,'crazygames-html5');
+// Rebuild this tool-owned output folder so stale files cannot enter an upload.
+fs.rmSync(dir,{recursive:true,force:true});fs.mkdirSync(dir,{recursive:true});
 const manifest=[];
 for(const file of files){const source=fs.readFileSync(path.join(ROOT,file));const dest=path.join(dir,file);fs.mkdirSync(path.dirname(dest),{recursive:true});fs.writeFileSync(dest,source);manifest.push({file,bytes:source.length,sha256:crypto.createHash('sha256').update(source).digest('hex')});}
 for(const file of ['index.html','style.css','game.js']){

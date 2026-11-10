@@ -95,7 +95,8 @@ async function capture(root, out) {
   const base = `http://127.0.0.1:${server.address().port}/`;
   const log = [];
   try {
-    for (const s of SCENES) {
+    const select = opt('--select', '');
+    for (const s of SCENES.filter(s => !select || select.split(',').some(prefix => s.name.startsWith(prefix)))) {
       const ctx = await browser.newContext({ viewport: { width: s.vp[0], height: s.vp[1] }, deviceScaleFactor: DPR, locale: s.locale || 'en-US', hasTouch: !!s.touch, isMobile: !!s.touch, reducedMotion: s.reducedMotion ? 'reduce' : 'no-preference' });
       await ctx.addInitScript((save) => {
         localStorage.setItem('neonCrusher.audio.v1', 'muted');
