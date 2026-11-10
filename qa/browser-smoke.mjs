@@ -1,6 +1,6 @@
 // Browser smoke test in real Chromium at the CrazyGames iframe sizes (DPR 1):
-// loads without errors or external requests in an English and a Polish
-// browser, animates, fits without page scroll, text readable and inside its
+// loads without errors or external requests with EN default in English/Polish
+// browsers and with an explicit Polish URL choice, animates, fits without page scroll, text readable and inside its
 // box, save survives a reload, a corrupted save is backed up.
 // Screenshots: qa/out/shots/.
 // Needs Playwright already installed on the machine (never added as a repo
@@ -18,7 +18,7 @@ function loadPlaywright() {
   return null;
 }
 
-const TYPES = { '.svg': 'image/svg+xml', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css' };
+const TYPES = { '.svg': 'image/svg+xml', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.json': 'application/json' };
 function serve() {
   return new Promise((resolve) => {
     const server = http.createServer((req, res) => {
@@ -47,15 +47,15 @@ export async function run() {
   const overflow = []; const smallCanvas = []; const langs = {}; const titles = {}; const hintBad = []; const hintTexts = {};
   let userSelect = null; let safeArea = null;
   try {
-    for (const locale of ['en-US', 'pl-PL']) {
+    for (const [mode, locale, query] of [['en-default', 'en-US', ''], ['pl-browser-default', 'pl-PL', ''], ['pl-explicit', 'pl-PL', '?lang=pl']]) {
       for (const [w, h] of CG_FRAMES) {
         const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, locale });
         const page = await ctx.newPage();
-        const tag = `${locale} ${w}x${h}`;
+        const tag = `${mode} ${w}x${h}`;
         page.on('pageerror', (e) => errors.push(`${tag}: ${e.message}`));
         page.on('console', (m) => { if (m.type() === 'error') errors.push(`${tag}: ${m.text()}`); });
         page.on('request', (q) => { if (!q.url().startsWith(base)) external.push(q.url()); });
-        await page.goto(base + 'index.html');
+        await page.goto(base + 'index.html' + query);
         await page.waitForTimeout(600);
         const m = await page.evaluate(() => {
           const c = document.getElementById('gameCanvas').getBoundingClientRect();
@@ -78,35 +78,36 @@ export async function run() {
         fonts.push(m.minFont);
         userSelect = userSelect === null || userSelect === 'none' ? m.us : userSelect;
         safeArea = m.insets;
-        (langs[locale] ||= new Set()).add(m.lang); (titles[locale] ||= new Set()).add(m.title);
+        (langs[mode] ||= new Set()).add(m.lang); (titles[mode] ||= new Set()).add(m.title);
         if (m.over.length) overflow.push(`${tag}: ${m.over.join(',')}`);
         if (!m.hint.visible || !m.hint.inside || m.hint.cut || !m.hint.passThrough) hintBad.push(`${tag}: ${JSON.stringify(m.hint)}`);
-        (hintTexts[locale] ||= new Set()).add(m.hint.text);
+        (hintTexts[mode] ||= new Set()).add(m.hint.text);
         if (m.ch / h < 0.7) smallCanvas.push(`${tag}: ${Math.round((100 * m.ch) / h)}%`);
         if (m.sh > h + 1 || m.sw > w + 1) scroll.push(tag);
         if (m.shopBottom > h + 1) shopOff.push(tag);
         const a = await page.screenshot();
         await page.waitForTimeout(400);
-        const b = await page.screenshot({ path: path.join(shots, `frame-${locale}-${w}x${h}.png`) });
+        const b = await page.screenshot({ path: path.join(shots, `frame-${mode}-${w}x${h}.png`) });
         if (a.equals(b)) still.push(tag);
         await ctx.close();
       }
     }
-    r.check('10 CrazyGames frames x 2 languages: no page errors / console errors', errors.length === 0, errors.slice(0, 3).join(' | '));
+    r.check('10 CrazyGames frames x 3 language choices: no page errors / console errors', errors.length === 0, errors.slice(0, 3).join(' | '));
     r.check('no request leaves the local server', external.length === 0, external.slice(0, 3).join(', '));
     r.check('no page scroll at any frame', scroll.length === 0, scroll.join(', '));
     r.check('shop fully visible at every frame', shopOff.length === 0, shopOff.join(', '));
     r.check('canvas animates (two screenshots 400 ms apart differ)', still.length === 0, still.join(', '));
-    r.check('[NC-07] English browser -> English UI (lang="en", "New drone") at every frame', [...langs['en-US']].join() === 'en' && [...titles['en-US']].join() === 'New drone', `lang=${[...langs['en-US']]}, "${[...titles['en-US']]}"`);
-    r.check('[NC-07] Polish browser -> Polish UI kept (lang="pl", "Nowy dron") at every frame', [...langs['pl-PL']].join() === 'pl' && [...titles['pl-PL']].join() === 'Nowy dron', `lang=${[...langs['pl-PL']]}, "${[...titles['pl-PL']]}"`);
+    r.check('[NC-07] English browser -> English UI (lang="en", "New drone") at every frame', [...langs['en-default']].join() === 'en' && [...titles['en-default']].join() === 'New drone', `lang=${[...langs['en-default']]}, "${[...titles['en-default']]}"`);
+    r.check('English remains default in a Polish browser at every frame', [...langs['pl-browser-default']].join() === 'en' && [...titles['pl-browser-default']].join() === 'New drone', `lang=${[...langs['pl-browser-default']]}, "${[...titles['pl-browser-default']]}"`);
+    r.check('explicit ?lang=pl selects Polish at every frame', [...langs['pl-explicit']].join() === 'pl' && [...titles['pl-explicit']].join() === 'Nowy dron', `lang=${[...langs['pl-explicit']]}, "${[...titles['pl-explicit']]}"`);
     r.check('[NC-17] no text overflows its box in the top bar or the shop (both languages)', overflow.length === 0, overflow.slice(0, 4).join(' | '));
-    r.check('first-minute hint on a fresh save: visible, inside the field, not cut off, taps pass through to the game (both languages)', hintBad.length === 0, hintBad.slice(0, 2).join(' | ') || `en: ${[...hintTexts['en-US']]} | pl: ${[...hintTexts['pl-PL']]}`);
+    r.check('first-minute hint on a fresh save: visible, inside the field, not cut off, taps pass through to the game (both languages)', hintBad.length === 0, hintBad.slice(0, 2).join(' | ') || `en: ${[...hintTexts['en-default']]} | pl: ${[...hintTexts['pl-explicit']]}`);
     r.check('[NC-17] smallest text >= 11 px at DPR 1', Math.min(...fonts) >= 11, `${Math.min(...fonts)} px`);
     // Layout guard for the owner-authorized KERNELFALL UI (Chromium/Linux).
     // Measured main on this machine is 343 px at 907x510; the new deck
     // leaves 344 px. World scaling and the base/candidate bots test pace.
     const BASELINE = '907x510->907x344 1216x684->1216x518 1077x606->1077x440 821x462->821x296 1366x768->1366x602 1920x1080->1920x914 1536x864->1536x698 1280x720->1280x554 800x450->800x284 1080x607->1080x441';
-    r.check('canvas size at every frame and language matches the KERNELFALL deck contract', sizes.join(' ') === `${BASELINE} ${BASELINE}`, sizes.filter((x) => !BASELINE.split(' ').includes(x)).join(' '));
+    r.check('canvas size at every frame and language matches the KERNELFALL deck contract', sizes.join(' ') === `${BASELINE} ${BASELINE} ${BASELINE}`, sizes.filter((x) => !BASELINE.split(' ').includes(x)).join(' '));
     r.info('[NC-17] canvas share of the iframe height below 70 % (open, see docs/RISKS.md)', smallCanvas.length ? smallCanvas.join(', ') : 'none');
     r.check('[NC-08] body has user-select: none (CrazyGames technical requirement for mobile)', userSelect === 'none', `computed: ${userSelect}`);
     r.check('[NC-18] stylesheet pads all four safe-area insets (env(safe-area-inset-*))', safeArea && safeArea.length === 4, `found: ${safeArea}`);

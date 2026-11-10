@@ -196,6 +196,8 @@ const STRINGS = {
     destroyed: 'AI CORE DESTROYED',
     soundOn: 'Sound on',
     soundOff: 'Sound off',
+    artLoading: 'Loading artwork…',
+    artError: 'Artwork could not load. Please reload.',
   },
   pl: {
     locale: 'pl-PL',
@@ -227,25 +229,17 @@ const STRINGS = {
     destroyed: 'RDZEŃ AI ZNISZCZONY',
     soundOn: 'Dźwięk włączony',
     soundOff: 'Dźwięk wyłączony',
+    artLoading: 'Ładowanie grafiki…',
+    artError: 'Nie udało się załadować grafiki. Odśwież stronę.',
   },
 };
 
-/** Picks the UI language: an explicit `?lang=xx` in the URL first, then the
- *  browser's preferred languages; anything unsupported falls back to English.
- *  (The CrazyGames SDK locale replaces the browser list once the SDK is added.) */
-function detectLanguage(nav, search) {
-  const candidates = [];
+/** English is the portal default, independent of the browser locale.
+ *  An explicit ?lang=pl (or ?lang=pl-PL) remains the Polish opt-in. */
+function detectLanguage(_nav, search) {
   const match = /[?&]lang=([a-zA-Z-]+)/.exec(search || '');
-  if (match) candidates.push(match[1]);
-  if (nav) {
-    if (Array.isArray(nav.languages)) candidates.push(...nav.languages);
-    if (nav.language) candidates.push(nav.language);
-  }
-  for (const tag of candidates) {
-    const base = String(tag).toLowerCase().split('-')[0];
-    if (Object.prototype.hasOwnProperty.call(STRINGS, base)) return base;
-  }
-  return DEFAULT_LANGUAGE;
+  const base = match ? match[1].toLowerCase().split('-')[0] : DEFAULT_LANGUAGE;
+  return Object.prototype.hasOwnProperty.call(STRINGS, base) ? base : DEFAULT_LANGUAGE;
 }
 
 function translate(lang, key, vars) {
@@ -996,6 +990,38 @@ class Block {
    * silhouette on the same tile base; broken tiles split into shards.
    */
   static drawCore(ctx, blocks, time, reducedMotion, underlay) {
+    if (Block.atlas?.loaded) {
+      if (underlay) underlay(ctx);
+      ctx.save();
+      ctx.shadowBlur = 0;
+      for (const b of blocks) {
+        ctx.globalAlpha = 1;
+        if (b.kind === 'heart') {
+          // The large boss body is drawn underneath the board. This inset is
+          // the precise, hittable core; a bright rim distinguishes its bounds.
+          if (!b.alive) continue;
+          // The housing's central gem is already visible here. Do not draw
+          // a second miniature boss over it; only mark the exact hitbox.
+          ctx.strokeStyle = Block.exposedHeart ? COLORS.magenta : COLORS.coreHot;
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(b.x, b.y, b.size, b.size);
+          continue;
+        }
+        const type = b.firewall ? 'firewall' : b.kind === 'relay' ? 'relay' : ['armor', 'memory', 'port'][b.variant];
+        const state = !b.alive ? 'broken' : b.offline || b.shatter !== null ? 'isolated' : b.hp / b.maxHp > 0.7 ? 'intact' : b.hp / b.maxHp > 0.35 ? 'damaged' : 'critical';
+        ctx.globalAlpha = b.alive ? 1 : Math.max(0, b.hitFlash);
+        Block.atlas.draw(ctx, `modules/${type}_${state}_256.png`, b.x, b.y, b.size);
+        if (b.alive && b.hitFlash > 0) {
+          ctx.globalAlpha = b.hitFlash * 0.6;
+          ctx.strokeStyle = COLORS.white;
+          ctx.lineWidth = 1;
+          ctx.strokeRect(b.x, b.y, b.size, b.size);
+          Block.atlas.fx(ctx, 'impact', b.cx, b.cy, b.size * 1.5, 1 - b.hitFlash, reducedMotion);
+        }
+      }
+      ctx.restore();
+      return;
+    }
     const tiles = [];
     const armour = [];
     const relays = [];
@@ -1657,6 +1683,42 @@ class Ball {
    *  objects on the field. */
   static drawAll(ctx, balls) {
     if (!balls.length) return;
+    if (Block.atlas?.loaded) {
+      ctx.save();
+      // Keep the inexpensive floor shadows and power-hit feedback from Basic.
+      // Sprite hulls rotate above these shadows, lit consistently top-left.
+      ctx.fillStyle = COLORS.shadow;
+      ctx.beginPath();
+      for (const b of balls) {
+        ctx.moveTo(b.x + 2.5 + b.radius * 0.9, b.y + 4);
+        ctx.arc(b.x + 2.5, b.y + 4, b.radius * 0.9, 0, Math.PI * 2);
+      }
+      ctx.fill();
+      ctx.strokeStyle = COLORS.cyan;
+      ctx.lineWidth = 1.6;
+      ctx.globalAlpha = 0.35;
+      ctx.beginPath();
+      for (const b of balls) { ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - b.vx * 0.035, b.y - b.vy * 0.035); }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      for (let i = 0; i < balls.length; i++) {
+        const b = balls[i];
+        const size = b.radius * 4;
+        ctx.save(); ctx.translate(b.x, b.y);
+        ctx.rotate(Math.atan2(b.vy, b.vx) + Math.PI / 2);
+        Block.atlas.draw(ctx, `drones/${['scout', 'assault', 'support'][i % 3]}_256.png`, -size / 2, -size / 2, size);
+        ctx.restore();
+      }
+      ctx.fillStyle = COLORS.white;
+      ctx.globalAlpha = 0.8;
+      ctx.beginPath();
+      for (const b of balls) if (b.flash > 0) {
+        ctx.moveTo(b.x + b.radius * 0.65, b.y);
+        ctx.arc(b.x, b.y, b.radius * 0.65, 0, Math.PI * 2);
+      }
+      ctx.fill();
+      ctx.restore(); return;
+    }
     ctx.save();
     ctx.lineCap = 'round';
     ctx.fillStyle = COLORS.shadow;
@@ -1666,37 +1728,6 @@ class Ball {
       ctx.arc(b.x + 2.5, b.y + 4, b.radius * 0.9, 0, Math.PI * 2);
     }
     ctx.fill();
-    // R3: on big screens / high DPR the drone sprite (one cached raster for
-    // all drones; below DRONE_SPRITE_MIN_PX the Canvas drone reads better),
-    // trail and shadow stay batched Canvas; a white disc marks the Breach
-    // power flash.
-    const atlas = Block.atlas;
-    const size = balls[0].radius * 2.4;
-    if (SPRITE_USE.drone && atlas && size * Block.pxScale >= DRONE_SPRITE_MIN_PX && atlas.get('drone_player', size * Block.pxScale)) {
-      ctx.strokeStyle = COLORS.cyan;
-      ctx.globalAlpha = 0.22;
-      ctx.lineWidth = 2.2;
-      ctx.beginPath();
-      for (const b of balls) {
-        ctx.moveTo(b.x - b.vx * 0.012, b.y - b.vy * 0.012);
-        ctx.lineTo(b.x - b.vx * 0.034, b.y - b.vy * 0.034);
-      }
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-      for (const b of balls) atlas.draw(ctx, 'drone_player', b.x - size / 2, b.y - size / 2, size, Block.pxScale);
-      ctx.fillStyle = COLORS.white;
-      ctx.beginPath();
-      let flashing = false;
-      for (const b of balls) {
-        if (b.flash <= 0) continue;
-        flashing = true;
-        ctx.moveTo(b.x + b.radius, b.y);
-        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-      }
-      if (flashing) { ctx.globalAlpha = 0.8; ctx.fill(); }
-      ctx.restore();
-      return;
-    }
     const byColor = new Map();
     for (const b of balls) {
       const key = b.flash > 0 ? COLORS.white : b.color;
@@ -1811,6 +1842,16 @@ class Turret {
    * pulses. Firing: a white flash at the muzzle.
    */
   draw(ctx, charge, time, reducedMotion) {
+    if (Block.atlas?.loaded) {
+      const state = this.flash > 0 ? 'firing' : charge >= 1 ? 'ready' : charge > 0.15 ? 'charging' : 'idle';
+      ctx.save();
+      ctx.fillStyle = COLORS.shadow; ctx.beginPath();
+      ctx.arc(this.x + 2.5, this.y + 3.5, 12.5, 0, Math.PI * 2); ctx.fill();
+      ctx.translate(this.x, this.y); ctx.rotate(this.angle + Math.PI / 2);
+      Block.atlas.draw(ctx, `uplinks/${state}_256.png`, -22, -22, 44);
+      if (!reducedMotion && this.flash > 0) Block.atlas.fx(ctx, 'override', 0, 0, 64, 1 - this.flash);
+      ctx.restore(); return;
+    }
     const ready = charge >= 1;
     const pulse = reducedMotion ? 0.7 : 0.5 + 0.5 * Math.sin(time * 6);
     ctx.save();
@@ -1896,82 +1937,135 @@ class Turret {
   }
 }
 
-// SVG namespace identifier for the embedded sprites (an XML name, never
-// fetched; the one http literal qa/integrity.mjs allows).
+// V3 is the same renderer at every viewport / DPR. Legacy vector code below
+// is retained only for non-browser simulation tests, never selected by size.
 const SVG_NS = 'http://www.w3.org/2000/svg';
-// Which elements draw from the sprite atlas — the winners of the in-game A/B
-// (R3, docs/VISUAL_IDENTITY.md): the AI core, the firewall node and, from 30
-// device pixels up (big screens, high DPR), the drones. Tiles, relays and
-// uplinks lost the A/B and stay Canvas. Every element is drawn by the Canvas
-// code until its sprite has loaded, and where images are unavailable (QA
-// harness).
-const SPRITE_USE = { core: true, node: true, drone: true };
-// Drones switch to the sprite only from this size on screen (device px).
-const DRONE_SPRITE_MIN_PX = 30;
+const SPRITE_USE = { core: false, node: true, drone: true };
 
-/**
- * Sprite atlas (NC-AI-RECOVERY-1 R3): the embedded SVG sources are decoded
- * once from data: URIs (no network request) and rasterised on demand at the
- * device-pixel size they are drawn at (rounded up to 4 px), so they stay
- * sharp at DPR 1 and 2 and every world scale. Drawing only: nothing here
- * touches the simulation or its RNG.
- */
 class SpriteAtlas {
   constructor() {
     this.images = new Map();
+    this.bounds = new Map();
     this.cache = new Map();
-    if (typeof Image === 'undefined' || typeof document === 'undefined' || typeof document.createElement !== 'function') return;
-    for (const id of Object.keys(SPRITE_SVG)) {
-      try {
-        const img = new Image();
-        img.onload = () => this.images.set(id, img);
-        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(`<svg xmlns="${SVG_NS}" viewBox="0 0 128 128" width="128" height="128">${SPRITE_DEFS}${SPRITE_SVG[id]}</svg>`);
-      } catch (err) {
-        // No sprite: the Canvas fallback draws this element.
-      }
-    }
+    this.cachePixels = 0;
+    this.used = new Set();
+    this.errors = [];
+    this.loaded = false;
+    this.revision = 0;
+    this.browser = typeof Image !== 'undefined' && typeof document.createElement === 'function';
+    const paths = [];
+    for (const boss of ['firewall', 'memory', 'neural'])
+      for (const state of ['intact', 'damaged', 'critical', 'shatter', 'captured']) paths.push(`bosses/${boss}_${state}_512.png`);
+    for (const module of ['armor', 'memory', 'port', 'relay', 'firewall'])
+      for (const state of ['intact', 'damaged', 'critical', 'isolated', 'broken']) paths.push(`modules/${module}_${state}_256.png`);
+    for (const drone of ['scout', 'assault', 'support']) paths.push(`drones/${drone}_256.png`);
+    for (const state of ['idle', 'charging', 'ready', 'firing']) paths.push(`uplinks/${state}_256.png`);
+    for (const fx of ['impact', 'chain', 'shield_break', 'core_collapse', 'override'])
+      for (let i = 0; i < 8; i++) paths.push(`fx/${fx}/frame_${String(i).padStart(2, '0')}_256.png`);
+    paths.push('environment/arena_floor_1024.png', 'ui/network_128.png', 'ui/shield_128.png');
+    // Remaining brand and UI assets belong to the DOM/CSS; all 100 remain in
+    // the package and are checksum-validated against its original manifest.
+    this.ready = this.browser ? Promise.all(paths.map(path => new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        this.images.set(path, img);
+        if (/^(bosses|drones|uplinks)\//.test(path)) this.alphaBounds(path);
+        this.revision++; resolve();
+      };
+      img.onerror = () => { this.errors.push(path); resolve(); };
+      img.src = `assets/kernelfall-v3/${path}`;
+    }))).then(() => { this.loaded = this.errors.length === 0; }) : Promise.resolve();
   }
 
-  /** Raster of sprite `id` at about `px` device pixels, or null. */
   get(id, px) {
     const img = this.images.get(id);
     if (!img) return null;
-    const n = Math.max(8, Math.min(512, Math.ceil(px / 4) * 4));
+    const n = Math.max(8, Math.min(2048, Math.ceil(px)));
     const key = `${id}|${n}`;
     if (this.cache.has(key)) return this.cache.get(key);
-    let c = null;
-    try {
-      c = document.createElement('canvas');
-      c.width = n;
-      c.height = n;
-      c.getContext('2d').drawImage(img, 0, 0, n, n);
-    } catch (err) {
-      c = null;
-    }
-    if (this.cache.size > 300) this.cache.clear();
-    this.cache.set(key, c);
+    const c = document.createElement('canvas');
+    c.width = n; c.height = n;
+    const g = c.getContext('2d');
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    // Module source padding is transparent. Crop the solid footprint to the
+    // real collision square (source x/y 28..232); keep baked 2.5D shading.
+    if (id.startsWith('modules/')) g.drawImage(img, 28, 28, 204, 204, 0, 0, n, n);
+    else g.drawImage(img, 0, 0, n, n);
+    this.storeRaster(key, c);
     return c;
   }
 
-  /** Draws sprite `id` over the world box (x, y, size); false if unavailable. */
-  draw(ctx, id, x, y, size, pxScale) {
+  storeRaster(key, raster) {
+    // Bound referenced RGBA raster storage to 48 MiB (not total game memory).
+    const pixels = raster.width * raster.height;
+    while (this.cache.size && this.cachePixels + pixels > 12 * 1024 * 1024) {
+      const oldest = this.cache.keys().next().value;
+      const prior = this.cache.get(oldest);
+      this.cachePixels -= prior.width * prior.height;
+      this.cache.delete(oldest);
+    }
+    this.cachePixels += pixels;
+    this.cache.set(key, raster);
+  }
+
+  /** Source alpha bounds are measured once. Skip only fully transparent
+   * margins during blits; retain every visible pixel, scale, rotation/pivot
+   * and a 4-device-pixel filtering guard. No source art is modified. */
+  alphaBounds(id) {
+    if (this.bounds.has(id)) return this.bounds.get(id);
+    const img = this.images.get(id);
+    const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+    const g = c.getContext('2d', { willReadFrequently: true });
+    g.drawImage(img, 0, 0);
+    let data;
+    try { data = g.getImageData(0, 0, c.width, c.height).data; }
+    catch (err) {
+      // A local file: origin may forbid pixel reads. Full blits preserve
+      // exactly the same art; HTTP/Pages can use the transparent-margin cache.
+      const full = { x0: 0, y0: 0, x1: c.width, y1: c.height, width: c.width, height: c.height };
+      this.bounds.set(id, full); return full;
+    }
+    let x0 = c.width, y0 = c.height, x1 = 0, y1 = 0;
+    for (let y = 0; y < c.height; y++) for (let x = 0; x < c.width; x++) {
+      if (!data[(y * c.width + x) * 4 + 3]) continue;
+      x0 = Math.min(x0, x); y0 = Math.min(y0, y);
+      x1 = Math.max(x1, x + 1); y1 = Math.max(y1, y + 1);
+    }
+    const bounds = { x0, y0, x1, y1, width: c.width, height: c.height };
+    this.bounds.set(id, bounds);
+    return bounds;
+  }
+
+  draw(ctx, id, x, y, size, pxScale = Block.pxScale) {
+    // Compatibility names used only by the existing defense overlay.
+    if (id === 'firewall_locked') id = 'modules/firewall_intact_256.png';
+    if (id === 'firewall_broken') id = 'modules/firewall_broken_256.png';
     const r = this.get(id, size * pxScale);
     if (!r) return false;
-    ctx.drawImage(r, x, y, size, size);
+    this.used.add(id);
+    // At <=2048px the cached raster is already the device size. Drawing at
+    // its exact pixel extent avoids a second filtering pass (rounding <1px).
+    const extent = size * pxScale <= 2048 ? r.width / pxScale : size;
+    if (id.startsWith('drones/') || id.startsWith('uplinks/') || id.startsWith('bosses/')) {
+      const b = this.alphaBounds(id);
+      const sx = Math.max(0, Math.floor(b.x0 / b.width * r.width) - 4);
+      const sy = Math.max(0, Math.floor(b.y0 / b.height * r.height) - 4);
+      const ex = Math.min(r.width, Math.ceil(b.x1 / b.width * r.width) + 4);
+      const ey = Math.min(r.height, Math.ceil(b.y1 / b.height * r.height) + 4);
+      const unit = extent / r.width;
+      ctx.drawImage(r, sx, sy, ex - sx, ey - sy, x + sx * unit, y + sy * unit, (ex - sx) * unit, (ey - sy) * unit);
+    } else ctx.drawImage(r, x, y, extent, extent);
     return true;
+  }
+
+  fx(ctx, kind, x, y, size, progress, reducedMotion = false) {
+    if (reducedMotion) return; // user preference, identical on phone and PC
+    const i = Math.min(7, Math.max(0, Math.floor(progress * 8)));
+    this.draw(ctx, `fx/${kind}/frame_${String(i).padStart(2, '0')}_256.png`, x - size / 2, y - size / 2, size);
   }
 }
 
-// >>> SPRITES (generated from NC-NETWORK-RECOVERY-ART-V2/svg, 128x128 viewBox; see docs/VISUAL_IDENTITY.md)
-const SPRITE_DEFS = '<defs><linearGradient id="metal" x1="0" y1="0" x2=".95" y2="1"><stop stop-color="#73859f"/><stop offset=".32" stop-color="#404d65"/><stop offset=".72" stop-color="#202a3d"/><stop offset="1" stop-color="#45546d"/></linearGradient><linearGradient id="face" x1=".07" y1="0" x2=".90" y2="1"><stop stop-color="#4c5972"/><stop offset=".45" stop-color="#29334a"/><stop offset="1" stop-color="#1d273b"/></linearGradient><linearGradient id="dark" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#22283f"/><stop offset="1" stop-color="#0e182a"/></linearGradient><linearGradient id="red" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#ffb8c5"/><stop offset=".16" stop-color="#ff4a72"/><stop offset=".60" stop-color="#b81e4a"/><stop offset="1" stop-color="#6a1732"/></linearGradient><linearGradient id="cyan" x1=".15" y1="0" x2=".85" y2="1"><stop stop-color="#eeffff"/><stop offset=".28" stop-color="#41f9fc"/><stop offset=".65" stop-color="#0cb1c9"/><stop offset="1" stop-color="#05738c"/></linearGradient><linearGradient id="amber" x1=".1" y1="0" x2=".9" y2="1"><stop stop-color="#fff3bc"/><stop offset=".32" stop-color="#ffc558"/><stop offset=".73" stop-color="#ca6328"/><stop offset="1" stop-color="#7b3826"/></linearGradient><linearGradient id="magenta" x1=".2" y1="0" x2=".9" y2="1"><stop stop-color="#ffe6ff"/><stop offset=".38" stop-color="#ff5ce1"/><stop offset="1" stop-color="#962c91"/></linearGradient><radialGradient id="core"><stop stop-color="#fffce9"/><stop offset=".19" stop-color="#ff76a2"/><stop offset=".61" stop-color="#e22b59"/><stop offset="1" stop-color="#83102d"/></radialGradient></defs>';
-const SPRITE_SVG = {
-  heart_sealed: '<rect x="5" y="13" width="118" height="108" rx="13" fill="#090e1b" stroke="#0a1120" stroke-width="5"/><rect x="4" y="8" width="120" height="100" rx="10" fill="url(#metal)" stroke="#9dacc6" stroke-width="5"/><rect x="12" y="15" width="104" height="88" rx="7" fill="#171e30" stroke="#e6c4d6" stroke-width="4"/><circle cx="19" cy="24" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><circle cx="19" cy="92" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><circle cx="109" cy="24" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><circle cx="109" cy="92" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><path d="M12 35 H28 M100 35 H116" stroke="#ff4e69" stroke-width="5"/><path d="M12 55 H28 M100 55 H116" stroke="#ff4e69" stroke-width="5"/><path d="M12 75 H28 M100 75 H116" stroke="#ff4e69" stroke-width="5"/><path d="M37 25 H92 L107 44 V80 L92 98 H37 L21 80 V44 Z" fill="#080c19" stroke="#f4647a" stroke-width="7"/><path d="M40 31 H88 L100 46 V77 L88 91 H40 L28 77 V46Z" fill="#4b172c" stroke="#ffb9c0" stroke-width="3"/><path d="M65 32 L88 55 L64 87 L39 55 Z" fill="url(#red)" stroke="#ffcad3" stroke-width="6"/><path d="M65 36 L65 81 L81 56Z" fill="#7c1632" opacity=".68"/><path d="M44 56 L64 35 L64 79Z" fill="#ff91a8" opacity=".5"/><path d="M64 42 L76 56 L64 78 L51 56Z" fill="url(#core)" /><rect x="31" y="6" width="15" height="7" fill="#ff3f61"/><rect x="82" y="6" width="15" height="7" fill="#ff3f61"/>',
-  heart_fractured: '<rect x="5" y="13" width="118" height="108" rx="13" fill="#090e1b" stroke="#0a1120" stroke-width="5"/><rect x="4" y="8" width="120" height="100" rx="10" fill="url(#metal)" stroke="#9dacc6" stroke-width="5"/><rect x="12" y="15" width="104" height="88" rx="7" fill="#171e30" stroke="#e6c4d6" stroke-width="4"/><circle cx="19" cy="24" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><circle cx="19" cy="92" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><circle cx="109" cy="24" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><circle cx="109" cy="92" r="5" fill="#c5cfde" stroke="#293b59" stroke-width="2"/><path d="M12 35 H28 M100 35 H116" stroke="#ff4e69" stroke-width="5"/><path d="M12 55 H28 M100 55 H116" stroke="#ff4e69" stroke-width="5"/><path d="M12 75 H28 M100 75 H116" stroke="#ff4e69" stroke-width="5"/><path d="M37 25 H92 L107 44 V80 L92 98 H37 L21 80 V44 Z" fill="#080c19" stroke="#f4647a" stroke-width="7"/><path d="M40 31 H88 L100 46 V77 L88 91 H40 L28 77 V46Z" fill="#4b172c" stroke="#ffb9c0" stroke-width="3"/><path d="M62 30 L82 47 L67 57 L55 45 Z" fill="url(#red)" stroke="#ffc7d4" stroke-width="5"/><path d="M42 52 L57 61 L55 82 L34 67 Z" fill="url(#red)" stroke="#f6abc4" stroke-width="5"/><path d="M73 59 L95 53 L92 77 L70 89 Z" fill="url(#red)" stroke="#f6abc4" stroke-width="5"/><path d="M64 36 L63 87 M43 61 L91 54" fill="none" stroke="#17e6ee" stroke-width="8" stroke-linejoin="round" stroke-linecap="round" /><rect x="31" y="6" width="15" height="7" fill="#ff3f61"/><rect x="82" y="6" width="15" height="7" fill="#ff3f61"/>',
-  firewall_locked: '<rect x="3" y="7" width="122" height="117" rx="5" fill="#0c1020" stroke="#20253a" stroke-width="4"/><rect x="3" y="5" width="121" height="111" rx="5" fill="url(#metal)" stroke="#c0c7d6" stroke-width="5"/><rect x="16" y="18" width="95" height="87" rx="4" fill="#2f1e38" stroke="#b34e8c" stroke-width="5"/><path d="M44 60 V47 Q44 24 64 24 Q84 24 84 47 V60" fill="none" stroke="#ffd9ee" stroke-width="9"/><rect x="37" y="53" width="55" height="39" rx="6" fill="url(#magenta)" stroke="#ffcbf7" stroke-width="6"/><circle cx="64" cy="68" r="6" fill="#631747"/><path d="M64 72 V82" stroke="#631747" stroke-width="6"/><path d="M6 31 V13 H26" fill="none" stroke="#fa42c8" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" /><path d="M102 13 H122 V31" fill="none" stroke="#fa42c8" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" /><path d="M6 93 V112 H26" fill="none" stroke="#fa42c8" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" /><path d="M102 112 H122 V93" fill="none" stroke="#fa42c8" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" />',
-  firewall_broken: '<rect x="3" y="7" width="122" height="117" rx="5" fill="#0c1020" stroke="#20253a" stroke-width="4"/><rect x="3" y="5" width="121" height="111" rx="5" fill="url(#metal)" stroke="#c0c7d6" stroke-width="5"/><rect x="16" y="18" width="95" height="87" rx="4" fill="#2f1e38" stroke="#b34e8c" stroke-width="5"/><path d="M41 58 L59 77 L93 36" fill="none" stroke="#e9ffff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/><path d="M41 58 L59 77 L93 36" fill="none" stroke="#17e6ee" stroke-width="9" stroke-linejoin="round" stroke-linecap="round" /><path d="M10 10 H118 V109 H10 Z" fill="none" stroke="#23e5f3" stroke-width="6"/>',
-  drone_player: '<circle cx="64" cy="66" r="54" fill="#001a2a" stroke="#126e8a" stroke-width="6"/><circle cx="64" cy="62" r="47" fill="url(#cyan)" stroke="#e0ffff" stroke-width="8"/><circle cx="64" cy="59" r="29" fill="#046c90" stroke="#78fbff" stroke-width="5"/><circle cx="64" cy="54" r="20" fill="#f9ffff"/><path d="M38 48 L47 40" stroke="#fff" stroke-width="7" stroke-linecap="round"/>',
-};
-// <<< SPRITES
+
 
 class Game {
   constructor(canvas) {
@@ -2541,11 +2635,11 @@ class Game {
   drawPowerNetwork(ctx) {
     if (!this.collapseEnabled) return;
     ctx.save();
-    ctx.lineWidth = 1.2;
+    ctx.lineWidth = 0.65;
     ctx.shadowBlur = 0;
     // Three readable core silhouettes: firewall bars, memory banks, neural halo.
     const heart = this.heart;
-    if (heart?.alive) {
+    if (heart?.alive && !this.sprites.loaded) {
       const r = heart.size * 0.68;
       ctx.strokeStyle = COLORS.amber;
       ctx.beginPath();
@@ -2574,6 +2668,18 @@ class Game {
         if (b.alive && b.offline === offline && (b.criticalPower || offline)) ctx.rect(b.x-2,b.y-2,b.size+4,b.size+4);
       }
       ctx.stroke();
+    }
+    if (this.sprites.loaded && !this.reducedMotion) {
+      let count = 0;
+      for (const {a,b} of this.powerEdges) {
+        if (!b.alive || !b.offline || count++ >= 10) continue;
+        const t = (this.time * 1.7 + count * 0.13) % 1;
+        const dx = b.cx - a.cx, dy = b.cy - a.cy;
+        ctx.save(); ctx.translate(a.cx + dx * t, a.cy + dy * t);
+        ctx.rotate(Math.atan2(dy, dx));
+        this.sprites.fx(ctx, 'chain', 0, 0, Math.min(32, Math.hypot(dx,dy)), t);
+        ctx.restore();
+      }
     }
     ctx.restore();
   }
@@ -3218,6 +3324,12 @@ class Game {
   draw() {
     const ctx = this.ctx;
     this.drawBackground(ctx);
+    if (this.sprites.browser && !this.sprites.loaded) {
+      ctx.save(); ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      ctx.fillStyle = COLORS.ice; ctx.textAlign = 'center'; ctx.font = '14px Arial';
+      ctx.fillText(this.sprites.errors.length ? this.t('artError') : this.t('artLoading'), this.canvas.width / this.dpr / 2, this.canvas.height / this.dpr / 2);
+      ctx.restore(); return;
+    }
 
     const shaking = this.shake > 0 && !this.reducedMotion;
     if (shaking) {
@@ -3230,12 +3342,13 @@ class Game {
     this.drawFieldMarks(ctx);
     this.drawRecovered(ctx);
     this.drawAimPreview(ctx);
+    this.drawBoss(ctx);
     Block.exposedHeart = !!(this.exposed && this.heart && this.heart.alive);
+    this.drawPowerNetwork(ctx);
     Block.drawCore(ctx, this.visibleBlocks(), this.time, this.reducedMotion, (c) => {
       this.drawNetwork(c);
       this.drawConduits(c);
     });
-    this.drawPowerNetwork(ctx);
     this.drawDefense(ctx);
     this.drawHeartLock(ctx);
     this.drawSync(ctx);
@@ -3262,6 +3375,21 @@ class Game {
       ctx.restore();
     }
     this.drawHud(ctx);
+  }
+
+  /** Decorative AI housing below colliders, never a new collision body.
+   * Size follows the generated core and available clearance on BOTH axes.
+   * During collapse it dissolves; the remaining target tiles stay on top. */
+  drawBoss(ctx) {
+    if (!this.sprites.loaded || !this.heart) return;
+    const h = this.heart;
+    const boss = ['firewall', 'memory', 'neural'][this.archetype];
+    const size = Math.min(this.coreExtent * this.coreScale * 3, Math.min(this.width, this.height) * 0.86);
+    const state = !h.alive ? (this.breach?.t < 0.35 ? 'shatter' : 'captured') : h.hp / h.maxHp > 0.7 ? 'intact' : h.hp / h.maxHp > 0.35 ? 'damaged' : 'critical';
+    ctx.save(); ctx.shadowBlur = 0;
+    ctx.globalAlpha = h.alive ? 1 : clamp(1 - (this.breach?.t || 0) / 1.2, 0, 1);
+    this.sprites.draw(ctx, `bosses/${boss}_${state}_512.png`, h.cx - size / 2, h.cy - size / 2, size);
+    ctx.restore();
   }
 
   /** Cells recovered in this sector (NC-AI-RECOVERY-1, cosmetic): every
@@ -3392,7 +3520,8 @@ class Game {
       // node never reads as an amber relay (R3: the magenta lock sprite when
       // the atlas is ready).
       ctx.globalAlpha = 1;
-      if (SPRITE_USE.node && this.sprites.draw(ctx, 'firewall_locked', n.x, n.y, n.size, Block.pxScale)) {
+      const nodeState = !n.alive ? 'broken' : n.offline || n.shatter !== null ? 'isolated' : n.hp / n.maxHp > 0.7 ? 'intact' : n.hp / n.maxHp > 0.35 ? 'damaged' : 'critical';
+      if (SPRITE_USE.node && this.sprites.draw(ctx, `modules/firewall_${nodeState}_256.png`, n.x, n.y, n.size, Block.pxScale)) {
         // drawn
       } else {
       ctx.fillStyle = COLORS.tileSide;
@@ -3435,6 +3564,7 @@ class Game {
       if (SPRITE_USE.node && ghost > 0 && e.node.size) {
         ctx.globalAlpha = ghost;
         this.sprites.draw(ctx, 'firewall_broken', e.node.x - e.node.size / 2, e.node.y - e.node.size / 2, e.node.size, Block.pxScale);
+        this.sprites.fx(ctx, 'shield_break', e.node.x, e.node.y, e.node.size * 3, 1 - ghost, this.reducedMotion);
         ctx.globalAlpha = 1;
       }
       if (h && h.alive) {
@@ -3478,7 +3608,7 @@ class Game {
    * offscreen canvas is unavailable (QA harness) the plain colour is used.
    */
   drawBackground(ctx) {
-    const key = `${this.canvas.width}x${this.canvas.height}@${this.viewScale}`;
+    const key = `${this.canvas.width}x${this.canvas.height}@${this.viewScale}:${this.sprites.revision}`;
     if (this.bgKey !== key) {
       this.bgKey = key;
       this.bgCanvas = this.renderBackground();
@@ -3522,6 +3652,12 @@ class Game {
     glow.addColorStop(1, '#04050a');
     g.fillStyle = glow;
     g.fillRect(0, 0, w, h);
+    const floor = this.sprites.images.get('environment/arena_floor_1024.png');
+    if (floor) {
+      this.sprites.used.add('environment/arena_floor_1024.png');
+      const side = Math.max(w, h);
+      g.drawImage(floor, cx - side / 2, cy - side / 2, side, side);
+    }
     // The network floor (NC-AI-RECOVERY-1): large dark floor panels with
     // bevelled seams (light top-left edge, dark bottom-right), the 2.5D
     // ground everything else stands on. Fixed, low contrast.
@@ -3914,6 +4050,10 @@ class Game {
     const b = this.breach;
     if (!b) return;
     const t = b.t;
+    if (this.sprites.loaded) {
+      this.sprites.fx(ctx, 'core_collapse', b.x, b.y, Math.min(this.width, this.height) * 0.82, t / b.life, this.reducedMotion);
+      return;
+    }
     const fade = clamp(1 - t / b.life, 0, 1);
     const front = t * SHATTER_SPEED;
     const s = b.size / 2;
@@ -4181,12 +4321,18 @@ class Game {
           textColor = blink ? COLORS.white : color;
           ctx.textAlign = 'right';
         }
+        if (this.sprites.loaded && r.id !== 'override') {
+          const iconSize = Math.round(13 * r.u);
+          const icon = r.id === 'alert' ? 'shield' : 'network';
+          const ix = r.id === 'progress' ? r.x + r.w - iconSize : r.x;
+          this.sprites.draw(ctx, `ui/${icon}_128.png`, ix, r.y, iconSize, this.dpr);
+        }
         ctx.font = `bold ${Math.round(12 * r.u)}px "Segoe UI", Arial, sans-serif`;
         ctx.fillStyle = textColor || color;
         ctx.shadowColor = color;
         ctx.shadowBlur = 6;
         const tx = ctx.textAlign === 'left' ? r.x : ctx.textAlign === 'right' ? r.x + r.w : r.x + r.w / 2;
-        ctx.fillText(label, tx, r.y, r.w);
+        ctx.fillText(label, tx, r.y, this.sprites.loaded && r.id !== 'override' ? r.w - Math.round(18 * r.u) : r.w);
         this.drawSegmentBar(ctx, r.x, r.y + Math.round(16 * r.u), r.w, Math.round(5 * r.u), value, color, glow);
         if (r.id === 'progress') {
           for (let i=0;i<12;i++) {

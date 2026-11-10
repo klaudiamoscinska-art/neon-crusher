@@ -38,31 +38,33 @@ export function run() {
 
   // --- Language selection.
   const cases = [
-    [{ languages: ['pl-PL', 'pl'], language: 'pl-PL' }, '', 'pl', 'pl-PL browser'],
+    [{ languages: ['pl-PL', 'pl'], language: 'pl-PL' }, '', 'en', 'pl-PL browser still defaults to English'],
     [{ languages: ['en-US'], language: 'en-US' }, '', 'en', 'en-US browser'],
     [{ languages: ['de-DE', 'fr'], language: 'de-DE' }, '', 'en', 'unsupported (de, fr) -> English'],
-    [{ languages: ['de-DE', 'pl'], language: 'de-DE' }, '', 'pl', 'first supported in the preference list'],
-    [{ language: 'PL' }, '', 'pl', 'only navigator.language, upper case'],
+    [{ languages: ['de-DE', 'pl'], language: 'de-DE' }, '', 'en', 'browser preference list does not opt into Polish'],
+    [{ language: 'PL' }, '', 'en', 'uppercase navigator.language does not opt into Polish'],
     [null, '', 'en', 'no navigator -> English'],
     [{ languages: [], language: '' }, '', 'en', 'empty language info -> English'],
     [{ languages: ['pl-PL'] }, '?lang=en', 'en', '?lang=en overrides a Polish browser'],
     [{ languages: ['en-US'] }, '?x=1&lang=pl', 'pl', '?lang=pl overrides an English browser'],
-    [{ languages: ['pl-PL'] }, '?lang=xx', 'pl', 'unknown ?lang ignored, browser list used'],
+    [{ languages: ['pl-PL'] }, '?lang=xx', 'en', 'unknown ?lang falls back to English'],
   ];
   const wrong = [];
   for (const [nav, search, want, name] of cases) {
     const got = detectLanguage(nav, search);
     if (got !== want) wrong.push(`${name}: got ${got}, want ${want}`);
   }
-  r.check(`${cases.length} language-selection cases (URL override, browser list, English fallback)`, wrong.length === 0, wrong.join('; '));
+  r.check(`${cases.length} language-selection cases (explicit URL choice, browser independence, English fallback)`, wrong.length === 0, wrong.join('; '));
 
   // --- The running game shows the selected language everywhere.
   const en = loadGame(); en.newGame();
   const enTexts = texts(en);
   r.check('no navigator (harness default) -> English UI, <html lang="en">', en.game.lang === 'en' && en.context.document.documentElement.lang === 'en' && enTexts.labelCash === 'Cash' && enTexts.titleBuyBall === STRINGS.en.buyBall);
-  const pl = loadGame({ navigator: { languages: ['pl-PL'], language: 'pl-PL' } }); pl.newGame();
+  const polishBrowser = loadGame({ navigator: { languages: ['pl-PL'], language: 'pl-PL' } }); polishBrowser.newGame();
+  r.check('Polish browser without an explicit language choice starts in English', polishBrowser.game.lang === 'en' && polishBrowser.el('titleBuyBall').textContent === 'New drone');
+  const pl = loadGame({ navigator: { languages: ['en-US'], language: 'en-US' }, search: '?lang=pl' }); pl.newGame();
   const plTexts = texts(pl);
-  r.check('Polish browser -> Polish UI, <html lang="pl">', pl.game.lang === 'pl' && pl.context.document.documentElement.lang === 'pl' && plTexts.labelCash === 'Kasa' && plTexts.titleBuyBall === 'Nowy dron' && plTexts.descBuyBall === 'Drony: 1' && plTexts.labelLevel === 'Sektor / 12');
+  r.check('Explicit ?lang=pl -> Polish UI, <html lang="pl">', pl.game.lang === 'pl' && pl.context.document.documentElement.lang === 'pl' && plTexts.labelCash === 'Kasa' && plTexts.titleBuyBall === 'Nowy dron' && plTexts.descBuyBall === 'Drony: 1' && plTexts.labelLevel === 'Sektor / 12');
   const blank = TEXT_IDS.filter((id) => !enTexts[id] || !plTexts[id]);
   r.check(`all ${TEXT_IDS.length} text elements are filled in both languages`, blank.length === 0, blank.join(', '));
   const leak = TEXT_IDS.filter((id) => POLISH_CHARS.test(enTexts[id]));

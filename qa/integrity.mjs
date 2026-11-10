@@ -4,11 +4,14 @@
 // Usage: node qa/integrity.mjs [--base origin/main] [--no-runtime-change]
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { ROOT, Reporter, isMain, readText } from './lib.mjs';
 
-/** Files the game loads at runtime. Changing this list is a release decision. */
-export const RUNTIME_FILES = ['index.html', 'style.css', 'game.js', 'assets/brand/wordmark-480.png', 'assets/brand/symbol-small-editable.svg'];
+/** One release file set shared with the HTML5 packager. All V3 originals ship. */
+export const ART_ROOT = 'assets/kernelfall-v3/';
+export const ART_MANIFEST = JSON.parse(fs.readFileSync(path.join(ROOT, ART_ROOT, 'manifest.json'), 'utf8'));
+export const RUNTIME_FILES = ['index.html', 'style.css', 'game.js', `${ART_ROOT}manifest.json`, ...ART_MANIFEST.files.map(f => ART_ROOT + f.path)];
 
 function git(args) {
   return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -37,9 +40,23 @@ export function run({ base = null, noRuntimeChange = false } = {}) {
   // --- Runtime file set read from index.html.
   const html = readText('index.html');
   const refs = [...html.matchAll(/<(?:script[^>]*\ssrc|link[^>]*\shref)="([^"]+)"/g)].map((m) => m[1]);
-  r.check('index.html loads stylesheet, script and approved local icon', JSON.stringify(refs.sort()) === JSON.stringify(['assets/brand/symbol-small-editable.svg', 'game.js', 'style.css']), refs.join(', '));
+  r.check('index.html loads stylesheet, script and approved local icon', JSON.stringify(refs.sort()) === JSON.stringify(['assets/kernelfall-v3/brand/symbol-128.png', 'game.js', 'style.css']), refs.join(', '));
   r.check('runtime references are relative (CrazyGames: no absolute paths)', refs.every((u) => !/^(\/|[a-z]+:)/i.test(u)));
   r.check('every runtime file exists', RUNTIME_FILES.every((f) => fs.existsSync(path.join(ROOT, f))));
+  const pngs = listFiles(ART_ROOT, f => f.endsWith('.png')).sort();
+  const expected = ART_MANIFEST.files.map(f => ART_ROOT + f.path).sort();
+  r.check('ART V3 contains exactly the 100 manifest PNGs', expected.length === 100 && JSON.stringify(pngs) === JSON.stringify(expected), `${pngs.length} PNGs`);
+  const invalidArt = ART_MANIFEST.files.filter(f => {
+    const file = path.join(ROOT, ART_ROOT, f.path);
+    if (!fs.existsSync(file)) return true;
+    const data = fs.readFileSync(file);
+    return data.length < 24 || data.length !== f.bytes || crypto.createHash('sha256').update(data).digest('hex') !== f.sha256
+      || data.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' || data.readUInt32BE(16) !== f.width || data.readUInt32BE(20) !== f.height;
+  });
+  r.check('ART V3 original PNG signatures, dimensions, bytes and SHA-256 match the manifest', invalidArt.length === 0, invalidArt.map(f => f.path).join(', '));
+  const localRefs = [...html.matchAll(/(?:src|href)="([^"#]+)"/g)].map(m => m[1]);
+  for (const m of readText('style.css').matchAll(/url\(\s*['"]?([^)'"\s]+)['"]?\s*\)/g)) localRefs.push(m[1]);
+  r.check('HTML and CSS asset paths are local and included in the release', localRefs.every(f => !/^(\/|[a-z]+:)/i.test(f) && RUNTIME_FILES.includes(f)), localRefs.filter(f => !RUNTIME_FILES.includes(f)).join(', '));
 
   // --- Zero third-party requests from the runtime.
   const ext = [];

@@ -1,0 +1,132 @@
+
+===== integrity =====
+PASS    syntax: node --check on 23 JS files
+PASS    index.html loads stylesheet, script and approved local icon -- assets/kernelfall-v3/brand/symbol-128.png, game.js, style.css
+PASS    runtime references are relative (CrazyGames: no absolute paths)
+PASS    every runtime file exists
+PASS    ART V3 contains exactly the 100 manifest PNGs -- 100 PNGs
+PASS    ART V3 original PNG signatures, dimensions, bytes and SHA-256 match the manifest
+PASS    HTML and CSS asset paths are local and included in the release
+PASS    runtime makes no external requests (no http(s) URLs in index.html/style.css/game.js; the SVG namespace identifier allowed once)
+PASS    save key literal is 'neonCrusher.save.v1'
+PASS    no eval / new Function / document.write in the runtime
+PASS    no innerHTML in the runtime (text goes through textContent)
+PASS    Pages/Jekyll: no Liquid tags ({{ or {%) in 27 published Markdown files
+INFO    runtime files changed vs origin/main -- assets/kernelfall-v3/bosses/firewall_captured_512.png, assets/kernelfall-v3/bosses/firewall_critical_512.png, assets/kernelfall-v3/bosses/firewall_damaged_512.png, assets/kernelfall-v3/bosses/firewall_intact_512.png, assets/kernelfall-v3/bosses/firewall_shatter_512.png, assets/kernelfall-v3/bosses/memory_captured_512.png, assets/kernelfall-v3/bosses/memory_critical_512.png, assets/kernelfall-v3/bosses/memory_damaged_512.png, assets/kernelfall-v3/bosses/memory_intact_512.png, assets/kernelfall-v3/bosses/memory_shatter_512.png, assets/kernelfall-v3/bosses/neural_captured_512.png, assets/kernelfall-v3/bosses/neural_critical_512.png, assets/kernelfall-v3/bosses/neural_damaged_512.png, assets/kernelfall-v3/bosses/neural_intact_512.png, assets/kernelfall-v3/bosses/neural_shatter_512.png, assets/kernelfall-v3/brand/symbol-128.png, assets/kernelfall-v3/brand/symbol-256.png, assets/kernelfall-v3/brand/symbol-512.png, assets/kernelfall-v3/brand/wordmark-480.png, assets/kernelfall-v3/drones/assault_256.png, assets/kernelfall-v3/drones/scout_256.png, assets/kernelfall-v3/drones/support_256.png, assets/kernelfall-v3/environment/arena_floor_1024.png, assets/kernelfall-v3/fx/chain/frame_00_256.png, assets/kernelfall-v3/fx/chain/frame_01_256.png, assets/kernelfall-v3/fx/chain/frame_02_256.png, assets/kernelfall-v3/fx/chain/frame_03_256.png, assets/kernelfall-v3/fx/chain/frame_04_256.png, assets/kernelfall-v3/fx/chain/frame_05_256.png, assets/kernelfall-v3/fx/chain/frame_06_256.png, assets/kernelfall-v3/fx/chain/frame_07_256.png, assets/kernelfall-v3/fx/core_collapse/frame_00_256.png, assets/kernelfall-v3/fx/core_collapse/frame_01_256.png, assets/kernelfall-v3/fx/core_collapse/frame_02_256.png, assets/kernelfall-v3/fx/core_collapse/frame_03_256.png, assets/kernelfall-v3/fx/core_collapse/frame_04_256.png, assets/kernelfall-v3/fx/core_collapse/frame_05_256.png, assets/kernelfall-v3/fx/core_collapse/frame_06_256.png, assets/kernelfall-v3/fx/core_collapse/frame_07_256.png, assets/kernelfall-v3/fx/impact/frame_00_256.png, assets/kernelfall-v3/fx/impact/frame_01_256.png, assets/kernelfall-v3/fx/impact/frame_02_256.png, assets/kernelfall-v3/fx/impact/frame_03_256.png, assets/kernelfall-v3/fx/impact/frame_04_256.png, assets/kernelfall-v3/fx/impact/frame_05_256.png, assets/kernelfall-v3/fx/impact/frame_06_256.png, assets/kernelfall-v3/fx/impact/frame_07_256.png, assets/kernelfall-v3/fx/override/frame_00_256.png, assets/kernelfall-v3/fx/override/frame_01_256.png, assets/kernelfall-v3/fx/override/frame_02_256.png, assets/kernelfall-v3/fx/override/frame_03_256.png, assets/kernelfall-v3/fx/override/frame_04_256.png, assets/kernelfall-v3/fx/override/frame_05_256.png, assets/kernelfall-v3/fx/override/frame_06_256.png, assets/kernelfall-v3/fx/override/frame_07_256.png, assets/kernelfall-v3/fx/shield_break/frame_00_256.png, assets/kernelfall-v3/fx/shield_break/frame_01_256.png, assets/kernelfall-v3/fx/shield_break/frame_02_256.png, assets/kernelfall-v3/fx/shield_break/frame_03_256.png, assets/kernelfall-v3/fx/shield_break/frame_04_256.png, assets/kernelfall-v3/fx/shield_break/frame_05_256.png, assets/kernelfall-v3/fx/shield_break/frame_06_256.png, assets/kernelfall-v3/fx/shield_break/frame_07_256.png, assets/kernelfall-v3/manifest.json, assets/kernelfall-v3/modules/armor_broken_256.png, assets/kernelfall-v3/modules/armor_critical_256.png, assets/kernelfall-v3/modules/armor_damaged_256.png, assets/kernelfall-v3/modules/armor_intact_256.png, assets/kernelfall-v3/modules/armor_isolated_256.png, assets/kernelfall-v3/modules/firewall_broken_256.png, assets/kernelfall-v3/modules/firewall_critical_256.png, assets/kernelfall-v3/modules/firewall_damaged_256.png, assets/kernelfall-v3/modules/firewall_intact_256.png, assets/kernelfall-v3/modules/firewall_isolated_256.png, assets/kernelfall-v3/modules/memory_broken_256.png, assets/kernelfall-v3/modules/memory_critical_256.png, assets/kernelfall-v3/modules/memory_damaged_256.png, assets/kernelfall-v3/modules/memory_intact_256.png, assets/kernelfall-v3/modules/memory_isolated_256.png, assets/kernelfall-v3/modules/port_broken_256.png, assets/kernelfall-v3/modules/port_critical_256.png, assets/kernelfall-v3/modules/port_damaged_256.png, assets/kernelfall-v3/modules/port_intact_256.png, assets/kernelfall-v3/modules/port_isolated_256.png, assets/kernelfall-v3/modules/relay_broken_256.png, assets/kernelfall-v3/modules/relay_critical_256.png, assets/kernelfall-v3/modules/relay_damaged_256.png, assets/kernelfall-v3/modules/relay_intact_256.png, assets/kernelfall-v3/modules/relay_isolated_256.png, assets/kernelfall-v3/ui/charge_128.png, assets/kernelfall-v3/ui/drone_128.png, assets/kernelfall-v3/ui/hud_amber_panel_512x128.png, assets/kernelfall-v3/ui/hud_cyan_panel_512x128.png, assets/kernelfall-v3/ui/hud_pink_panel_512x128.png, assets/kernelfall-v3/ui/network_128.png, assets/kernelfall-v3/ui/power_128.png, assets/kernelfall-v3/ui/shield_128.png, assets/kernelfall-v3/uplinks/charging_256.png, assets/kernelfall-v3/uplinks/firing_256.png, assets/kernelfall-v3/uplinks/idle_256.png, assets/kernelfall-v3/uplinks/ready_256.png, game.js (uncommitted), index.html (uncommitted), style.css (uncommitted)
+
+[integrity] 12/12 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 1 => PASS: all checks pass
+
+===== instructions =====
+PASS    CLAUDE.md within 9000 bytes -- 5032 bytes
+PASS    CLAUDE.md states 15 required rules
+PASS    skills exist under .claude/skills/ -- 12
+PASS    every skill: SKILL.md, frontmatter, name = folder, lowercase-hyphen name, description
+PASS    every description <= 300 chars (loaded into every session)
+PASS    every SKILL.md body <= 6000 bytes
+INFO    always-loaded context -- CLAUDE.md 5032 B + 12 skill descriptions 3007 chars
+PASS    docs/claude/SKILLS.md lists exactly the installed skills -- listed=nc-audio,nc-crazygames,nc-economy,nc-engineering,nc-gameplay,nc-performance,nc-physics,nc-qa,nc-release,nc-save,nc-ux,nc-visual-fx installed=nc-audio,nc-crazygames,nc-economy,nc-engineering,nc-gameplay,nc-performance,nc-physics,nc-qa,nc-release,nc-save,nc-ux,nc-visual-fx
+PASS    skills only reference existing skills
+PASS    every backticked repo path in 28 instruction/doc files exists
+PASS    every doc <= 20000 bytes (split or trim when it grows)
+PASS    no instruction line (>= 80 chars) duplicated across files
+PASS    2 known-defect ids used by qa/ are registered in docs/RISKS.md
+
+[instructions] 12/12 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 1 => PASS: all checks pass
+
+===== i18n =====
+PASS    exactly two languages: en, pl -- en,pl
+PASS    default (fallback) language is English
+PASS    en and pl tables have the same keys -- en-only: , pl-only: 
+PASS    no empty or non-string entries
+PASS    placeholders ({n}) match between languages
+PASS    English table contains no Polish text
+PASS    10 language-selection cases (explicit URL choice, browser independence, English fallback)
+PASS    no navigator (harness default) -> English UI, <html lang="en">
+PASS    Polish browser without an explicit language choice starts in English
+PASS    Explicit ?lang=pl -> Polish UI, <html lang="pl">
+PASS    all 13 text elements are filled in both languages
+PASS    English UI shows no Polish words
+PASS    static labels differ between en and pl (all translated)
+PASS    money format en: $0, $10, $1,234,567 -- $1,234,567
+PASS    money format pl: $1 234 567 (space-grouped digits), fractions floored -- "$1 234 567"
+PASS    live UI after progress: cash, counters and costs formatted (en) -- {"labelCash":"Cash","labelLevel":"Sector / 12","titleBuyBall":"New drone","titleFireRate":"Override charge","titleDamage":"Breach power","statCash":"$2,500,000","statLevel":"1","descBuyBall":"Drones: 12","costBuyBall":"$865","descFireRate":"Lvl 1 · 11 s","costFireRate":"$15","descDamage":"Lvl 3","costDamage":"$34"}
+PASS    very large cash still renders as digits (no NaN/undefined) -- $1,000,000,000,000,000,000,000,000,000,000
+PASS    index.html declares lang="en" and ships English default labels
+
+[i18n] 18/18 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 0 => PASS: all checks pass
+
+===== collapse =====
+PASS    sector 1: every module has one supply edge
+PASS    sector 1: connected acyclic supply to heart
+PASS    sector 1: cut disconnects descendants, never heart
+PASS    sector 1: no income or instant wipe
+PASS    sector 1: failure respects supply edges
+PASS    sector 2: every module has one supply edge
+PASS    sector 2: connected acyclic supply to heart
+PASS    sector 2: cut disconnects descendants, never heart
+PASS    sector 2: no income or instant wipe
+PASS    sector 2: failure respects supply edges
+PASS    sector 3: every module has one supply edge
+PASS    sector 3: connected acyclic supply to heart
+PASS    sector 3: cut disconnects descendants, never heart
+PASS    sector 3: no income or instant wipe
+PASS    sector 3: failure respects supply edges
+PASS    sector 4: every module has one supply edge
+PASS    sector 4: connected acyclic supply to heart
+PASS    sector 4: cut disconnects descendants, never heart
+PASS    sector 4: no income or instant wipe
+PASS    sector 4: failure respects supply edges
+PASS    sector 5: every module has one supply edge
+PASS    sector 5: connected acyclic supply to heart
+PASS    sector 5: cut disconnects descendants, never heart
+PASS    sector 5: no income or instant wipe
+PASS    sector 5: failure respects supply edges
+PASS    sector 6: every module has one supply edge
+PASS    sector 6: connected acyclic supply to heart
+PASS    sector 6: cut disconnects descendants, never heart
+PASS    sector 6: no income or instant wipe
+PASS    sector 6: failure respects supply edges
+PASS    sector 7: every module has one supply edge
+PASS    sector 7: connected acyclic supply to heart
+PASS    sector 7: cut disconnects descendants, never heart
+PASS    sector 7: no income or instant wipe
+PASS    sector 7: failure respects supply edges
+PASS    sector 8: every module has one supply edge
+PASS    sector 8: connected acyclic supply to heart
+PASS    sector 8: cut disconnects descendants, never heart
+PASS    sector 8: no income or instant wipe
+PASS    sector 8: failure respects supply edges
+PASS    sector 9: every module has one supply edge
+PASS    sector 9: connected acyclic supply to heart
+PASS    sector 9: cut disconnects descendants, never heart
+PASS    sector 9: no income or instant wipe
+PASS    sector 9: failure respects supply edges
+PASS    sector 10: every module has one supply edge
+PASS    sector 10: connected acyclic supply to heart
+PASS    sector 10: cut disconnects descendants, never heart
+PASS    sector 10: no income or instant wipe
+PASS    sector 10: failure respects supply edges
+PASS    sector 11: every module has one supply edge
+PASS    sector 11: connected acyclic supply to heart
+PASS    sector 11: cut disconnects descendants, never heart
+PASS    sector 11: no income or instant wipe
+PASS    sector 11: failure respects supply edges
+PASS    sector 12: every module has one supply edge
+PASS    sector 12: connected acyclic supply to heart
+PASS    sector 12: cut disconnects descendants, never heart
+PASS    sector 12: no income or instant wipe
+PASS    sector 12: failure respects supply edges
+PASS    old v1 save beyond final sector continues endless
+PASS    campaign adds no save fields
+PASS    collapse simulation identical at equal fixed steps at 60/144/165 Hz -- 1482 comparisons
+PASS    rendering does not affect simulation RNG or state
+
+[collapse] 64/64 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 0 => PASS: all checks pass
+
+===== SUMMARY =====
+PASS             integrity      PASS 12  FAIL 0  KNOWN 0  NOT RUN 0  
+PASS             instructions   PASS 12  FAIL 0  KNOWN 0  NOT RUN 0  
+PASS             i18n           PASS 18  FAIL 0  KNOWN 0  NOT RUN 0  
+PASS             collapse       PASS 64  FAIL 0  KNOWN 0  NOT RUN 0  
+
+RESULT: PASS (no blocking suite)

@@ -15,16 +15,16 @@ node qa/<suite>.mjs                      # one suite
 
 | Suite | Checks | Browser |
 |---|---|---|
-| `qa/integrity.mjs` | `node --check` on all JS; runtime file set from `index.html`; relative paths; zero external URLs; save-key literal; no `eval`/`innerHTML`; no Liquid tags in published Markdown (Pages/Jekyll); `--base <ref>` runtime diff, `--no-runtime-change` makes it a gate | no |
+| `qa/integrity.mjs` | `node --check` on all JS; runtime release set including all 100 ART V3 PNGs; manifest SHA-256, bytes, PNG signature and dimensions; relative HTML/CSS paths; zero external URLs; save-key literal; no `eval`/`innerHTML`; no Liquid tags in published Markdown (Pages/Jekyll); `--base <ref>` runtime diff, `--no-runtime-change` makes it a gate | no |
 | `qa/instructions.mjs` | `CLAUDE.md` budget + required rules; skill format/name/description budget; skill map sync; dead paths; duplicated lines; doc sizes; KNOWN ids registered in `docs/RISKS.md` | no |
 | `qa/runner.mjs` | self-test of the runner: a mandatory suite with zero checks, only NOT RUN rows or only KNOWN rows blocks; a FAIL or crash always blocks (also in an optional suite); only the optional browser-smoke may be NOT RUN, and only for an unavailable environment; real CLI exit codes (`NC_QA_NO_BROWSER=1` simulates a machine without a browser) | no |
 | `qa/physics.mjs` | reflections per face/corner/oblique, push-out, approach check (NC-01), embedded balls leave without repeat hits (NC-02), walls, speed conservation, tunnelling bound per fixed step, refresh rate (NC-03): same seed = identical state at 60/144/165 Hz, hit rate within 2 SE / 2 % (48 seeds; `--quick` = 12 seeds, statistical verdict NOT RUN) | no |
 | `qa/levels.mjs` | grid/circle alternation, N×N, rings, heart (centre, 6 × HP, 1 or 2×2 cells) and relay counts, HP and money scaling, turret count, level-up, geometry on 8 canvas sizes × 30 levels, turret clearance (NC-14), every block ≥ 11 px on screen, resize: fit inside, restore, HP kept, resize storm with balls (NC-15), world scale (NC-09), turrets aim at the core with a clear spawn, core progress value; positions in world units | no |
 | `qa/economy.mjs` | cost curves, purchases through the real buttons, volley charge time and floor, fixed refill, live damage, income per hit, maxBalls cap, NC-10 (charge upgrade pays on a full field), lance power/order/gaps, click/tap/Space input on the next fixed step, autopilot, relay shockwave + recharge, heart shatter + level-up, sound toggle key, active vs passive pace, first-minute hint (fresh save only, not saved), `+$n` labels (capped), time to first purchase (NC-09: median ≤ 60 s and 20–45 s on 4 canvases), greedy bot level-1 time | no |
 | `qa/save.mjs` | key, fields, round trip, autosave 5 s, lifecycle saves, storage throwing, valid saves kept unchanged, per-field fallback of invalid numbers, backup of unreadable/unsupported saves before any write, no overwrite when the backup or the read fails | no |
-| `qa/i18n.mjs` | EN/PL tables (same keys, placeholders, no Polish in English), language selection (`?lang=`, browser list, English fallback), every label filled, number formatting | no |
+| `qa/i18n.mjs` | EN/PL tables (same keys, placeholders, no Polish in English), language selection (`?lang=`, English default regardless of browser locale, English fallback), every label filled, number formatting | no |
 | `qa/recovery.mjs` | NC-AI-RECOVERY-1 adaptive defense: none on sectors 1–2, first shield 8 s into sector 3, node = armour hit first on a turret's line, shield × 0.5 never restores HP, ends after 7 s, cooldown 10 s, break → exposure 5 s (× 2.5 pulses/shockwaves, × 1 drones), bonus 3 ×, refund only for the player's own pulse, autopilot targets the node, sector end clears it, nothing saved, same shields at 60/144/165 Hz, idle safety (4 min no input from sector 3: ≥ 3 sectors, no shield > 7 s, sector/cash never go back), shield hint, HUD safe areas (R2: meters, AI alert and the 3 longest toasts never overlap each other, leave the field or cover the core / node / relays / uplinks; EN + PL, 8 field sizes, sectors 3–14, shield and exposure), active ≥ passive + 3 sectors at 5 min (`--quick`: 1 idle seed, pace NOT RUN) | no |
-| `qa/browser-smoke.mjs` | real Chromium at the 10 CrazyGames frames (DPR 1), English and Polish browser: errors, external requests, page scroll, shop visible, text inside buttons, smallest text, canvas share of the height, first-minute hint (visible, inside the field, not cut, taps pass through), volley fired by a mouse click and by a touch tap (proved through the hint, autopilot ruled out), sound toggle persisted, animation, user-select, safe-area padding, save restore + reload, corrupted save backed up; screenshots `qa/out/shots/` | Playwright if installed, else NOT RUN |
+| `qa/browser-smoke.mjs` | real Chromium at the 10 CrazyGames frames (DPR 1), English default in English/Polish browsers plus explicit `?lang=pl`: errors, external requests, page scroll, shop visible, text inside buttons, smallest text, canvas share of the height, first-minute hint (visible, inside the field, not cut, taps pass through), volley fired by a mouse click and by a touch tap (proved through the hint, autopilot ruled out), sound toggle persisted, animation, user-select, safe-area padding, save restore + reload, corrupted save backed up; screenshots `qa/out/shots/` | Playwright if installed, else NOT RUN |
 
 ## Measurement tool (not a suite)
 
@@ -130,7 +130,9 @@ Run from the repo root with `node qa\run-all.mjs`; paths are handled with
 KERNELFALL additions: `qa/collapse.mjs` is mandatory in run-all (supply graph,
 cut propagation, bounded/no-reward erosion, save continuity, equal fixed-step
 states at 60/144/165 Hz). `node qa/package-basic.mjs` creates and validates the
-HTML5 folder, ZIP and SHA-256 manifest. With a system Chromium use
+HTML5 folder (including the complete ART V3 manifest and 100 original PNGs),
+`qa/out/kernelfall-art-v3.zip` and SHA-256 package manifest. The uncompressed
+release must stay below 20 MB. With a system Chromium use
 `NC_CHROMIUM=/usr/bin/chromium`; no browser dependency is added to the game.
 `qa/sim-compare.mjs <base-game.js> --no-collapse` disables only the new mechanic.
 
@@ -138,3 +140,12 @@ For a long simulation run use `NC_QA_SIM_ONLY=1 node qa/run-all.mjs`:
 this skips only the harness's stub rendering calls, never fixed updates,
 inputs or assertions. Real Chromium smoke remains enabled and renders fully.
 The collapse suite separately proves render/no-render state equality.
+
+ART V3 evidence tools (development only, Playwright + Chromium required):
+`node qa/art-v3-browser.mjs` captures real gameplay at all five required
+viewports, DPR 2/3, labelled art-state fixtures, nested Pages paths, load errors
+and before/after/contact sheets. `node qa/art-v3-performance.mjs` compares
+render+raster cost against `origin/main` with a controlled 60-drone scene.
+Run performance alone after other browser/CPU tests finish. Both write retained
+evidence to `docs/qa/kernelfall-art-v3/`; see `REPORT_PL.md` there. Emulation is
+not a physical-device PASS. These tools add no game runtime dependencies.

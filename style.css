@@ -455,9 +455,13 @@ body {
     font-size: 0.75rem;
   }
 
-  /* Narrow buttons: the text needs the room. */
+  /* The same V3 icons remain visible on phones; flow them above the copy. */
   .shop-btn__icon {
-    display: none;
+    position: static;
+    display: block;
+    width: 22px;
+    height: 22px;
+    transform: none;
   }
 }
 
@@ -484,4 +488,33 @@ body {
   .brand-wordmark { width:128px; height:30px; }
   .stat { min-width:48px; }
   .stats { gap:10px; }
+}
+
+/* ART V3 HUD plates use the supplied textures at every viewport size. */
+#btnBuyBall { --panel-art: url('assets/kernelfall-v3/ui/hud_cyan_panel_512x128.png'); }
+#btnFireRate { --panel-art: url('assets/kernelfall-v3/ui/hud_pink_panel_512x128.png'); }
+#btnDamage { --panel-art: url('assets/kernelfall-v3/ui/hud_amber_panel_512x128.png'); }
+.shop-btn {
+  border-color: transparent;
+  background: var(--panel-art) center / 100% 100% no-repeat;
+  border-radius: 10px;
+}
+.shop-btn__icon { object-fit: contain; filter: none; }
+.shop-btn:disabled { opacity: .7; filter: none; }
+@media (min-width: 641px) {
+  .shop-btn { padding-left: 42px; padding-right: 20px; }
+}
+@media (max-width: 380px) {
+  #topbar { padding-left: 8px; padding-right: 8px; }
+  .brand { gap: 4px; }
+  .brand-wordmark { width: 116px; }
+  .stats { gap: 7px; }
+  .stat-label { letter-spacing: .5px; }
+}
+/* Compact command deck keeps the arena usable on short landscape phones. */
+@media (max-height: 420px) and (min-aspect-ratio: 1/1) {
+  #topbar { padding-top: calc(4px + env(safe-area-inset-top, 0px)); padding-bottom: 4px; }
+  #shop { gap: 8px; padding: 4px 8px calc(4px + env(safe-area-inset-bottom, 0px)); }
+  .shop-btn { gap: 2px; padding-top: 6px; padding-bottom: 6px; }
+  .shop-btn__icon { width: 20px; height: 20px; left: 8px; }
 }
