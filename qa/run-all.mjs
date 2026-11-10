@@ -16,6 +16,7 @@ import * as levels from './levels.mjs';
 import * as economy from './economy.mjs';
 import * as save from './save.mjs';
 import * as i18n from './i18n.mjs';
+import * as recovery from './recovery.mjs';
 import * as smoke from './browser-smoke.mjs';
 
 /** The suite list. Only browser-smoke is optional (needs a browser). */
@@ -29,6 +30,7 @@ export function defaultSuites({ quick = false, base = null, noRuntimeChange = fa
     { name: 'economy', run: () => economy.run({ quick }) },
     { name: 'save', run: () => save.run() },
     { name: 'i18n', run: () => i18n.run() },
+    { name: 'recovery', run: () => recovery.run({ quick }) },
     { name: 'browser-smoke', optional: true, run: () => smoke.run() },
   ];
 }

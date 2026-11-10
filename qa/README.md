@@ -23,6 +23,7 @@ node qa/<suite>.mjs                      # one suite
 | `qa/economy.mjs` | cost curves, purchases through the real buttons, volley charge time and floor, fixed refill, live damage, income per hit, maxBalls cap, NC-10 (charge upgrade pays on a full field), lance power/order/gaps, click/tap/Space input on the next fixed step, autopilot, relay shockwave + recharge, heart shatter + level-up, sound toggle key, active vs passive pace, first-minute hint (fresh save only, not saved), `+$n` labels (capped), time to first purchase (NC-09: median ≤ 60 s and 20–45 s on 4 canvases), greedy bot level-1 time | no |
 | `qa/save.mjs` | key, fields, round trip, autosave 5 s, lifecycle saves, storage throwing, valid saves kept unchanged, per-field fallback of invalid numbers, backup of unreadable/unsupported saves before any write, no overwrite when the backup or the read fails | no |
 | `qa/i18n.mjs` | EN/PL tables (same keys, placeholders, no Polish in English), language selection (`?lang=`, browser list, English fallback), every label filled, number formatting | no |
+| `qa/recovery.mjs` | NC-AI-RECOVERY-1 adaptive defense: none on sectors 1–2, first shield 8 s into sector 3, node = armour hit first on a turret's line, shield × 0.5 never restores HP, ends after 7 s, cooldown 10 s, break → exposure 5 s (× 2.5 pulses/shockwaves, × 1 drones), bonus 3 ×, refund only for the player's own pulse, autopilot targets the node, sector end clears it, nothing saved, same shields at 60/144/165 Hz, idle safety (4 min no input from sector 3: ≥ 3 sectors, no shield > 7 s, sector/cash never go back), shield hint, active ≥ passive + 3 sectors at 5 min (`--quick`: 1 idle seed, pace NOT RUN) | no |
 | `qa/browser-smoke.mjs` | real Chromium at the 10 CrazyGames frames (DPR 1), English and Polish browser: errors, external requests, page scroll, shop visible, text inside buttons, smallest text, canvas share of the height, first-minute hint (visible, inside the field, not cut, taps pass through), volley fired by a mouse click and by a touch tap (proved through the hint, autopilot ruled out), sound toggle persisted, animation, user-select, safe-area padding, save restore + reload, corrupted save backed up; screenshots `qa/out/shots/` | Playwright if installed, else NOT RUN |
 
 ## Measurement tool (not a suite)
@@ -43,12 +44,22 @@ node qa/pace.mjs --bot active --canvas 907x339 --skip-first  # NC-ORIGINAL-1: ai
 `NC_GAME_JS=<path>` works for every suite too (e.g. to show that a new check
 fails on the base).
 
+Idle vs active balance (NC-AI-RECOVERY-1), a tool, not a suite: base vs
+candidate, bots passive / active (breaks firewall nodes) / core (ignores
+shields), median sector and cash earned at 1/3/5/10 min, parallel children:
+
+```bash
+node qa/idle-balance.mjs --base /tmp/base/game.js --seeds 8 --canvas 800x279,907x339,1216x513 --hz 60
+node qa/idle-balance.mjs --bots passive,active,core --seeds 4 --hz 144
+```
+
 Visual changes (NC-ART-1), also tools, not suites:
 
 ```bash
 node qa/sim-compare.mjs /tmp/base-game.js        # simulation bit-identical to the base? + draw counters per frame
+node qa/sim-compare.mjs /tmp/base-game.js --no-defense   # NC-AI-RECOVERY-1: identical with the AI's reaction off
 node qa/art-shots.mjs --root /tmp/base --out qa/out/art/before   # base folder with index.html/style.css/game.js
-node qa/art-shots.mjs --out qa/out/art/after                     # 13 scenes + frame cost (rAF + forced raster)
+node qa/art-shots.mjs --out qa/out/art/after                     # 14 scenes (NC-AI-RECOVERY-1 set) + frame cost (rAF + forced raster)
 node qa/art-shots.mjs --sheet qa/out/art/before qa/out/art/after --out qa/out/art/sheets
 ```
 

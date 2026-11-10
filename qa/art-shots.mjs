@@ -1,4 +1,5 @@
-// Art-pass capture and frame-cost probe (dev tool, not a suite; NC-ART-1).
+// Art-pass capture and frame-cost probe (dev tool, not a suite; NC-ART-1,
+// scenes replaced in NC-AI-RECOVERY-1).
 // Serves a game folder in real Chromium and takes the same scenes at the same
 // moments, so a base build and a candidate build can be compared side by side:
 //   git worktree-free base: mkdir /tmp/base && for f in index.html style.css game.js; do git show origin/main:$f > /tmp/base/$f; done
@@ -34,22 +35,39 @@ function serve(root) {
   });
 }
 
+// NC-AI-RECOVERY-1 scene set (the stage's BEFORE/AFTER list). `act`:
+//   'defense' waits until the AI raises a shield (base: same moment, it has
+//   none), 'break' then clicks the firewall node (base: the same click on the
+//   core), 'core' clicks the core when the pulse is ready. The page reads the
+//   game through a wrapper around Game.prototype.update installed by this
+//   test page only (no runtime hook), like the rAF probe below.
 const SCENES = [
-  // name, viewport, save (null = fresh), action, wait ms after action / load
-  { name: '01-first-seconds-907x510', vp: [907, 510], save: null, wait: 2500 },
-  { name: '02-first-seconds-800x450-pl', vp: [800, 450], save: null, wait: 2500, locale: 'pl-PL', touch: true },
-  { name: '03-relays-level5-1216x684', vp: [1216, 684], save: { cash: 120, level: 5, maxBalls: 5, fireRateLevel: 3, damageLevel: 3 }, wait: 1800 },
-  { name: '04-relays-ring-level8-1366x768', vp: [1366, 768], save: { cash: 400, level: 8, maxBalls: 8, fireRateLevel: 4, damageLevel: 4 }, wait: 1800 },
-  { name: '05-volley-ready-aim-907x510', vp: [907, 510], save: { cash: 50, level: 5, maxBalls: 4, fireRateLevel: 1, damageLevel: 3 }, volley: 'hover' },
-  { name: '06-volley-fired-907x510', vp: [907, 510], save: { cash: 50, level: 5, maxBalls: 4, fireRateLevel: 1, damageLevel: 3 }, volley: 'click', after: 70 },
-  { name: '07-heart-shatter-a-907x510', vp: [907, 510], save: { cash: 50, level: 5, maxBalls: 4, fireRateLevel: 1, damageLevel: 40 }, volley: 'click', after: 110 },
-  { name: '08-heart-shatter-b-907x510', vp: [907, 510], save: { cash: 50, level: 5, maxBalls: 4, fireRateLevel: 1, damageLevel: 40 }, volley: 'click', after: 330 },
-  { name: '09-late-level13-1920x1080', vp: [1920, 1080], save: { cash: 9000, level: 13, maxBalls: 40, fireRateLevel: 10, damageLevel: 12 }, wait: 7000 },
-  { name: '10-late-level14-800x450', vp: [800, 450], save: { cash: 9000, level: 14, maxBalls: 40, fireRateLevel: 10, damageLevel: 12 }, wait: 7000 },
-  { name: '11-phone-portrait-390x844', vp: [390, 844], save: null, wait: 2500, touch: true },
-  { name: '12-tablet-1080x607', vp: [1080, 607], save: { cash: 60, level: 3, maxBalls: 3, fireRateLevel: 2, damageLevel: 2 }, wait: 2500, touch: true },
-  { name: '13-reduced-motion-shatter-907x510', vp: [907, 510], save: { cash: 50, level: 5, maxBalls: 4, fireRateLevel: 1, damageLevel: 40 }, volley: 'click', after: 110, reducedMotion: true },
+  { name: '01-first-10s-907x510', vp: [907, 510], save: null, wait: 10000 },
+  { name: '02-first-10s-800x450-pl', vp: [800, 450], save: null, wait: 10000, locale: 'pl-PL', touch: true },
+  { name: '03-ai-shield-sector5-907x510', vp: [907, 510], save: { cash: 50, level: 5, maxBalls: 4, fireRateLevel: 2, damageLevel: 3 }, act: 'defense', after: 900 },
+  { name: '04-ai-shield-sector8-1366x768', vp: [1366, 768], save: { cash: 400, level: 8, maxBalls: 8, fireRateLevel: 4, damageLevel: 5 }, act: 'defense', after: 900 },
+  { name: '05-manual-break-907x510', vp: [907, 510], save: { cash: 50, level: 5, maxBalls: 4, fireRateLevel: 20, damageLevel: 8 }, act: 'break', after: 140 },
+  { name: '06-core-exposed-907x510', vp: [907, 510], save: { cash: 50, level: 5, maxBalls: 4, fireRateLevel: 20, damageLevel: 8 }, act: 'break', after: 1200 },
+  { name: '07-sector-recovered-a-907x510', vp: [907, 510], save: { cash: 50, level: 5, maxBalls: 4, fireRateLevel: 1, damageLevel: 40 }, act: 'core', after: 110 },
+  { name: '08-sector-recovered-b-907x510', vp: [907, 510], save: { cash: 50, level: 5, maxBalls: 4, fireRateLevel: 1, damageLevel: 40 }, act: 'core', after: 380 },
+  { name: '09-late-sector13-1920x1080', vp: [1920, 1080], save: { cash: 9000, level: 13, maxBalls: 40, fireRateLevel: 10, damageLevel: 12 }, wait: 9500 },
+  { name: '10-late-sector14-800x450', vp: [800, 450], save: { cash: 9000, level: 14, maxBalls: 40, fireRateLevel: 10, damageLevel: 12 }, wait: 9500 },
+  { name: '11-phone-portrait-390x844', vp: [390, 844], save: null, wait: 4000, touch: true },
+  { name: '12-phone-shield-sector4-390x844', vp: [390, 844], save: { cash: 60, level: 4, maxBalls: 4, fireRateLevel: 2, damageLevel: 3 }, act: 'defense', after: 900, touch: true },
+  { name: '13-tablet-1080x607', vp: [1080, 607], save: { cash: 60, level: 3, maxBalls: 3, fireRateLevel: 2, damageLevel: 2 }, wait: 4000, touch: true },
+  { name: '14-reduced-motion-recovered-907x510', vp: [907, 510], save: { cash: 50, level: 5, maxBalls: 4, fireRateLevel: 1, damageLevel: 40 }, act: 'core', after: 110, reducedMotion: true },
 ];
+
+const HOOK = () => {
+  // Test page only: remember the running game (no runtime change).
+  const tryWrap = () => {
+    if (typeof Game === 'undefined') return false; // eslint-disable-line no-undef
+    const u = Game.prototype.update; // eslint-disable-line no-undef
+    Game.prototype.update = function (dt) { window.__g = this; return u.call(this, dt); }; // eslint-disable-line no-undef
+    return true;
+  };
+  window.addEventListener('DOMContentLoaded', tryWrap, { once: true, capture: true });
+};
 
 // Each rAF callback is timed together with a 1-pixel getImageData, which
 // forces the canvas to rasterise the frame inside the measurement (otherwise
@@ -79,16 +97,36 @@ async function capture(root, out) {
         localStorage.setItem('neonCrusher.audio.v1', 'muted');
         if (save) localStorage.setItem('neonCrusher.save.v1', JSON.stringify(save));
       }, s.save);
+      await ctx.addInitScript(HOOK);
       const page = await ctx.newPage();
       const errs = [];
       page.on('pageerror', (e) => errs.push(e.message));
       await page.goto(base + 'index.html');
       const box = await page.locator('#gameCanvas').boundingBox();
-      const cx = box.x + box.width / 2; const cy = box.y + box.height / 2;
-      if (s.volley) {
-        for (let i = 0; i < 60; i++) { await page.waitForTimeout(100); if (await page.evaluate(() => document.getElementById('hint').classList.contains('hint--action'))) break; }
-        if (s.volley === 'hover') { await page.mouse.move(cx + 40, cy - 25); await page.waitForTimeout(250); } else {
-          await page.mouse.move(cx, cy); await page.mouse.down(); await page.mouse.up(); await page.waitForTimeout(s.after);
+      if (s.act) {
+        // Wait (same wall-clock budget on both builds) for a ready pulse, and
+        // for 'defense'/'break' also for the AI's shield (the base has none:
+        // it times out at the same moment the shield would have appeared).
+        const waitFor = async (fn, ms) => {
+          const deadline = Date.now() + ms;
+          for (;;) {
+            await page.waitForTimeout(50);
+            if (await page.evaluate(fn) || Date.now() > deadline) return;
+          }
+        };
+        if (s.act !== 'core') await waitFor(() => !!(window.__g && window.__g.defense), 11000);
+        if (s.act !== 'defense') await waitFor(() => !!(window.__g && window.__g.volleyReady), 8000);
+        if (s.act === 'defense') {
+          await page.waitForTimeout(s.after);
+        } else {
+          const pt = await page.evaluate((act) => {
+            const g = window.__g;
+            const t = act === 'break' && g.defense ? g.defense.node : g.blocks.find((b) => b.alive && b.kind === 'heart');
+            return t ? { x: t.cx * g.viewScale, y: t.cy * g.viewScale } : { x: g.width * g.viewScale / 2, y: g.height * g.viewScale / 2 };
+          }, s.act);
+          await page.mouse.move(box.x + pt.x, box.y + pt.y);
+          await page.mouse.down(); await page.mouse.up();
+          await page.waitForTimeout(s.after);
         }
       } else {
         await page.waitForTimeout(s.wait);
@@ -148,7 +186,7 @@ async function sheets(beforeDir, afterDir, out) {
       const page = await browser.newPage({ viewport: { width: 400, height: 300 }, deviceScaleFactor: 1 });
       await page.setContent(`<body style="margin:0;background:#111;font:600 18px Arial;color:#ddd">
         <div style="display:flex;gap:8px;padding:8px"><figure style="margin:0"><figcaption>BEFORE (main)</figcaption><img src="data:image/png;base64,${a}"></figure>
-        <figure style="margin:0"><figcaption>AFTER (NC-ART-1)</figcaption><img src="data:image/png;base64,${b}"></figure></div></body>`);
+        <figure style="margin:0"><figcaption>AFTER (NC-AI-RECOVERY-1)</figcaption><img src="data:image/png;base64,${b}"></figure></div></body>`);
       await page.waitForTimeout(100);
       const size = await page.evaluate(() => ({ w: document.body.scrollWidth, h: document.body.scrollHeight }));
       await page.setViewportSize({ width: size.w, height: size.h });
