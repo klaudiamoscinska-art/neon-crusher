@@ -1,0 +1,65 @@
+{
+  "environment": "Headless Debian Chromium / cloud shared CPU; software raster; physical iPhone NOT RUN",
+  "results": [
+    {
+      "name": "1920x1080 DPR1,60 drones render+raster",
+      "status": "PASS",
+      "baselineRef": "1fb7ab4b4a931a039adf047ae900c6b0641f882d",
+      "beforeMs": 15.295999999998603,
+      "afterMs": 16.551999999999534,
+      "changePercent": 8.211297071136547,
+      "samples": {
+        "before": [
+          26.088000000000466,
+          15.595999999998604,
+          16.192000000001862,
+          14.301999999999534,
+          14.847999999998137,
+          15.295999999998603,
+          14.365999999998603
+        ],
+        "after": [
+          16.338000000000466,
+          17.963999999999068,
+          15.878000000000466,
+          14.831999999999534,
+          17.11600000000093,
+          16.551999999999534,
+          17.798000000000467
+        ]
+      },
+      "method": "7 alternating samples \u00d750 draws,50th-percentile sample. Identical static sector13 fixture,force raster via getImageData. rAF frozen; measures draw+raster only, not physical GPU/FPS."
+    },
+    {
+      "name": "1920x1080 DPR2,60 drones render+raster",
+      "status": "FAIL",
+      "baselineRef": "1fb7ab4b4a931a039adf047ae900c6b0641f882d",
+      "beforeMs": 31.658000000000467,
+      "afterMs": 51.985999999998604,
+      "changePercent": 64.2112578179223,
+      "samples": {
+        "before": [
+          31.021999999999533,
+          31.468000000000465,
+          31.771999999999533,
+          31.658000000000467,
+          31.065999999998603,
+          67.80199999999721,
+          64.53600000000093
+        ],
+        "after": [
+          48.15,
+          51.985999999998604,
+          58.90600000000093,
+          47.78,
+          63.281999999999535,
+          47.55,
+          58.76600000000093
+        ]
+      },
+      "method": "7 alternating samples \u00d750 draws,50th-percentile sample. Identical static sector13 fixture,force raster via getImageData. rAF frozen; measures draw+raster only, not physical GPU/FPS."
+    }
+  ],
+  "stage": "Initial unoptimised V3. Historical FAIL retained; superseded by performance-results.json after transparent-margin and raster-cache optimisation.",
+  "runtimeSHA256": "5b4c89601d00282a192df9edf77f0ee457d83f710e99ffd83a0b74694878794a"
+}

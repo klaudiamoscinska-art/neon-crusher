@@ -1,0 +1,64 @@
+{
+  "environment": "Headless Debian Chromium / cloud shared CPU; software raster; physical iPhone NOT RUN",
+  "results": [
+    {
+      "name": "1920x1080 DPR1,60 drones render+raster",
+      "status": "PASS",
+      "baselineRef": "1fb7ab4b4a931a039adf047ae900c6b0641f882d",
+      "beforeMs": 15.401999999997207,
+      "afterMs": 14.67,
+      "changePercent": -4.752629528615371,
+      "samples": {
+        "before": [
+          19.498000000002794,
+          16.176000000000933,
+          15.401999999997207,
+          14.56399999999907,
+          14.327999999998138,
+          15.438000000002795,
+          15.017999999998137
+        ],
+        "after": [
+          14.653999999999069,
+          14.02600000000093,
+          14.67,
+          14.59,
+          20.304000000003725,
+          20.55,
+          19.71200000000186
+        ]
+      },
+      "method": "7 alternating samples \u00d750 draws,50th-percentile sample. Identical static sector13 fixture,force raster via getImageData. rAF frozen; measures draw+raster only, not physical GPU/FPS."
+    },
+    {
+      "name": "1920x1080 DPR2,60 drones render+raster",
+      "status": "PASS",
+      "baselineRef": "1fb7ab4b4a931a039adf047ae900c6b0641f882d",
+      "beforeMs": 32.7480000000028,
+      "afterMs": 32.93599999999628,
+      "changePercent": 0.5740808598798885,
+      "samples": {
+        "before": [
+          52.08,
+          33.52799999999814,
+          28.77,
+          32.7480000000028,
+          29.292000000001863,
+          33.85,
+          29.157999999998136
+        ],
+        "after": [
+          33.30799999999814,
+          46.51799999999814,
+          31.55200000000186,
+          33.12799999999814,
+          32.93599999999628,
+          32.45200000000186,
+          31.577999999998138
+        ]
+      },
+      "method": "7 alternating samples \u00d750 draws,50th-percentile sample. Identical static sector13 fixture,force raster via getImageData. rAF frozen; measures draw+raster only, not physical GPU/FPS."
+    }
+  ],
+  "runtimeSHA256": "59fc166f2d76ed6bc52954fc8c811a8fe05fb22069bb95ba704413e98c544bc6"
+}
