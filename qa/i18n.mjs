@@ -62,7 +62,7 @@ export function run() {
   r.check('no navigator (harness default) -> English UI, <html lang="en">', en.game.lang === 'en' && en.context.document.documentElement.lang === 'en' && enTexts.labelCash === 'Cash' && enTexts.titleBuyBall === STRINGS.en.buyBall);
   const pl = loadGame({ navigator: { languages: ['pl-PL'], language: 'pl-PL' } }); pl.newGame();
   const plTexts = texts(pl);
-  r.check('Polish browser -> Polish UI, <html lang="pl">', pl.game.lang === 'pl' && pl.context.document.documentElement.lang === 'pl' && plTexts.labelCash === 'Kasa' && plTexts.titleBuyBall === 'Nowy dron' && plTexts.descBuyBall === 'Drony: 1' && plTexts.labelLevel === 'Sektor');
+  r.check('Polish browser -> Polish UI, <html lang="pl">', pl.game.lang === 'pl' && pl.context.document.documentElement.lang === 'pl' && plTexts.labelCash === 'Kasa' && plTexts.titleBuyBall === 'Nowy dron' && plTexts.descBuyBall === 'Drony: 1' && plTexts.labelLevel === 'Sektor / 12');
   const blank = TEXT_IDS.filter((id) => !enTexts[id] || !plTexts[id]);
   r.check(`all ${TEXT_IDS.length} text elements are filled in both languages`, blank.length === 0, blank.join(', '));
   const leak = TEXT_IDS.filter((id) => POLISH_CHARS.test(enTexts[id]));

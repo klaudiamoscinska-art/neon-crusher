@@ -65,3 +65,13 @@ rule does **not** apply here.
    only runtime files after QA — NC-16 (owner decision); `nc-release`.
 
 Order rationale and the full plan: `docs/ROADMAP.md` (fast-track queue first).
+
+## KERNELFALL Basic review
+
+NC-11: twelve-sector objective implemented; real player retention NOT VERIFIED.
+NC-12: KERNELFALL research and registry-access limitations documented in
+`docs/KERNELFALL_BASIC.md`; no legal clearance. Competitor runtime comparison,
+owner visual approval, portal Preview and physical iPhone/Chromebook tests
+remain NOT VERIFIED. Final covers/videos await the explicit name/gameplay
+approval required by the supplied package. NC-13/NC-20: bounded power erosion
+requires base/candidate timing and performance evidence in the stage report.

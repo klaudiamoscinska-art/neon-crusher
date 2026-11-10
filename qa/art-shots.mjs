@@ -25,7 +25,7 @@ const opt = (name, def) => { const i = args.indexOf(name); return i >= 0 ? args[
 // rasters must stay sharp on high-DPR screens).
 const DPR = Number(opt('--dpr', 1));
 
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg' };
+const TYPES = { '.svg': 'image/svg+xml', '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg' };
 function serve(root) {
   return new Promise((resolve) => {
     const server = http.createServer((req, res) => {
@@ -90,12 +90,13 @@ const RAF_PROBE = () => {
 
 async function capture(root, out) {
   fs.mkdirSync(out, { recursive: true });
-  const browser = await pw.chromium.launch();
+  const browser = await pw.chromium.launch(process.env.NC_CHROMIUM ? { executablePath: process.env.NC_CHROMIUM, args: ['--no-sandbox'] } : {});
   const server = await serve(root);
   const base = `http://127.0.0.1:${server.address().port}/`;
   const log = [];
   try {
-    for (const s of SCENES) {
+    const select = opt('--select', '');
+    for (const s of SCENES.filter(s => !select || select.split(',').some(prefix => s.name.startsWith(prefix)))) {
       const ctx = await browser.newContext({ viewport: { width: s.vp[0], height: s.vp[1] }, deviceScaleFactor: DPR, locale: s.locale || 'en-US', hasTouch: !!s.touch, isMobile: !!s.touch, reducedMotion: s.reducedMotion ? 'reduce' : 'no-preference' });
       await ctx.addInitScript((save) => {
         localStorage.setItem('neonCrusher.audio.v1', 'muted');
@@ -149,7 +150,7 @@ async function capture(root, out) {
 
 /** JS time per rAF callback (update steps + draw) on a late-game save. */
 async function perf(root, out) {
-  const browser = await pw.chromium.launch();
+  const browser = await pw.chromium.launch(process.env.NC_CHROMIUM ? { executablePath: process.env.NC_CHROMIUM, args: ['--no-sandbox'] } : {});
   const server = await serve(root);
   const base = `http://127.0.0.1:${server.address().port}/`;
   const rows = [];
@@ -182,7 +183,7 @@ async function perf(root, out) {
 /** Side-by-side BEFORE | AFTER sheets (JPEG) from two capture folders. */
 async function sheets(beforeDir, afterDir, out) {
   fs.mkdirSync(out, { recursive: true });
-  const browser = await pw.chromium.launch();
+  const browser = await pw.chromium.launch(process.env.NC_CHROMIUM ? { executablePath: process.env.NC_CHROMIUM, args: ['--no-sandbox'] } : {});
   try {
     for (const f of fs.readdirSync(afterDir).filter((x) => x.endsWith('.png'))) {
       const a = fs.readFileSync(path.join(beforeDir, f)).toString('base64');
@@ -190,7 +191,7 @@ async function sheets(beforeDir, afterDir, out) {
       const page = await browser.newPage({ viewport: { width: 400, height: 300 }, deviceScaleFactor: 1 });
       await page.setContent(`<body style="margin:0;background:#111;font:600 18px Arial;color:#ddd">
         <div style="display:flex;gap:8px;padding:8px"><figure style="margin:0"><figcaption>BEFORE (main)</figcaption><img src="data:image/png;base64,${a}"></figure>
-        <figure style="margin:0"><figcaption>AFTER (NC-AI-RECOVERY-1)</figcaption><img src="data:image/png;base64,${b}"></figure></div></body>`);
+        <figure style="margin:0"><figcaption>AFTER (KERNELFALL)</figcaption><img src="data:image/png;base64,${b}"></figure></div></body>`);
       await page.waitForTimeout(100);
       const size = await page.evaluate(() => ({ w: document.body.scrollWidth, h: document.body.scrollHeight }));
       await page.setViewportSize({ width: size.w, height: size.h });
