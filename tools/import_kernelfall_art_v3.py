@@ -38,7 +38,7 @@ def main():
             payload = z.read(PREFIX + rel)
             if hashlib.sha256(payload).hexdigest() != asset["sha256"]:
                 raise SystemExit(f"Niezgodny SHA256: {rel}")
-            if len(payload) != asset["bytes"] or payload[:8] != b"\\x89PNG\\r\\n\\x1a\\n":
+            if len(payload) != asset["bytes"] or payload[:8] != bytes([137, 80, 78, 71, 13, 10, 26, 10]):
                 raise SystemExit(f"Niezgodne bajty PNG: {rel}")
         # Writes only after full validation of all inputs.
         for asset in items:
