@@ -16,8 +16,9 @@ krawędziami; krytyczne początki czterech gałęzi mają obwódkę. Drony i OVE
 niszczą rzeczywiste moduły. Zniszczenie rodzica odcina potomków (cyjan).
 Erozja idzie po krawędziach od martwego rodzica, maksymalnie jeden moduł co
 0,45 s, obrażenia min(6% maksymalnego HP, 2 × aktualna siła drona).
-Odcięcie nigdy nie zabija rdzenia, nie płaci pieniędzy, nie wyzwala relay
-shockwave i nie odnawia ładowania. Zwykłe trafienia i stary relay shockwave
+Odcięcie nigdy nie zabija rdzenia, nie płaci za trafienie, nie wyzwala relay
+shockwave i nie odnawia ładowania. Zniszczenie aktywnego węzła osłony zachowuje
+istniejącą, jednorazową premię za przerwanie osłony. Zwykłe trafienia i stary relay shockwave
 zachowują swoje zasady. Osłona AI nadal wygasa, automat nadal atakuje.
 
 Trzy deterministyczne archetypy zasilania cyklicznie w 12 sektorach:

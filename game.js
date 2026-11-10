@@ -2507,7 +2507,8 @@ class Game {
   }
 
   /** One bounded erosion hit every 0.45 s, never a free board wipe.
-   * No cash, relay bonus or recharge is awarded by power erosion. */
+   * No hit income, relay bonus or recharge is awarded by power erosion.
+   * Breaking an active shield retains its existing one-shot node bonus. */
   updateCollapse(dt) {
     if (!this.collapseEnabled || !this.heart?.alive) return;
     let newlyOffline = false;

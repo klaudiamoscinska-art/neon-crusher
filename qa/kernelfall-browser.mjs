@@ -30,6 +30,22 @@ try {
   await frame.waitForTimeout(700);await frame.locator('#gameCanvas').screenshot({path:path.join(out,`${archetype}-cut-fixture.png`)});
   checks.push({name:`${archetype}: real graph disconnect visible`,pass:await frame.evaluate(()=>window.__g.blocks.some(b=>b.offline))});
  }
+ await frame.evaluate(()=>{
+  const c=document.createElement('canvas');c.id='qaSpecimens';c.width=600;c.height=240;c.style='position:absolute;inset:65px auto auto 10px;background:#080d15;z-index:99';document.body.append(c);
+  const ctx=c.getContext('2d');ctx.fillStyle='#cceef5';ctx.font='14px Arial';ctx.fillText('Runtime renderer / 22, 34, 49 px / intact + damaged',12,20);
+  let x=55;
+  for(const size of [22,34,49]){
+   for(const hp of [1,.35]){
+    const blocks=[];
+    for(const [i,kind]of ['armor','relay','heart'].entries()){
+     const b=new Block(0,0,size,100,1,COLORS.hostile);b.kind=kind;b.hp=100*hp;b.applyCenter(x,55+i*65);blocks.push(b);
+    }
+    Block.drawCore(ctx,blocks,1,true,()=>{});x+=85;
+   }
+  }
+ });
+ await frame.locator('#qaSpecimens').screenshot({path:path.join(out,'runtime-specimens-22-34-49.png')});
+ await frame.evaluate(()=>document.getElementById('qaSpecimens').remove());
  await frame.evaluate(()=>{const g=window.__g;g.level=12;g.generateCore(12);g.hitBlock(g.heart,g.heart.hp,g.heart.cx,g.heart.cy,'lance',true);});
  await frame.waitForTimeout(1200);await page.screenshot({path:path.join(out,'victory-fixture.png')});
  checks.push({name:'sector 12 continues to endless with victory',pass:await frame.evaluate(()=>window.__g.level===13&&window.__g.toasts.some(t=>t.text===window.__g.t('victory')))});

@@ -202,4 +202,5 @@ story with destruction of a rogue AI. Prices, base physics and v1 saves stay
 unchanged. Rules, tuning, three power-topology archetypes and the twelve-sector
 objective are specified in `docs/KERNELFALL_BASIC.md`; tests: `qa/collapse.mjs`.
 The campaign continues endlessly after sector 12; completion is derived from
-`level >= 13`. Power erosion has no cash reward and never kills the heart.
+`level >= 13`. Power erosion has no hit/relay reward and never kills the heart; breaking an
+active shield keeps its existing one-shot node bonus.
