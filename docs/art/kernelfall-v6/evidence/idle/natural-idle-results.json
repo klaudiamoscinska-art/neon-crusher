@@ -1,0 +1,469 @@
+{
+  "runtimeSHA256": "59fc166f2d76ed6bc52954fc8c811a8fe05fb22069bb95ba704413e98c544bc6",
+  "generatedAt": "2026-11-10T21:11:32.761Z",
+  "scope": "Natural live Game.loop, no inputs, no purchases, no forced state; seed 0x4b465636; actual simulation times retained. Existing V3 runtime is unchanged. This recording is not a V6 integration claim.",
+  "video": "natural-idle-60s.webm",
+  "snapshots": [
+    {
+      "targetSeconds": 0,
+      "wallElapsedSeconds": 0.392,
+      "screenshot": "natural-idle-00s-907x510.png",
+      "time": 0.44583333333333297,
+      "level": 1,
+      "cash": 1,
+      "maxBalls": 1,
+      "balls": 1,
+      "damageLevel": 1,
+      "fireRateLevel": 1,
+      "manualVolleys": 0,
+      "autoVolleys": 0,
+      "heartHP": 60,
+      "heartMaxHP": 60,
+      "aliveBlocks": 9,
+      "offlineBlocks": 0,
+      "shield": false,
+      "charge": 0.7405303030303018,
+      "lang": "en",
+      "loaded": true,
+      "assetErrors": [],
+      "used": [
+        "bosses/firewall_intact_512.png",
+        "drones/scout_256.png",
+        "environment/arena_floor_1024.png",
+        "fx/impact/frame_07_256.png",
+        "modules/armor_intact_256.png",
+        "modules/port_intact_256.png",
+        "ui/network_128.png",
+        "uplinks/charging_256.png"
+      ],
+      "shop": [
+        "New drone",
+        "Override charge",
+        "Breach power"
+      ],
+      "upgrades": [
+        1,
+        1,
+        1
+      ],
+      "scroll": [
+        907,
+        510
+      ],
+      "viewport": [
+        907,
+        510
+      ]
+    },
+    {
+      "targetSeconds": 15,
+      "wallElapsedSeconds": 15.1,
+      "screenshot": "natural-idle-15s-907x510.png",
+      "time": 15.029166666666134,
+      "level": 1,
+      "cash": 11,
+      "maxBalls": 1,
+      "balls": 1,
+      "damageLevel": 1,
+      "fireRateLevel": 1,
+      "manualVolleys": 0,
+      "autoVolleys": 1,
+      "heartHP": 59,
+      "heartMaxHP": 60,
+      "aliveBlocks": 8,
+      "offlineBlocks": 1,
+      "shield": false,
+      "charge": 0.6113636363636222,
+      "lang": "en",
+      "loaded": true,
+      "assetErrors": [],
+      "used": [
+        "bosses/firewall_intact_512.png",
+        "drones/scout_256.png",
+        "environment/arena_floor_1024.png",
+        "fx/chain/frame_00_256.png",
+        "fx/chain/frame_01_256.png",
+        "fx/chain/frame_02_256.png",
+        "fx/chain/frame_03_256.png",
+        "fx/chain/frame_04_256.png",
+        "fx/chain/frame_05_256.png",
+        "fx/chain/frame_06_256.png",
+        "fx/chain/frame_07_256.png",
+        "fx/impact/frame_00_256.png",
+        "fx/impact/frame_01_256.png",
+        "fx/impact/frame_02_256.png",
+        "fx/impact/frame_03_256.png",
+        "fx/impact/frame_04_256.png",
+        "fx/impact/frame_05_256.png",
+        "fx/impact/frame_06_256.png",
+        "fx/impact/frame_07_256.png",
+        "fx/override/frame_00_256.png",
+        "fx/override/frame_01_256.png",
+        "fx/override/frame_02_256.png",
+        "fx/override/frame_03_256.png",
+        "fx/override/frame_04_256.png",
+        "fx/override/frame_05_256.png",
+        "fx/override/frame_06_256.png",
+        "fx/override/frame_07_256.png",
+        "modules/armor_broken_256.png",
+        "modules/armor_damaged_256.png",
+        "modules/armor_intact_256.png",
+        "modules/port_intact_256.png",
+        "modules/port_isolated_256.png",
+        "ui/network_128.png",
+        "uplinks/charging_256.png",
+        "uplinks/firing_256.png",
+        "uplinks/idle_256.png",
+        "uplinks/ready_256.png"
+      ],
+      "shop": [
+        "New drone",
+        "Override charge",
+        "Breach power"
+      ],
+      "upgrades": [
+        1,
+        1,
+        1
+      ],
+      "scroll": [
+        907,
+        510
+      ],
+      "viewport": [
+        907,
+        510
+      ]
+    },
+    {
+      "targetSeconds": 30,
+      "wallElapsedSeconds": 31.129,
+      "screenshot": "natural-idle-30s-907x510.png",
+      "time": 30.029166666665283,
+      "level": 1,
+      "cash": 17,
+      "maxBalls": 1,
+      "balls": 1,
+      "damageLevel": 1,
+      "fireRateLevel": 1,
+      "manualVolleys": 0,
+      "autoVolleys": 2,
+      "heartHP": 50,
+      "heartMaxHP": 60,
+      "aliveBlocks": 7,
+      "offlineBlocks": 0,
+      "shield": false,
+      "charge": 0.5200757575757462,
+      "lang": "en",
+      "loaded": true,
+      "assetErrors": [],
+      "used": [
+        "bosses/firewall_intact_512.png",
+        "drones/scout_256.png",
+        "environment/arena_floor_1024.png",
+        "fx/chain/frame_00_256.png",
+        "fx/chain/frame_01_256.png",
+        "fx/chain/frame_02_256.png",
+        "fx/chain/frame_03_256.png",
+        "fx/chain/frame_04_256.png",
+        "fx/chain/frame_05_256.png",
+        "fx/chain/frame_06_256.png",
+        "fx/chain/frame_07_256.png",
+        "fx/impact/frame_00_256.png",
+        "fx/impact/frame_01_256.png",
+        "fx/impact/frame_02_256.png",
+        "fx/impact/frame_03_256.png",
+        "fx/impact/frame_04_256.png",
+        "fx/impact/frame_05_256.png",
+        "fx/impact/frame_06_256.png",
+        "fx/impact/frame_07_256.png",
+        "fx/override/frame_00_256.png",
+        "fx/override/frame_01_256.png",
+        "fx/override/frame_02_256.png",
+        "fx/override/frame_03_256.png",
+        "fx/override/frame_04_256.png",
+        "fx/override/frame_05_256.png",
+        "fx/override/frame_06_256.png",
+        "fx/override/frame_07_256.png",
+        "modules/armor_broken_256.png",
+        "modules/armor_damaged_256.png",
+        "modules/armor_intact_256.png",
+        "modules/port_broken_256.png",
+        "modules/port_intact_256.png",
+        "modules/port_isolated_256.png",
+        "ui/network_128.png",
+        "uplinks/charging_256.png",
+        "uplinks/firing_256.png",
+        "uplinks/idle_256.png",
+        "uplinks/ready_256.png"
+      ],
+      "shop": [
+        "New drone",
+        "Override charge",
+        "Breach power"
+      ],
+      "upgrades": [
+        1,
+        1,
+        1
+      ],
+      "scroll": [
+        907,
+        510
+      ],
+      "viewport": [
+        907,
+        510
+      ]
+    },
+    {
+      "targetSeconds": 45,
+      "wallElapsedSeconds": 47.705,
+      "screenshot": "natural-idle-45s-907x510.png",
+      "time": 45.012500000008856,
+      "level": 1,
+      "cash": 25,
+      "maxBalls": 1,
+      "balls": 1,
+      "damageLevel": 1,
+      "fireRateLevel": 1,
+      "manualVolleys": 0,
+      "autoVolleys": 3,
+      "heartHP": 50,
+      "heartMaxHP": 60,
+      "aliveBlocks": 6,
+      "offlineBlocks": 0,
+      "shield": false,
+      "charge": 0.4272727272727187,
+      "lang": "en",
+      "loaded": true,
+      "assetErrors": [],
+      "used": [
+        "bosses/firewall_intact_512.png",
+        "drones/scout_256.png",
+        "environment/arena_floor_1024.png",
+        "fx/chain/frame_00_256.png",
+        "fx/chain/frame_01_256.png",
+        "fx/chain/frame_02_256.png",
+        "fx/chain/frame_03_256.png",
+        "fx/chain/frame_04_256.png",
+        "fx/chain/frame_05_256.png",
+        "fx/chain/frame_06_256.png",
+        "fx/chain/frame_07_256.png",
+        "fx/impact/frame_00_256.png",
+        "fx/impact/frame_01_256.png",
+        "fx/impact/frame_02_256.png",
+        "fx/impact/frame_03_256.png",
+        "fx/impact/frame_04_256.png",
+        "fx/impact/frame_05_256.png",
+        "fx/impact/frame_06_256.png",
+        "fx/impact/frame_07_256.png",
+        "fx/override/frame_00_256.png",
+        "fx/override/frame_01_256.png",
+        "fx/override/frame_02_256.png",
+        "fx/override/frame_03_256.png",
+        "fx/override/frame_04_256.png",
+        "fx/override/frame_05_256.png",
+        "fx/override/frame_06_256.png",
+        "fx/override/frame_07_256.png",
+        "modules/armor_broken_256.png",
+        "modules/armor_damaged_256.png",
+        "modules/armor_intact_256.png",
+        "modules/port_broken_256.png",
+        "modules/port_damaged_256.png",
+        "modules/port_intact_256.png",
+        "modules/port_isolated_256.png",
+        "ui/network_128.png",
+        "uplinks/charging_256.png",
+        "uplinks/firing_256.png",
+        "uplinks/idle_256.png",
+        "uplinks/ready_256.png"
+      ],
+      "shop": [
+        "New drone",
+        "Override charge",
+        "Breach power"
+      ],
+      "upgrades": [
+        1,
+        1,
+        1
+      ],
+      "scroll": [
+        907,
+        510
+      ],
+      "viewport": [
+        907,
+        510
+      ]
+    },
+    {
+      "targetSeconds": 60,
+      "wallElapsedSeconds": 64.185,
+      "screenshot": "natural-idle-60s-907x510.png",
+      "time": 60.0250000000208,
+      "level": 1,
+      "cash": 32,
+      "maxBalls": 1,
+      "balls": 1,
+      "damageLevel": 1,
+      "fireRateLevel": 1,
+      "manualVolleys": 0,
+      "autoVolleys": 4,
+      "heartHP": 50,
+      "heartMaxHP": 60,
+      "aliveBlocks": 5,
+      "offlineBlocks": 2,
+      "shield": false,
+      "charge": 0.33712121212120627,
+      "lang": "en",
+      "loaded": true,
+      "assetErrors": [],
+      "used": [
+        "bosses/firewall_intact_512.png",
+        "drones/scout_256.png",
+        "environment/arena_floor_1024.png",
+        "fx/chain/frame_00_256.png",
+        "fx/chain/frame_01_256.png",
+        "fx/chain/frame_02_256.png",
+        "fx/chain/frame_03_256.png",
+        "fx/chain/frame_04_256.png",
+        "fx/chain/frame_05_256.png",
+        "fx/chain/frame_06_256.png",
+        "fx/chain/frame_07_256.png",
+        "fx/impact/frame_00_256.png",
+        "fx/impact/frame_01_256.png",
+        "fx/impact/frame_02_256.png",
+        "fx/impact/frame_03_256.png",
+        "fx/impact/frame_04_256.png",
+        "fx/impact/frame_05_256.png",
+        "fx/impact/frame_06_256.png",
+        "fx/impact/frame_07_256.png",
+        "fx/override/frame_00_256.png",
+        "fx/override/frame_01_256.png",
+        "fx/override/frame_02_256.png",
+        "fx/override/frame_03_256.png",
+        "fx/override/frame_04_256.png",
+        "fx/override/frame_05_256.png",
+        "fx/override/frame_06_256.png",
+        "fx/override/frame_07_256.png",
+        "modules/armor_broken_256.png",
+        "modules/armor_damaged_256.png",
+        "modules/armor_intact_256.png",
+        "modules/port_broken_256.png",
+        "modules/port_damaged_256.png",
+        "modules/port_intact_256.png",
+        "modules/port_isolated_256.png",
+        "ui/network_128.png",
+        "uplinks/charging_256.png",
+        "uplinks/firing_256.png",
+        "uplinks/idle_256.png",
+        "uplinks/ready_256.png"
+      ],
+      "shop": [
+        "New drone",
+        "Override charge",
+        "Breach power"
+      ],
+      "upgrades": [
+        1,
+        1,
+        1
+      ],
+      "scroll": [
+        907,
+        510
+      ],
+      "viewport": [
+        907,
+        510
+      ]
+    }
+  ],
+  "events": [
+    {
+      "time": 8.304166666666516,
+      "level": 1,
+      "auto": 1,
+      "manual": 0,
+      "shield": false,
+      "cash": 8
+    },
+    {
+      "time": 24.308333333332275,
+      "level": 1,
+      "auto": 2,
+      "manual": 0,
+      "shield": false,
+      "cash": 16
+    },
+    {
+      "time": 40.312500000005116,
+      "level": 1,
+      "auto": 3,
+      "manual": 0,
+      "shield": false,
+      "cash": 23
+    },
+    {
+      "time": 56.31666666668452,
+      "level": 1,
+      "auto": 4,
+      "manual": 0,
+      "shield": false,
+      "cash": 31
+    }
+  ],
+  "checks": [
+    {
+      "name": "natural first 60 s ran without manual override",
+      "status": "PASS"
+    },
+    {
+      "name": "autopilot fires during natural idle",
+      "status": "PASS"
+    },
+    {
+      "name": "exactly three existing upgrades, no purchases",
+      "status": "PASS"
+    },
+    {
+      "name": "English default in Polish browser, no runtime asset load failures or page errors",
+      "status": "PASS"
+    },
+    {
+      "name": "zero external requests",
+      "status": "PASS"
+    },
+    {
+      "name": "physical iPhone",
+      "status": "NOT RUN",
+      "reason": "Chromium Linux viewport recording only"
+    },
+    {
+      "name": "CrazyGames real portal",
+      "status": "NOT RUN",
+      "reason": "Local HTTP only; no portal session available"
+    }
+  ],
+  "errors": [],
+  "external": [],
+  "videoMedia": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "vp8",
+        "width": 906,
+        "height": 510,
+        "r_frame_rate": "25/1"
+      }
+    ],
+    "format": {
+      "duration": "66.640000",
+      "size": "5027967"
+    }
+  },
+  "videoNote": "Playwright records the whole wall-clock session including asset startup. VP8 rounds the 907px viewport recording down to 906px; PNG screenshots retain exact 907x510 viewport dimensions."
+}

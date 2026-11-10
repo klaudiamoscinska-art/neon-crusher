@@ -149,3 +149,17 @@ render+raster cost against `origin/main` with a controlled 60-drone scene.
 Run performance alone after other browser/CPU tests finish. Both write retained
 evidence to `docs/qa/kernelfall-art-v3/`; see `REPORT_PL.md` there. Emulation is
 not a physical-device PASS. These tools add no game runtime dependencies.
+
+ART V6 pre-integration review (development only):
+`python3 qa/art-v6-assets.py` checks all 92 source PNGs (Pillow is QA-only);
+`node qa/art-v6-browser.mjs` captures identical seeded real Canvas scenes
+with browser-only V6 substitution, plus states and gameplay fixtures;
+`node qa/art-v6-background.mjs` checks aspect-preserving background cover;
+`node qa/art-v6-idle.mjs` records 60 simulated seconds of natural V3 idle
+without inputs or purchases. `node qa/art-v6-reconstruct.mjs` reconstructs
+v1 saves for sectors 1–12. `node qa/art-v6-performance.mjs` measures the
+unchanged V3 runtime against main (A/A control; run alone, not production V6).
+After successful A/B, `node qa/art-v6-inventory.mjs` writes exact production
+and fixture source lists and screenshot hashes. Outputs and limits are in
+`docs/art/kernelfall-v6/REPORT_PL.md`. These tools are separate from run-all;
+the V6 visual gate is BLOCKED, and no V6 PNG is selected by production code.

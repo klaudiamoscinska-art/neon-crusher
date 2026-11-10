@@ -1,0 +1,173 @@
+{
+  "command": "node qa/run-all.mjs",
+  "generatedAt": "2026-11-10T21:19:04.815Z",
+  "scope": "Initial full run without acceleration. Started before explicit-PL QA correction (module already imported). Temporarily paused with SIGSTOP solely for isolated render benchmark, resumed with SIGCONT and completed exit 0. Default Playwright bundled browser missing; final QA used /usr/bin/chromium and did execute browser smoke.",
+  "counts": {
+    "PASS": 240,
+    "FAIL": 0,
+    "NOT RUN": 2,
+    "KNOWN": 0,
+    "INFO": 14
+  },
+  "quick": false,
+  "base": null,
+  "noRuntimeChange": false,
+  "only": null,
+  "exitCode": 0,
+  "summary": [
+    {
+      "name": "integrity",
+      "optional": false,
+      "counts": {
+        "PASS": 12,
+        "FAIL": 0,
+        "NOT RUN": 1,
+        "KNOWN": 0,
+        "INFO": 0
+      },
+      "status": "PASS+NOT RUN",
+      "blocking": false,
+      "reason": "passing checks; also NOT RUN rows (listed above)"
+    },
+    {
+      "name": "instructions",
+      "optional": false,
+      "counts": {
+        "PASS": 12,
+        "FAIL": 0,
+        "NOT RUN": 0,
+        "KNOWN": 0,
+        "INFO": 1
+      },
+      "status": "PASS",
+      "blocking": false,
+      "reason": "all checks pass"
+    },
+    {
+      "name": "runner",
+      "optional": false,
+      "counts": {
+        "PASS": 18,
+        "FAIL": 0,
+        "NOT RUN": 0,
+        "KNOWN": 0,
+        "INFO": 0
+      },
+      "status": "PASS",
+      "blocking": false,
+      "reason": "all checks pass"
+    },
+    {
+      "name": "physics",
+      "optional": false,
+      "counts": {
+        "PASS": 20,
+        "FAIL": 0,
+        "NOT RUN": 0,
+        "KNOWN": 0,
+        "INFO": 3
+      },
+      "status": "PASS",
+      "blocking": false,
+      "reason": "all checks pass"
+    },
+    {
+      "name": "levels",
+      "optional": false,
+      "counts": {
+        "PASS": 25,
+        "FAIL": 0,
+        "NOT RUN": 0,
+        "KNOWN": 0,
+        "INFO": 1
+      },
+      "status": "PASS",
+      "blocking": false,
+      "reason": "all checks pass"
+    },
+    {
+      "name": "economy",
+      "optional": false,
+      "counts": {
+        "PASS": 30,
+        "FAIL": 0,
+        "NOT RUN": 0,
+        "KNOWN": 0,
+        "INFO": 8
+      },
+      "status": "PASS",
+      "blocking": false,
+      "reason": "all checks pass"
+    },
+    {
+      "name": "save",
+      "optional": false,
+      "counts": {
+        "PASS": 24,
+        "FAIL": 0,
+        "NOT RUN": 0,
+        "KNOWN": 0,
+        "INFO": 0
+      },
+      "status": "PASS",
+      "blocking": false,
+      "reason": "all checks pass"
+    },
+    {
+      "name": "i18n",
+      "optional": false,
+      "counts": {
+        "PASS": 18,
+        "FAIL": 0,
+        "NOT RUN": 0,
+        "KNOWN": 0,
+        "INFO": 0
+      },
+      "status": "PASS",
+      "blocking": false,
+      "reason": "all checks pass"
+    },
+    {
+      "name": "collapse",
+      "optional": false,
+      "counts": {
+        "PASS": 64,
+        "FAIL": 0,
+        "NOT RUN": 0,
+        "KNOWN": 0,
+        "INFO": 0
+      },
+      "status": "PASS",
+      "blocking": false,
+      "reason": "all checks pass"
+    },
+    {
+      "name": "recovery",
+      "optional": false,
+      "counts": {
+        "PASS": 17,
+        "FAIL": 0,
+        "NOT RUN": 0,
+        "KNOWN": 0,
+        "INFO": 1
+      },
+      "status": "PASS",
+      "blocking": false,
+      "reason": "all checks pass"
+    },
+    {
+      "name": "browser-smoke",
+      "optional": true,
+      "counts": {
+        "PASS": 0,
+        "FAIL": 0,
+        "NOT RUN": 1,
+        "KNOWN": 0,
+        "INFO": 0
+      },
+      "status": "NOT RUN",
+      "blocking": false,
+      "reason": "optional suite, environment unavailable (allowed)"
+    }
+  ]
+}

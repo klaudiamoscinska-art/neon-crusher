@@ -1,0 +1,336 @@
+
+===== integrity =====
+PASS    syntax: node --check on 26 JS files
+PASS    index.html loads stylesheet, script and approved local icon -- assets/kernelfall-v3/brand/symbol-128.png, game.js, style.css
+PASS    runtime references are relative (CrazyGames: no absolute paths)
+PASS    every runtime file exists
+PASS    ART V3 contains exactly the 100 manifest PNGs -- 100 PNGs
+PASS    ART V3 original PNG signatures, dimensions, bytes and SHA-256 match the manifest
+PASS    HTML and CSS asset paths are local and included in the release
+PASS    runtime makes no external requests (no http(s) URLs in index.html/style.css/game.js; the SVG namespace identifier allowed once)
+PASS    save key literal is 'neonCrusher.save.v1'
+PASS    no eval / new Function / document.write in the runtime
+PASS    no innerHTML in the runtime (text goes through textContent)
+PASS    Pages/Jekyll: no Liquid tags ({{ or {%) in 29 published Markdown files
+NOT RUN runtime diff vs base -- no --base given
+
+[integrity] 12/12 checks PASS, FAIL 0, KNOWN 0, NOT RUN 1, INFO 0 => PASS+NOT RUN: passing checks; also NOT RUN rows (listed above)
+
+===== instructions =====
+PASS    CLAUDE.md within 9000 bytes -- 5032 bytes
+PASS    CLAUDE.md states 15 required rules
+PASS    skills exist under .claude/skills/ -- 12
+PASS    every skill: SKILL.md, frontmatter, name = folder, lowercase-hyphen name, description
+PASS    every description <= 300 chars (loaded into every session)
+PASS    every SKILL.md body <= 6000 bytes
+INFO    always-loaded context -- CLAUDE.md 5032 B + 12 skill descriptions 3007 chars
+PASS    docs/claude/SKILLS.md lists exactly the installed skills -- listed=nc-audio,nc-crazygames,nc-economy,nc-engineering,nc-gameplay,nc-performance,nc-physics,nc-qa,nc-release,nc-save,nc-ux,nc-visual-fx installed=nc-audio,nc-crazygames,nc-economy,nc-engineering,nc-gameplay,nc-performance,nc-physics,nc-qa,nc-release,nc-save,nc-ux,nc-visual-fx
+PASS    skills only reference existing skills
+PASS    every backticked repo path in 28 instruction/doc files exists
+PASS    every doc <= 20000 bytes (split or trim when it grows)
+PASS    no instruction line (>= 80 chars) duplicated across files
+PASS    2 known-defect ids used by qa/ are registered in docs/RISKS.md
+
+[instructions] 12/12 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 1 => PASS: all checks pass
+
+===== runner =====
+PASS    mandatory suite with zero checks -> NOT RUN, blocking, run exit 1
+PASS    mandatory suite with only NOT RUN/INFO rows -> blocking, exit 1
+PASS    environment unavailable does NOT excuse a mandatory suite -> exit 1
+PASS    optional suite, environment unavailable -> NOT RUN allowed, exit 0
+PASS    optional suite that ran nothing for another reason -> blocking, exit 1
+PASS    FAIL in a mandatory suite -> exit 1
+PASS    FAIL in an optional suite -> exit 1
+PASS    crashing suite -> FAIL, exit 1
+PASS    a KNOWN check whose defect disappeared is a FAIL -> exit 1
+PASS    suite with only KNOWN rows -> KNOWN ONLY (not PASS), blocking, exit 1
+PASS    PASS with KNOWN and NOT RUN rows -> labelled PASS+KNOWN+NOT RUN, exit 0
+PASS    only a suite with passing checks and nothing else is plain PASS
+PASS    no suite at all -> exit 1
+PASS    Reporter.finish: zero checks -> 2, KNOWN only -> 2, FAIL -> 1, PASS -> 0, optional+unavailable -> 0
+PASS    qa/run-all.mjs marks exactly one suite optional: browser-smoke
+PASS    CLI: run-all --only browser-smoke without a browser -> exit 0, NOT RUN (optional, allowed) -- exit 0
+PASS    CLI: run-all --only <unknown suite> -> exit 1 (an empty selection is never green) -- exit 1
+PASS    CLI: browser-smoke alone without a browser -> exit 0 with NOT RUN -- exit 0
+
+[runner] 18/18 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 0 => PASS: all checks pass
+
+===== physics =====
+PASS    collideBlock left face: reflects the normal component -- v=(-250.00,0.00)
+PASS    collideBlock right face: reflects the normal component -- v=(250.00,0.00)
+PASS    collideBlock top face: reflects the normal component -- v=(0.00,-250.00)
+PASS    collideBlock bottom face: reflects the normal component -- v=(0.00,250.00)
+PASS    collideBlock oblique: tangential component kept, speed kept
+PASS    collideBlock: ball pushed out of contact (no overlap after resolve) -- x=84.5
+PASS    collideBlock: no contact far away returns null and leaves velocity
+PASS    collideBlock corner: diagonal approach reflected back
+PASS    [NC-01] ball overlapping a face but moving away: no bounce, no hit (velocity kept) -- hit=false, vx after=250
+PASS    [NC-01] tangential motion along a face (v.n = 0): no bounce, no hit
+PASS    [NC-02] centre inside a block: pushed fully out through the nearest face (no overlap left) -- pos=(84.5,100)
+PASS    [NC-02] after the push-out a second resolve finds no contact (no repeat hit)
+PASS    [NC-02] centre inside, moving deeper: one bounce out of the nearest face, outside afterwards -- v=(-250,0) pos=(84.5,101)
+PASS    [NC-02] level generated on top of balls: at most one hit per ball over 10 resolves -- 0 hits for 9 balls
+PASS    [NC-02] no ball centre left inside a block after resolving -- 0 inside
+PASS    bounceWalls: 200 balls x 600 frames stay inside the canvas
+PASS    bounceWalls: speed preserved after jittered bounces
+PASS    no tunnelling: max step per simulation step < min block size + ball diameter -- step=1.17px, block>=9.9px, radius=5
+INFO    tunnelling margin -- max speed 279.9 px/s, step 0.0042 s -> 1.17 px/step vs 19.9 px
+PASS    [NC-03] same seed -> identical state (cash, level, every ball position) at 60/144/165 Hz after the same fixed steps -- 8892 comparisons, seeds 1,2,3,4,5,6
+INFO    hit rate 60 Hz vs 144 Hz -- 11.637+-0.103 vs 11.633+-0.103 hits/s, diff 0.0%, z=0.03, seeds=48
+INFO    hit rate 60 Hz vs 165 Hz -- 11.637+-0.103 vs 11.633+-0.103 hits/s, diff 0.0%, z=0.03, seeds=48
+PASS    [NC-03] hit rate at 144 and 165 Hz within 2 standard errors and 2 % of 60 Hz (48 seeds) -- worst |z|=0.03, worst diff 0.0%
+
+[physics] 20/20 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 3 => PASS: all checks pass
+
+===== levels =====
+PASS    odd levels = grid, even levels = circle (L1-20)
+PASS    grid is NxN with N = min(3 + floor((L-1)/2), 7), the heart replacing the centre block (odd N) or the 4 central blocks (even N)
+PASS    circle: one ring, two rings from level 5 (even levels), heart inside
+PASS    armour block HP = round(10 x 1.5^(L-1)) (+50% per level)
+PASS    one heart per core at the centre, HP 6 x block HP, size 1 cell (odd N) / 2x2 cells (even N), overlapping no block
+PASS    relays = 0 on level 1, then min(1 + floor((L-2)/3), 4) -- L1:0 L2:1 L3:1 L4:1 L5:2 L6:2 L7:2 L8:3 L9:3 L10:3 L11:4 L12:4 L13:4 L14:4 L15:4 L16:4 L17:4 L18:4 L19:4 L20:4
+PASS    money per hit = max(1, round(1.5^(L-1)))
+PASS    turrets = min(1 + floor((L-1)/3), 4)
+PASS    all blocks destroyed -> level 2 and a fresh core
+PASS    one block left alive -> no level-up
+PASS    every block inside the canvas (8 sizes x 30 levels)
+PASS    every turret inside the canvas
+PASS    [NC-14] no turret within 14 px of the core (8 sizes x 30 levels)
+PASS    every block drawn >= 11 px on screen (8 canvases x 30 levels) -- 1920x909: 46.7 px, 1216x513: 26.4 px, 907x339: 17.4 px, 821x291: 15.0 px, 800x279: 14.3 px, 667x230: 11.7 px, 375x480: 19.3 px, 320x380: 16.5 px
+INFO    core scaled down to fit (canvas, level, scale) -- 97 of 240: 1920x909 L8 x0.93, 1920x909 L10 x0.86, 1920x909 L12 x0.79, 1920x909 L14 x0.74, 1920x909 L16 x0.71, 1920x909 L18 x0.71, 1920x909 L20 x0.71, 1920x909 L22 x0.71, 1920x909 L24 x0.71, 1920x909 L26 x0.71, 1920x909 L28 x0.71, 1920x909 L30 x0.71, 1216x513 L8 x0.93, 1216x513 L10 x0.86, 1216x513 L12 x0.79, 1216x513 L14 x0.74, 1216x513 L16 x0.71, 1216x513 L18 x0.71, 1216x513 L20 x0.71, 1216x513 L22 x0.71, 1216x513 L24 x0.71, 1216x513 L26 x0.71, 1216x513 L28 x0.71, 1216x513 L30 x0.71, 907x339 L8 x0.93, 907x339 L10 x0.86, 907x339 L12 x0.79, 907x339 L14 x0.74, 907x339 L16 x0.71, 907x339 L18 x0.71, 907x339 L20 x0.71, 907x339 L22 x0.71, 907x339 L24 x0.71, 907x339 L26 x0.71, 907x339 L28 x0.71, 907x339 L30 x0.71, 821x291 L8 x0.93, 821x291 L10 x0.86, 821x291 L12 x0.79, 821x291 L14 x0.74, 821x291 L16 x0.71, 821x291 L18 x0.71, 821x291 L20 x0.71, 821x291 L22 x0.71, 821x291 L24 x0.71, 821x291 L26 x0.71, 821x291 L28 x0.71, 821x291 L30 x0.71, 800x279 L8 x0.93, 800x279 L10 x0.86, 800x279 L12 x0.79, 800x279 L14 x0.74, 800x279 L16 x0.71, 800x279 L18 x0.71, 800x279 L20 x0.71, 800x279 L22 x0.71, 800x279 L24 x0.71, 800x279 L26 x0.71, 800x279 L28 x0.71, 800x279 L30 x0.71, 667x230 L6 x0.95, 667x230 L8 x0.86, 667x230 L10 x0.79, 667x230 L12 x0.73, 667x230 L14 x0.68, 667x230 L16 x0.65, 667x230 L18 x0.65, 667x230 L20 x0.65, 667x230 L22 x0.65, 667x230 L24 x0.65, 667x230 L26 x0.65, 667x230 L28 x0.65, 667x230 L30 x0.65, 375x480 L8 x0.93, 375x480 L10 x0.86, 375x480 L12 x0.79, 375x480 L14 x0.74, 375x480 L16 x0.71, 375x480 L18 x0.71, 375x480 L20 x0.71, 375x480 L22 x0.71, 375x480 L24 x0.71, 375x480 L26 x0.71, 375x480 L28 x0.71, 375x480 L30 x0.71, 320x380 L8 x0.93, 320x380 L10 x0.86, 320x380 L12 x0.79, 320x380 L14 x0.74, 320x380 L16 x0.71, 320x380 L18 x0.71, 320x380 L20 x0.71, 320x380 L22 x0.71, 320x380 L24 x0.71, 320x380 L26 x0.71, 320x380 L28 x0.71, 320x380 L30 x0.71
+PASS    resize re-centres the core from stored offsets
+PASS    resize keeps block HP (no regeneration)
+PASS    resize sets canvas backing store to CSS size x DPR
+PASS    [NC-15] big resize (1920x900 -> 375x480, level 16): core and turrets inside the canvas
+PASS    [NC-15] after the resize turrets keep clear of the core
+PASS    [NC-15] resize keeps the level, block count and HP
+PASS    [NC-15] resizing back restores the generated geometry exactly
+PASS    [NC-15] resize sequence with 15 balls in play: core, turrets and balls inside, no ball inside a block, turrets clear
+PASS    world scale = max(1, short side / 250); world x scale = canvas; backing store = CSS x DPR -- 1920x909: x3.64 world 528x250, 907x339: x1.36 world 669x250, 800x279: x1.12 world 717x250, 667x230: x1.00 world 667x230, 375x480: x1.50 world 250x320
+PASS    every turret aims at the core centre; a new ball spawns clear of every block (8 sizes x 6 levels)
+PASS    core progress: 0 on a fresh core, destroyed HP / total HP, 1 when cleared -- p0=0 p1=0.0214 end=1
+
+[levels] 25/25 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 1 => PASS: all checks pass
+
+===== economy =====
+PASS    costs: ball 10 x 1.5^(n-1), volley charge / damage 15 x 1.5^(lvl-1), rounded up (lvl 1-40)
+PASS    starting costs shown in the shop: $10 / $15 / $15
+PASS    button disabled when cash < cost
+PASS    handler guard: forced click with too little cash changes nothing
+PASS    buy ball: -$10, maxBalls 2, next cost $15
+PASS    volley charge: -$15, level 2, charge time 11 x 0.9 s, shop shows level and seconds -- Lvl 2 · 9.9 s
+PASS    damage: -$15, level 2, ball damage 2
+PASS    purchase feedback: the bought button gets the one-shot flash class
+PASS    volley charge time floor 2 s; ball refill fixed at 700 ms whatever the charge level
+PASS    a hit pays moneyPerHit ($1 at L1) and deals damageLevel damage
+PASS    maxBalls is a cap: turrets never exceed it
+PASS    [NC-10] volley-charge upgrade pays off with a full field and no input (charge 12 beats charge 1 in >= 5 of 6 seeds, 60 s) -- score (cash + 1000 x levels gained): charge 1 = 1197,1174,1188,1145,1209,1332; charge 12 = 1475,1518,1176,1279,1255,1476
+PASS    a fresh session starts at 70 % charge; volley ready after 30 % of 11 s
+PASS    lance from the turret through the heart: front block (10 HP) broken, heart 60 -> 46, block behind untouched (Hit power 3 = 24 power) -- turret (334,20) heart 46 below 10
+PASS    every block a lance damages pays one hit ($1 each at level 1)
+PASS    volley not ready: fireVolley does nothing
+PASS    a lance aimed into a 5-unit gap still hits a block (lance wider than half a gap) -- turret x 334.4, gap x 313.9
+PASS    click/tap while charging does nothing; when ready it fires on the next fixed step at the tapped point (touch)
+PASS    Space fires the volley at the core centre (default prevented)
+PASS    autopilot: a ready volley waits 5 s for the player, then fires by itself at an armour block (not the heart)
+PASS    relay destroyed: volley fully charged, +4x money per hit bonus, shockwave deals 6 x ball damage to blocks within 1.6 steps -- neighbours 2, cash +14
+PASS    heart destroyed: every other block shatters in a wave (each pays 1 hit), +6x bonus, volley recharged, level 2 -- marked 8/8, cash +15, level 2
+PASS    mute toggle (button and M) persists under neonCrusher.audio.v1, restored on load; progress save key not written by it
+PASS    hint: fresh save explains cash + goal; a ready volley asks for a click/tap until the first aimed volley; then "buy ball" when affordable; hidden after the first purchase -- start=true volley=true affordable=true afterBuy=true afterVolley=true
+PASS    hint state is not saved (save keeps exactly its five fields)
+PASS    returning player: no first-minute hint; only the volley hint while a volley is ready (until the first aimed volley)
+PASS    hits show a "+$n" label in the money format; at most 10 at once with 80 balls -- label "+$1", max 1 ball 2, max 80 balls 10
+INFO    first purchase ($10), canvas 800x279 -- median 25 s, runs: 13,20,24,25,25,25,30,42
+INFO    first purchase ($10), canvas 907x339 -- median 24 s, runs: 13,21,23,23,25,25,28,57
+INFO    first purchase ($10), canvas 1216x513 -- median 20 s, runs: 11,16,18,20,20,23,32,51
+INFO    first purchase ($10), canvas 1920x909 -- median 19 s, runs: 9,9,17,18,20,24,26,36
+PASS    [NC-09] median time to the first purchase <= 60 s on every CrazyGames canvas -- 800x279: 25 s, 907x339: 24 s, 1216x513: 20 s, 1920x909: 19 s
+PASS    [NC-09] median time to the first purchase within the 15-45 s design target on every canvas, no input (8 seeds) -- 800x279: 25 s, 907x339: 24 s, 1216x513: 20 s, 1920x909: 19 s
+INFO    greedy bot, canvas 907x339: minutes to clear level 1 -- 1.8, 1.7, 1.5
+INFO    greedy bot, canvas 1920x909: minutes to clear level 1 -- 1.3, 1.5, 2.0
+INFO    active bot (aims every volley at the heart), 907x339 -- L1 71 s, level 7 at 3 min; L1 59.75 s, level 6 at 3 min; L1 70.75 s, level 6 at 3 min
+INFO    passive bot (never touches the field), 907x339 -- L1 104.5 s, level 3 at 3 min; L1 99.25 s, level 4 at 3 min; L1 88.5 s, level 4 at 3 min
+PASS    active play clearly ahead: in every seed level 1 cleared sooner and >= 2 levels higher at 3 min than passive play; passive play still progresses (level >= 3 at 3 min)
+
+[economy] 30/30 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 8 => PASS: all checks pass
+
+===== save =====
+PASS    SAVE_KEY is exactly "neonCrusher.save.v1" (never changes)
+PASS    no save -> defaults (cash 0, level 1, balls 1, fire 1, damage 1)
+PASS    save() writes under "neonCrusher.save.v1"
+PASS    save writes exactly cash, level, maxBalls, fireRateLevel, damageLevel
+PASS    round trip restores all five fields
+PASS    loaded level 7 regenerates its core (6x6 grid with a 2x2 heart = 33 blocks, HP 10 x 1.5^6)
+PASS    volley charge time recomputed from the loaded fireRateLevel (the saved field keeps its name)
+PASS    autosave after 5 s of game time (not before)
+PASS    pagehide, beforeunload and visibilitychange(hidden) each save
+PASS    localStorage throwing on read and write (sandboxed iframe, quota) -> game runs on defaults
+PASS    truncated JSON -> no crash, defaults
+PASS    fields of the wrong type are ignored
+PASS    4 valid v1 saves load unchanged, autosave keeps them, no backup written
+PASS    level <= 0 / < 1 no longer crashes the start: falls back to level 1 with a turret
+PASS    Infinity / negative / zero / huge numbers fall back per field (cash 0, level 1, balls 1, fire capped 1000, damage 1)
+PASS    mixed save: valid fields kept, maxBalls 0 -> 1, damage 2.7 -> 2; a ball spawns (no softlock)
+PASS    mixed save: original string backed up before the first autosave overwrites it
+PASS    unreadable JSON: game starts on defaults, raw string copied to "neonCrusher.save.v1.bak" before any write -- bak={"cash": 98765, "level": 12, "maxBa
+PASS    unreadable JSON: backup still intact after the autosave writes a fresh save
+PASS    unsupported formats (array, number, null, string, unknown schemaVersion/extra fields) start without a crash and are backed up
+PASS    unknown-format object: known valid fields still loaded (level 3, cash 50)
+PASS    backup write fails -> saving is off for the session; the original save is never overwritten
+PASS    storage unreadable at start -> no write over data the game could not read
+PASS    sanitizeSave is idempotent (sanitised values are a valid exact save)
+
+[save] 24/24 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 0 => PASS: all checks pass
+
+===== i18n =====
+PASS    exactly two languages: en, pl -- en,pl
+PASS    default (fallback) language is English
+PASS    en and pl tables have the same keys -- en-only: , pl-only: 
+PASS    no empty or non-string entries
+PASS    placeholders ({n}) match between languages
+PASS    English table contains no Polish text
+PASS    10 language-selection cases (explicit URL choice, browser independence, English fallback)
+PASS    no navigator (harness default) -> English UI, <html lang="en">
+PASS    Polish browser without an explicit language choice starts in English
+PASS    Explicit ?lang=pl -> Polish UI, <html lang="pl">
+PASS    all 13 text elements are filled in both languages
+PASS    English UI shows no Polish words
+PASS    static labels differ between en and pl (all translated)
+PASS    money format en: $0, $10, $1,234,567 -- $1,234,567
+PASS    money format pl: $1 234 567 (space-grouped digits), fractions floored -- "$1 234 567"
+PASS    live UI after progress: cash, counters and costs formatted (en) -- {"labelCash":"Cash","labelLevel":"Sector / 12","titleBuyBall":"New drone","titleFireRate":"Override charge","titleDamage":"Breach power","statCash":"$2,500,000","statLevel":"1","descBuyBall":"Drones: 12","costBuyBall":"$865","descFireRate":"Lvl 1 · 11 s","costFireRate":"$15","descDamage":"Lvl 3","costDamage":"$34"}
+PASS    very large cash still renders as digits (no NaN/undefined) -- $1,000,000,000,000,000,000,000,000,000,000
+PASS    index.html declares lang="en" and ships English default labels
+
+[i18n] 18/18 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 0 => PASS: all checks pass
+
+===== collapse =====
+PASS    sector 1: every module has one supply edge
+PASS    sector 1: connected acyclic supply to heart
+PASS    sector 1: cut disconnects descendants, never heart
+PASS    sector 1: no income or instant wipe
+PASS    sector 1: failure respects supply edges
+PASS    sector 2: every module has one supply edge
+PASS    sector 2: connected acyclic supply to heart
+PASS    sector 2: cut disconnects descendants, never heart
+PASS    sector 2: no income or instant wipe
+PASS    sector 2: failure respects supply edges
+PASS    sector 3: every module has one supply edge
+PASS    sector 3: connected acyclic supply to heart
+PASS    sector 3: cut disconnects descendants, never heart
+PASS    sector 3: no income or instant wipe
+PASS    sector 3: failure respects supply edges
+PASS    sector 4: every module has one supply edge
+PASS    sector 4: connected acyclic supply to heart
+PASS    sector 4: cut disconnects descendants, never heart
+PASS    sector 4: no income or instant wipe
+PASS    sector 4: failure respects supply edges
+PASS    sector 5: every module has one supply edge
+PASS    sector 5: connected acyclic supply to heart
+PASS    sector 5: cut disconnects descendants, never heart
+PASS    sector 5: no income or instant wipe
+PASS    sector 5: failure respects supply edges
+PASS    sector 6: every module has one supply edge
+PASS    sector 6: connected acyclic supply to heart
+PASS    sector 6: cut disconnects descendants, never heart
+PASS    sector 6: no income or instant wipe
+PASS    sector 6: failure respects supply edges
+PASS    sector 7: every module has one supply edge
+PASS    sector 7: connected acyclic supply to heart
+PASS    sector 7: cut disconnects descendants, never heart
+PASS    sector 7: no income or instant wipe
+PASS    sector 7: failure respects supply edges
+PASS    sector 8: every module has one supply edge
+PASS    sector 8: connected acyclic supply to heart
+PASS    sector 8: cut disconnects descendants, never heart
+PASS    sector 8: no income or instant wipe
+PASS    sector 8: failure respects supply edges
+PASS    sector 9: every module has one supply edge
+PASS    sector 9: connected acyclic supply to heart
+PASS    sector 9: cut disconnects descendants, never heart
+PASS    sector 9: no income or instant wipe
+PASS    sector 9: failure respects supply edges
+PASS    sector 10: every module has one supply edge
+PASS    sector 10: connected acyclic supply to heart
+PASS    sector 10: cut disconnects descendants, never heart
+PASS    sector 10: no income or instant wipe
+PASS    sector 10: failure respects supply edges
+PASS    sector 11: every module has one supply edge
+PASS    sector 11: connected acyclic supply to heart
+PASS    sector 11: cut disconnects descendants, never heart
+PASS    sector 11: no income or instant wipe
+PASS    sector 11: failure respects supply edges
+PASS    sector 12: every module has one supply edge
+PASS    sector 12: connected acyclic supply to heart
+PASS    sector 12: cut disconnects descendants, never heart
+PASS    sector 12: no income or instant wipe
+PASS    sector 12: failure respects supply edges
+PASS    old v1 save beyond final sector continues endless
+PASS    campaign adds no save fields
+PASS    collapse simulation identical at equal fixed steps at 60/144/165 Hz -- 1482 comparisons
+PASS    rendering does not affect simulation RNG or state
+
+[collapse] 64/64 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 0 => PASS: all checks pass
+
+===== recovery =====
+PASS    no AI shield on sectors 1-2 (60 s each, drones on) -- reroutes 0, 0
+PASS    sector 3: the AI raises its first shield 8 s into the sector (±1 step) -- started at 8.004166666666533 s
+PASS    the shield guards the AI core; its firewall node is an alive armour block marked as breakable, hit first on some turret's line
+PASS    shielded core takes x0.5 damage; the shield never restores HP -- hp 138 -> 136
+PASS    an unbroken shield ends by itself after 7 s; the next one comes 10 s later -- ended after 7.004 s, next after 10.00416666666642 s
+PASS    node destroyed by the player's pulse: shield gone, core + power line exposed for 5 s, +3x money per hit, +50 % override charge -- cash +20 (mph 5), charge 0.60, path 2
+PASS    node destroyed by a drone: same collapse and bonus, but no override refund and not counted as the player's break
+PASS    exposed core: x2.5 damage from shockwaves and override pulses, x1 from drones -- drone 2, shock 5, pulse (2 turrets x power 8) 40
+PASS    exposure ends after 5 s with no new shield during it; the next shield comes 10 s after the exposure -- exposure 5.000000000000036 s, next shield after 9.999999999999753 s
+PASS    an override pulse aimed at the firewall node breaks it and collapses the shield in the same step (counted as the player's break)
+PASS    while a shield is up the autopilot's target is the firewall node
+PASS    the core breaking ends the shield and any exposure; save keeps exactly its five v1 fields; a reload starts unshielded with the 8 s delay
+PASS    same seed -> identical shields (step, sector, node), cash and sector at 60/144/165 Hz (90 s, drones + autopilot) -- 60 Hz: 5 shields, broken 2, cash 1160; 144 Hz cash 1160; 165 Hz cash 1160
+PASS    no input (autopilot + greedy buyer), 4 min from sector 3: >= 3 sectors recovered, no shield lasts > 7 s, the sector and cash never go back -- seed 1: sector 3 -> 8, shields 12, broken 6 (autopilot/drones), longest 7.00 s; seed 2: sector 3 -> 7, shields 10, broken 6 (autopilot/drones), longest 7.00 s; seed 3: sector 3 -> 7, shields 11, broken 7 (autopilot/drones), longest 7.00 s
+PASS    shield hint (amber) while a shield is up, until the player breaks one node with their own pulse
+PASS    HUD text (meters, AI alert, 3 longest event toasts) never overlaps itself, leaves the field or covers the core / node / relays / uplinks (EN + PL, 8 field sizes, sectors 3-14, shield and exposure: 192 layouts)
+INFO    sector at 5 min, 907x339: active (breaks nodes, else aims at the core) / passive -- 11,10,11 / 6,6,7
+PASS    active play >= passive play + 3 sectors at 5 min in every seed; passive still reaches sector 5 -- active 11,10,11, passive 6,6,7
+
+[recovery] 17/17 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 1 => PASS: all checks pass
+
+===== browser-smoke (optional) =====
+PASS    10 CrazyGames frames x 3 language choices: no page errors / console errors
+PASS    no request leaves the local server
+PASS    no page scroll at any frame
+PASS    shop fully visible at every frame
+PASS    canvas animates (two screenshots 400 ms apart differ)
+PASS    [NC-07] English browser -> English UI (lang="en", "New drone") at every frame -- lang=en, "New drone"
+PASS    English remains default in a Polish browser at every frame -- lang=en, "New drone"
+PASS    explicit ?lang=pl selects Polish at every frame -- lang=pl, "Nowy dron"
+PASS    [NC-17] no text overflows its box in the top bar or the shop (both languages)
+PASS    first-minute hint on a fresh save: visible, inside the field, not cut off, taps pass through to the game (both languages) -- en: Drones break the AI's defences · reach its core | pl: Drony łamią zabezpieczenia AI · dotrzyj do rdzenia
+PASS    [NC-17] smallest text >= 11 px at DPR 1 -- 11.2 px
+PASS    canvas size at every frame and language matches the KERNELFALL deck contract
+INFO    [NC-17] canvas share of the iframe height below 70 % (open, see docs/RISKS.md) -- en-default 907x510: 67%, en-default 821x462: 64%, en-default 800x450: 63%, pl-browser-default 907x510: 67%, pl-browser-default 821x462: 64%, pl-browser-default 800x450: 63%, pl-explicit 907x510: 67%, pl-explicit 821x462: 64%, pl-explicit 800x450: 63%
+PASS    [NC-08] body has user-select: none (CrazyGames technical requirement for mobile) -- computed: none
+PASS    [NC-18] stylesheet pads all four safe-area insets (env(safe-area-inset-*)) -- found: top,bottom,left,right
+NOT RUN [NC-18] safe areas on a notched phone / in the CrazyGames app -- Chromium cannot emulate env(safe-area-inset-*); needs a device or CrazyGames Preview (owner)
+PASS    sound toggle: aria-pressed true, preference stored under neonCrusher.audio.v1, still muted after a reload -- {"pressed":"true","pref":"muted","afterReload":"true"}
+PASS    volley by mouse: ready hint shown within 10 s, a click on the core fires it (hint ends and does not return at the next charge), no errors -- {"before":{"text":"Click or tap the core to fire an override","action":true,"cash":"$5"},"after":{"text":"Drones break the AI's defences · reach its core","action":false,"cash":"$6"},"returned":false,"verrs":[]}
+PASS    volley by touch: ready hint shown within 10 s, a tap on the core fires it (hint ends and does not return at the next charge), no errors -- {"before":{"text":"Click or tap the core to fire an override","action":true,"cash":"$8"},"after":{"text":"Deploy a new drone!","action":false,"cash":"$11"},"returned":false,"verrs":[]}
+PASS    save in localStorage is restored on load (level 3, cash >= $4321), no backup for a valid save -- {"lvl":"3","cash":"$4,329","bak":null}
+PASS    reload keeps the progress (beforeunload/pagehide save) -- {"lvl":"3","cash":"$4,335","bak":null}
+PASS    [NC-05] corrupted save: game starts (level 1, no page error), original kept in .bak after a reload, new save valid -- {"lvl":"1","bak":"{\"cash\": 98765, \"level\": 12, \"maxBa","main":"{\"cash\":2,\"level\":1,\"maxBalls\":1,\"fireRateLevel\":1,\"damageLevel\":1}","errs2":[]}
+
+[browser-smoke] 20/20 checks PASS, FAIL 0, KNOWN 0, NOT RUN 1, INFO 1 => PASS+NOT RUN: passing checks; also NOT RUN rows (listed above)
+
+===== SUMMARY =====
+PASS+NOT RUN     integrity      PASS 12  FAIL 0  KNOWN 0  NOT RUN 1  
+PASS             instructions   PASS 12  FAIL 0  KNOWN 0  NOT RUN 0  
+PASS             runner         PASS 18  FAIL 0  KNOWN 0  NOT RUN 0  
+PASS             physics        PASS 20  FAIL 0  KNOWN 0  NOT RUN 0  
+PASS             levels         PASS 25  FAIL 0  KNOWN 0  NOT RUN 0  
+PASS             economy        PASS 30  FAIL 0  KNOWN 0  NOT RUN 0  
+PASS             save           PASS 24  FAIL 0  KNOWN 0  NOT RUN 0  
+PASS             i18n           PASS 18  FAIL 0  KNOWN 0  NOT RUN 0  
+PASS             collapse       PASS 64  FAIL 0  KNOWN 0  NOT RUN 0  
+PASS             recovery       PASS 17  FAIL 0  KNOWN 0  NOT RUN 0  
+PASS+NOT RUN     browser-smoke  PASS 20  FAIL 0  KNOWN 0  NOT RUN 1  
+
+RESULT: PASS (no blocking suite)

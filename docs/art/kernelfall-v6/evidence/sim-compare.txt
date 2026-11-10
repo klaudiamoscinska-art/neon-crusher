@@ -1,0 +1,11 @@
+IDENTICAL scenario 1: level 5/5, cash 109/109, steps 35996, volleys manual 18 auto 0, cores 4
+IDENTICAL scenario 2: level 4/4, cash 84/84, steps 35998, volleys manual 17 auto 0, cores 3
+IDENTICAL scenario 3: level 10/10, cash 1663/1663, steps 35996, volleys manual 38 auto 0, cores 5
+IDENTICAL scenario 4: level 13/13, cash 33007/33007, steps 35998, volleys manual 54 auto 0, cores 1
+base:      level 1, 1 balls: shadowBlur sets 16.9, save 10.8, fill 33.7, stroke 50.7, arc 29.0, lineTo 605.8, drawImage 0.0 per frame
+candidate: level 1, 1 balls: shadowBlur sets 16.9, save 10.8, fill 33.7, stroke 50.7, arc 29.0, lineTo 605.8, drawImage 0.0 per frame
+base:      level 13, 24 balls: shadowBlur sets 55.7, save 25.7, fill 71.3, stroke 140.8, arc 170.0, lineTo 2710.6, drawImage 0.0 per frame
+candidate: level 13, 24 balls: shadowBlur sets 55.7, save 25.7, fill 71.3, stroke 140.8, arc 170.0, lineTo 2710.6, drawImage 0.0 per frame
+base:      level 14, 60 balls: shadowBlur sets 59.6, save 29.6, fill 65.0, stroke 192.4, arc 317.0, lineTo 2814.8, drawImage 0.0 per frame
+candidate: level 14, 60 balls: shadowBlur sets 59.6, save 29.6, fill 65.0, stroke 192.4, arc 317.0, lineTo 2814.8, drawImage 0.0 per frame
+RESULT: simulation identical in all scenarios

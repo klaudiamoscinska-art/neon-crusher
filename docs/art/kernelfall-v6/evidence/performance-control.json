@@ -1,0 +1,193 @@
+{
+  "generatedAt": "2026-11-10T21:16:44.709Z",
+  "environment": "Headless Debian Chromium / cloud shared CPU / software raster",
+  "baselineRef": "c32a1371d6e5a58559e90df1865eaefe1926e6e0",
+  "runtimeSHA256": "59fc166f2d76ed6bc52954fc8c811a8fe05fb22069bb95ba704413e98c544bc6",
+  "baselineRuntimeSHA256": "59fc166f2d76ed6bc52954fc8c811a8fe05fb22069bb95ba704413e98c544bc6",
+  "productionV6Measurement": {
+    "status": "NOT RUN",
+    "reason": "No V6 asset was admitted to the production runtime; visual gate blocked integration. A/A V3 results are baseline/control only."
+  },
+  "physicalIPhone": {
+    "status": "NOT RUN",
+    "reason": "No device attached"
+  },
+  "results": [
+    {
+      "name": "1920x1080 DPR1 / sector13 / 60 drones",
+      "scope": "A/A V3 control; no V6 assets",
+      "status": "PASS",
+      "sceneSHA256": [
+        "cf125bf5b3c15089a7c7e45d4448523f2e286ee495e6ecd475a793cca22244a4",
+        "cf125bf5b3c15089a7c7e45d4448523f2e286ee495e6ecd475a793cca22244a4"
+      ],
+      "beforeMs": 9.969999999999224,
+      "afterMs": 9.769999999999223,
+      "changePercent": -2.0060180541626504,
+      "thresholdObservation": "PASS",
+      "thresholdExplanation": "A/A median difference is within 10%; no V6 production performance claim.",
+      "samples": {
+        "before": [
+          10.383333333333333,
+          9.7,
+          9.393333333331006,
+          10.206666666665114,
+          9.969999999999224,
+          9.91333333333411,
+          10.13666666666589
+        ],
+        "after": [
+          11.55,
+          10.109999999997672,
+          9.423333333331781,
+          9.75,
+          9.769999999999223,
+          10.336666666669771,
+          9.576666666668219
+        ]
+      },
+      "memory": {
+        "before": {
+          "loadedImages": 90,
+          "sourceDecodedRGBABytes": 38928384,
+          "cacheRGBABytes": 2704168,
+          "cacheEntries": 10,
+          "cacheActualRGBABytes": 2704168,
+          "cacheBudgetRGBABytes": 50331648,
+          "backgroundRGBABytes": 7019520,
+          "used": [
+            "bosses/firewall_intact_512.png",
+            "drones/assault_256.png",
+            "drones/scout_256.png",
+            "drones/support_256.png",
+            "environment/arena_floor_1024.png",
+            "fx/impact/frame_05_256.png",
+            "modules/armor_intact_256.png",
+            "modules/memory_intact_256.png",
+            "modules/port_intact_256.png",
+            "modules/relay_intact_256.png",
+            "ui/network_128.png",
+            "uplinks/charging_256.png"
+          ],
+          "usedScope": "Cumulative atlas usage includes startup before the deterministic fixture; not an exact fixture-only list."
+        },
+        "after": {
+          "loadedImages": 90,
+          "sourceDecodedRGBABytes": 38928384,
+          "cacheRGBABytes": 2704168,
+          "cacheEntries": 10,
+          "cacheActualRGBABytes": 2704168,
+          "cacheBudgetRGBABytes": 50331648,
+          "backgroundRGBABytes": 7019520,
+          "used": [
+            "bosses/firewall_intact_512.png",
+            "drones/assault_256.png",
+            "drones/scout_256.png",
+            "drones/support_256.png",
+            "environment/arena_floor_1024.png",
+            "fx/impact/frame_05_256.png",
+            "fx/impact/frame_07_256.png",
+            "modules/armor_intact_256.png",
+            "modules/memory_intact_256.png",
+            "modules/port_intact_256.png",
+            "modules/relay_intact_256.png",
+            "ui/network_128.png",
+            "uplinks/charging_256.png"
+          ],
+          "usedScope": "Cumulative atlas usage includes startup before the deterministic fixture; not an exact fixture-only list."
+        }
+      },
+      "memoryScope": "Computed referenced RGBA pixels in loaded images and cached canvases only. Excludes GPU copies, decoder temporaries, browser heap and total process RSS.",
+      "method": "7 alternating samples \u00d730 forced-raster draws, median. Warmed static identical seeded scene; native requestAnimationFrame stopped after startup. Canvas getImageData forces raster; not physical GPU/FPS."
+    },
+    {
+      "name": "390x844 DPR3 / sector13 / 60 drones",
+      "scope": "A/A V3 control; no V6 assets",
+      "status": "PASS",
+      "sceneSHA256": [
+        "507b69da1f0a7f52f8f7f86c78cb76dbe4bd79accdf5bdab916bf52b7bd83e0c",
+        "507b69da1f0a7f52f8f7f86c78cb76dbe4bd79accdf5bdab916bf52b7bd83e0c"
+      ],
+      "beforeMs": 13.176666666668218,
+      "afterMs": 13.23666666666589,
+      "changePercent": 0.45535036679229535,
+      "thresholdObservation": "PASS",
+      "thresholdExplanation": "A/A median difference is within 10%; no V6 production performance claim.",
+      "samples": {
+        "before": [
+          13.909999999997671,
+          13.896666666663561,
+          13.033333333333333,
+          13.356666666665115,
+          12.83666666666589,
+          12.203333333332557,
+          13.176666666668218
+        ],
+        "after": [
+          15.95,
+          14.479999999996895,
+          12.293333333331004,
+          13.23666666666589,
+          12.35,
+          12.029999999996896,
+          13.753333333336437
+        ]
+      },
+      "memory": {
+        "before": {
+          "loadedImages": 90,
+          "sourceDecodedRGBABytes": 38928384,
+          "cacheRGBABytes": 4428056,
+          "cacheEntries": 10,
+          "cacheActualRGBABytes": 4428056,
+          "cacheBudgetRGBABytes": 50331648,
+          "backgroundRGBABytes": 9266400,
+          "used": [
+            "bosses/firewall_intact_512.png",
+            "drones/assault_256.png",
+            "drones/scout_256.png",
+            "drones/support_256.png",
+            "environment/arena_floor_1024.png",
+            "fx/impact/frame_05_256.png",
+            "fx/impact/frame_06_256.png",
+            "fx/impact/frame_07_256.png",
+            "modules/armor_intact_256.png",
+            "modules/memory_intact_256.png",
+            "modules/port_intact_256.png",
+            "modules/relay_intact_256.png",
+            "ui/network_128.png",
+            "uplinks/charging_256.png"
+          ],
+          "usedScope": "Cumulative atlas usage includes startup before the deterministic fixture; not an exact fixture-only list."
+        },
+        "after": {
+          "loadedImages": 90,
+          "sourceDecodedRGBABytes": 38928384,
+          "cacheRGBABytes": 4428056,
+          "cacheEntries": 10,
+          "cacheActualRGBABytes": 4428056,
+          "cacheBudgetRGBABytes": 50331648,
+          "backgroundRGBABytes": 9266400,
+          "used": [
+            "bosses/firewall_intact_512.png",
+            "drones/assault_256.png",
+            "drones/scout_256.png",
+            "drones/support_256.png",
+            "environment/arena_floor_1024.png",
+            "fx/impact/frame_05_256.png",
+            "fx/impact/frame_06_256.png",
+            "modules/armor_intact_256.png",
+            "modules/memory_intact_256.png",
+            "modules/port_intact_256.png",
+            "modules/relay_intact_256.png",
+            "ui/network_128.png",
+            "uplinks/charging_256.png"
+          ],
+          "usedScope": "Cumulative atlas usage includes startup before the deterministic fixture; not an exact fixture-only list."
+        }
+      },
+      "memoryScope": "Computed referenced RGBA pixels in loaded images and cached canvases only. Excludes GPU copies, decoder temporaries, browser heap and total process RSS.",
+      "method": "7 alternating samples \u00d730 forced-raster draws, median. Warmed static identical seeded scene; native requestAnimationFrame stopped after startup. Canvas getImageData forces raster; not physical GPU/FPS."
+    }
+  ]
+}

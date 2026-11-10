@@ -1,0 +1,859 @@
+{
+  "generatedAt": "2026-11-10T21:15:54.831Z",
+  "verdict": "BLOCKED",
+  "baseSHA": "c32a1371d6e5a58559e90df1865eaefe1926e6e0",
+  "runtime": [
+    {
+      "file": "game.js",
+      "baseSHA256": "59fc166f2d76ed6bc52954fc8c811a8fe05fb22069bb95ba704413e98c544bc6",
+      "candidateSHA256": "59fc166f2d76ed6bc52954fc8c811a8fe05fb22069bb95ba704413e98c544bc6",
+      "identical": true
+    },
+    {
+      "file": "index.html",
+      "baseSHA256": "1592a19ac4dfa91c751c55f4bb81a58cba311197cc9337b6ab543a100bfba499",
+      "candidateSHA256": "1592a19ac4dfa91c751c55f4bb81a58cba311197cc9337b6ab543a100bfba499",
+      "identical": true
+    },
+    {
+      "file": "style.css",
+      "baseSHA256": "81a11f56591fab8ee6e3bdf331db1c4cd719462afe2e810b04546a66f3264483",
+      "candidateSHA256": "81a11f56591fab8ee6e3bdf331db1c4cd719462afe2e810b04546a66f3264483",
+      "identical": true
+    }
+  ],
+  "productionDrawn": [],
+  "productionUnused": [
+    "assets/kernelfall-art-v6/bosses/firewall_intact_512.png",
+    "assets/kernelfall-art-v6/bosses/firewall_damaged_512.png",
+    "assets/kernelfall-art-v6/bosses/firewall_critical_512.png",
+    "assets/kernelfall-art-v6/bosses/firewall_shatter_512.png",
+    "assets/kernelfall-art-v6/bosses/firewall_captured_512.png",
+    "assets/kernelfall-art-v6/bosses/memory_intact_512.png",
+    "assets/kernelfall-art-v6/bosses/memory_damaged_512.png",
+    "assets/kernelfall-art-v6/bosses/memory_critical_512.png",
+    "assets/kernelfall-art-v6/bosses/memory_shatter_512.png",
+    "assets/kernelfall-art-v6/bosses/memory_captured_512.png",
+    "assets/kernelfall-art-v6/bosses/neural_intact_512.png",
+    "assets/kernelfall-art-v6/bosses/neural_damaged_512.png",
+    "assets/kernelfall-art-v6/bosses/neural_critical_512.png",
+    "assets/kernelfall-art-v6/bosses/neural_shatter_512.png",
+    "assets/kernelfall-art-v6/bosses/neural_captured_512.png",
+    "assets/kernelfall-art-v6/modules/armor_intact_256.png",
+    "assets/kernelfall-art-v6/modules/armor_damaged_256.png",
+    "assets/kernelfall-art-v6/modules/armor_critical_256.png",
+    "assets/kernelfall-art-v6/modules/armor_isolated_256.png",
+    "assets/kernelfall-art-v6/modules/armor_broken_256.png",
+    "assets/kernelfall-art-v6/modules/memory_intact_256.png",
+    "assets/kernelfall-art-v6/modules/memory_damaged_256.png",
+    "assets/kernelfall-art-v6/modules/memory_critical_256.png",
+    "assets/kernelfall-art-v6/modules/memory_isolated_256.png",
+    "assets/kernelfall-art-v6/modules/memory_broken_256.png",
+    "assets/kernelfall-art-v6/modules/relay_intact_256.png",
+    "assets/kernelfall-art-v6/modules/relay_damaged_256.png",
+    "assets/kernelfall-art-v6/modules/relay_critical_256.png",
+    "assets/kernelfall-art-v6/modules/relay_isolated_256.png",
+    "assets/kernelfall-art-v6/modules/relay_broken_256.png",
+    "assets/kernelfall-art-v6/modules/port_intact_256.png",
+    "assets/kernelfall-art-v6/modules/port_damaged_256.png",
+    "assets/kernelfall-art-v6/modules/port_critical_256.png",
+    "assets/kernelfall-art-v6/modules/port_isolated_256.png",
+    "assets/kernelfall-art-v6/modules/port_broken_256.png",
+    "assets/kernelfall-art-v6/modules/firewall_intact_256.png",
+    "assets/kernelfall-art-v6/modules/firewall_damaged_256.png",
+    "assets/kernelfall-art-v6/modules/firewall_critical_256.png",
+    "assets/kernelfall-art-v6/modules/firewall_isolated_256.png",
+    "assets/kernelfall-art-v6/modules/firewall_broken_256.png",
+    "assets/kernelfall-art-v6/drones/scout_256.png",
+    "assets/kernelfall-art-v6/drones/assault_256.png",
+    "assets/kernelfall-art-v6/drones/support_256.png",
+    "assets/kernelfall-art-v6/uplinks/idle_256.png",
+    "assets/kernelfall-art-v6/uplinks/charging_256.png",
+    "assets/kernelfall-art-v6/uplinks/ready_256.png",
+    "assets/kernelfall-art-v6/uplinks/firing_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_00_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_01_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_02_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_03_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_04_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_05_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_06_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_07_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_00_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_01_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_02_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_03_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_04_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_05_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_06_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_07_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_00_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_01_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_02_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_03_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_04_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_05_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_06_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_07_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_00_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_01_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_02_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_03_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_04_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_05_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_06_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_07_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_00_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_01_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_02_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_03_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_04_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_05_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_06_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_07_256.png",
+    "assets/kernelfall-art-v6/environment/arena_firewall_1280x720.png",
+    "assets/kernelfall-art-v6/environment/arena_memory_1280x720.png",
+    "assets/kernelfall-art-v6/environment/arena_neural_1280x720.png",
+    "assets/kernelfall-art-v6/brand/wordmark-480.png",
+    "assets/kernelfall-art-v6/brand/symbol-512.png"
+  ],
+  "fixtureScope": "Only browser fixture image substitution and actual SpriteAtlas draw calls; not production integration or natural gameplay.",
+  "fixtureV6Drawn": [
+    "assets/kernelfall-art-v6/bosses/firewall_captured_512.png",
+    "assets/kernelfall-art-v6/bosses/firewall_critical_512.png",
+    "assets/kernelfall-art-v6/bosses/firewall_damaged_512.png",
+    "assets/kernelfall-art-v6/bosses/firewall_intact_512.png",
+    "assets/kernelfall-art-v6/bosses/firewall_shatter_512.png",
+    "assets/kernelfall-art-v6/bosses/memory_captured_512.png",
+    "assets/kernelfall-art-v6/bosses/memory_critical_512.png",
+    "assets/kernelfall-art-v6/bosses/memory_damaged_512.png",
+    "assets/kernelfall-art-v6/bosses/memory_intact_512.png",
+    "assets/kernelfall-art-v6/bosses/memory_shatter_512.png",
+    "assets/kernelfall-art-v6/bosses/neural_captured_512.png",
+    "assets/kernelfall-art-v6/bosses/neural_critical_512.png",
+    "assets/kernelfall-art-v6/bosses/neural_damaged_512.png",
+    "assets/kernelfall-art-v6/bosses/neural_intact_512.png",
+    "assets/kernelfall-art-v6/bosses/neural_shatter_512.png",
+    "assets/kernelfall-art-v6/drones/assault_256.png",
+    "assets/kernelfall-art-v6/drones/scout_256.png",
+    "assets/kernelfall-art-v6/drones/support_256.png",
+    "assets/kernelfall-art-v6/environment/arena_firewall_1280x720.png",
+    "assets/kernelfall-art-v6/environment/arena_memory_1280x720.png",
+    "assets/kernelfall-art-v6/environment/arena_neural_1280x720.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_00_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_01_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_02_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_03_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_04_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_05_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_06_256.png",
+    "assets/kernelfall-art-v6/fx/chain/frame_07_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_00_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_01_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_02_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_03_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_04_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_05_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_06_256.png",
+    "assets/kernelfall-art-v6/fx/core_collapse/frame_07_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_00_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_01_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_02_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_03_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_04_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_05_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_06_256.png",
+    "assets/kernelfall-art-v6/fx/impact/frame_07_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_00_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_01_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_02_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_03_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_04_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_05_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_06_256.png",
+    "assets/kernelfall-art-v6/fx/override/frame_07_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_00_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_01_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_02_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_03_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_04_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_05_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_06_256.png",
+    "assets/kernelfall-art-v6/fx/shield_break/frame_07_256.png",
+    "assets/kernelfall-art-v6/modules/armor_broken_256.png",
+    "assets/kernelfall-art-v6/modules/armor_critical_256.png",
+    "assets/kernelfall-art-v6/modules/armor_damaged_256.png",
+    "assets/kernelfall-art-v6/modules/armor_intact_256.png",
+    "assets/kernelfall-art-v6/modules/armor_isolated_256.png",
+    "assets/kernelfall-art-v6/modules/firewall_broken_256.png",
+    "assets/kernelfall-art-v6/modules/firewall_critical_256.png",
+    "assets/kernelfall-art-v6/modules/firewall_damaged_256.png",
+    "assets/kernelfall-art-v6/modules/firewall_intact_256.png",
+    "assets/kernelfall-art-v6/modules/firewall_isolated_256.png",
+    "assets/kernelfall-art-v6/modules/memory_broken_256.png",
+    "assets/kernelfall-art-v6/modules/memory_critical_256.png",
+    "assets/kernelfall-art-v6/modules/memory_damaged_256.png",
+    "assets/kernelfall-art-v6/modules/memory_intact_256.png",
+    "assets/kernelfall-art-v6/modules/memory_isolated_256.png",
+    "assets/kernelfall-art-v6/modules/port_broken_256.png",
+    "assets/kernelfall-art-v6/modules/port_critical_256.png",
+    "assets/kernelfall-art-v6/modules/port_damaged_256.png",
+    "assets/kernelfall-art-v6/modules/port_intact_256.png",
+    "assets/kernelfall-art-v6/modules/port_isolated_256.png",
+    "assets/kernelfall-art-v6/modules/relay_broken_256.png",
+    "assets/kernelfall-art-v6/modules/relay_critical_256.png",
+    "assets/kernelfall-art-v6/modules/relay_damaged_256.png",
+    "assets/kernelfall-art-v6/modules/relay_intact_256.png",
+    "assets/kernelfall-art-v6/modules/relay_isolated_256.png",
+    "assets/kernelfall-art-v6/uplinks/charging_256.png",
+    "assets/kernelfall-art-v6/uplinks/firing_256.png",
+    "assets/kernelfall-art-v6/uplinks/idle_256.png",
+    "assets/kernelfall-art-v6/uplinks/ready_256.png"
+  ],
+  "files": [
+    {
+      "path": "assets/kernelfall-art-v6/bosses/firewall_intact_512.png",
+      "sha256": "ad65c720b3700f45c7764eb4fae92674b299207d736015a759d7aefcad9e046a",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/firewall_damaged_512.png",
+      "sha256": "c1bf804028a20205b6f2cd80c39b018fb5693e069f112120647e6a373bf459b3",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/firewall_critical_512.png",
+      "sha256": "dd00dc0dfb96a34f4b4d00dda6f9cb24d7e148bdf11811b4837bc9ba7d4b5c7b",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/firewall_shatter_512.png",
+      "sha256": "a26de21edc9bbff4630f5bec11aa1cd7395b97b6c9fc74a1b70810144a9105ea",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/firewall_captured_512.png",
+      "sha256": "0946b5bcccbd3f696365f7711eaf68efa8ff8031d4fa4df10d755645e1d4b98e",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/memory_intact_512.png",
+      "sha256": "392f1d10b7e0c32dda08231d3391424d584b315e8f12c985aafbceb7d8000b7c",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/memory_damaged_512.png",
+      "sha256": "e5cbf9d8ed0dcbcae4eb42b6b587c98f9803f5e38b2bc3d5eb6f1a3e0b9c8be2",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/memory_critical_512.png",
+      "sha256": "81c1d992341d002f1c360c200b4d28daead8798c21ee3c4e42be2bf480e67195",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/memory_shatter_512.png",
+      "sha256": "3c96e7ea9e20089c678268db07d1a15cd61bb6868af3188535cb37c3c53bd5b7",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/memory_captured_512.png",
+      "sha256": "4b484de8b9e37613a04595ebb54f9b6e990b85dcd68629826e2568af621da367",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/neural_intact_512.png",
+      "sha256": "2782b2e9e325fdb0ca845473c7a845735c2b2ada1f943436ba239a27520cbd53",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/neural_damaged_512.png",
+      "sha256": "9cc7ae6746c697e98580d402c7b7462b070eed33512eeca0a945daeaa9ba4037",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/neural_critical_512.png",
+      "sha256": "8111744fd1b2ac5f3d8b16e07626c51188273a3f0d84deafc424c48b53bfbce9",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/neural_shatter_512.png",
+      "sha256": "c9915e26b89da0d7988176a268302740f5dd5b1826ec36ba469b648f6257a517",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/bosses/neural_captured_512.png",
+      "sha256": "91f2122846975053d0704731a2635450e65b4a6063b57960d20bd7b4d2095dbf",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: upscaled soft detail/edge residue and bright housing compete with actual heart; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/armor_intact_256.png",
+      "sha256": "47ac62b0798f721856c84de3e5cb90bf438b50e3ffacdb2fa25c90daa4a13a38",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/armor_damaged_256.png",
+      "sha256": "76701070b3079c0fbe8a237ba42518b5a922e76309752474f82295dede75b144",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/armor_critical_256.png",
+      "sha256": "8d45ce014872ac5878eb05985292353deefe3b1d99995d534280e8509c67303b",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/armor_isolated_256.png",
+      "sha256": "f22e00f2997e35ac2558882273685a3b8e19f678108e10b20d836d7921db6e72",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/armor_broken_256.png",
+      "sha256": "c371a97e3246fa4474694b2ebeb4906b6e6e38b32daeb53a933036a59748cae5",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/memory_intact_256.png",
+      "sha256": "a9bb7a9ce966a0a1cadf3578551153158d30c9b780432e176c5dc7333d1c4643",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/memory_damaged_256.png",
+      "sha256": "47ba57589a4630da27a49ee1f9d9d539466a0e3c1082170904533ac8796f4041",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/memory_critical_256.png",
+      "sha256": "59dbd3a8bf955a404ab902dfc4d34b32fc5e4aa226abb5274498d63dcdceb6d5",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/memory_isolated_256.png",
+      "sha256": "6e05c80f8f2045fe98d3b05916c5908c049ca277bed33d846f05d262feba6c21",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/memory_broken_256.png",
+      "sha256": "fb3a9a9945c4113c68d6b8904c5849e85126a21be5ededb28854b04d4dceacdb",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/relay_intact_256.png",
+      "sha256": "7d2b4991d9d3dfb8c23d7f17142a6d3e0647f3815be55f565a00568df5e133a4",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/relay_damaged_256.png",
+      "sha256": "5788c76baf02cf50530ed0619f5f13025bfda0f16183b536c9df25414409bde9",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/relay_critical_256.png",
+      "sha256": "370659ff927d2133910bbff65dbc039045872b49844709c5974a746b0dc9c5ac",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/relay_isolated_256.png",
+      "sha256": "524569925ab1f72659662e9cb44c62da6b495495019133040934e2e147195c96",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/relay_broken_256.png",
+      "sha256": "37c1850f738bdb551b8a6ccf895f91f0946ebc7bf5c45623900abfc62ae62731",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/port_intact_256.png",
+      "sha256": "b3a9964a166c4d75bd1b42fc7a6e59a6e66e33ca6e5d4a012659269142f1f309",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/port_damaged_256.png",
+      "sha256": "586afc1d1947defa9fe448549a3f2a17863e8553151d39516fb075d7a3362ce4",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/port_critical_256.png",
+      "sha256": "9befe1710c2b8d7efa10b5a73a6bdcf23cdc3a35d6efce4f4ddf9e98f4d7eb39",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/port_isolated_256.png",
+      "sha256": "ccaa8cb5d86220e8bfbaa2b28a9ca2fefd7dd85f172a09204b5683ce44a52073",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/port_broken_256.png",
+      "sha256": "9476ffde52743873f68f9bce76acfb3a7e485ef7bae99d2825f1e13e18461aab",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/firewall_intact_256.png",
+      "sha256": "22fa3edab874bf138c4c07509893940af475c6f48570a915fdb10bedc12453eb",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/firewall_damaged_256.png",
+      "sha256": "a9a7aa8e542cf1bd1338b84b70d15fe55e72f1884b3aebafdda6fbce4fc51b6a",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/firewall_critical_256.png",
+      "sha256": "a600cde49a58b0c203e75ffa44f7848f57b428fff2c445adf2983353bd8f1def",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/firewall_isolated_256.png",
+      "sha256": "738f5e0ca9f99b7e91167a7691d0325f9a79c27ae8a2c8663e782915bd9d583a",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/modules/firewall_broken_256.png",
+      "sha256": "b1a54f4e3058f334d5af2f05c52721ca3d057ed5d580125680eb544dfcca8506",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: role/state readability and square collider footprint are weaker in Canvas A/B; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/drones/scout_256.png",
+      "sha256": "cd127d8887f7c4c8cee12be98abb9f3504f29ab81b7764716626974319d86227",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "REDO: opaque circular background remnants in all three hull sources; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/drones/assault_256.png",
+      "sha256": "94848fda79a57007c9304b952a33b3129cfdf23d68ac26c2153d8cf2c1f56ccf",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "REDO: opaque circular background remnants in all three hull sources; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/drones/support_256.png",
+      "sha256": "e7f39113b69d68257fab0167bcab7d51b8d0ce4b80d561c53cff09d221223e81",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "REDO: opaque circular background remnants in all three hull sources; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/uplinks/idle_256.png",
+      "sha256": "a8f848136dd8d0efa1773b4be2688c9b0ddfc69a4a80b6d4d8cf8091be42d95b",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "REDO: non-directional orb and weak charge/fire distinction; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/uplinks/charging_256.png",
+      "sha256": "ad82411f18763c400607304b5a10680550bdee47cf993a369fca1036e7d546a1",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "REDO: non-directional orb and weak charge/fire distinction; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/uplinks/ready_256.png",
+      "sha256": "fa5b8efe1fa9d53862d7cbc8eb7d8c959fd0c8b31e6f2fae01d7c0232130ba0b",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "REDO: non-directional orb and weak charge/fire distinction; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/uplinks/firing_256.png",
+      "sha256": "9580fdfbdf93610c77805461d754ddceddb4a7c3245db0ee14cdd30a4bd1151f",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "REDO: non-directional orb and weak charge/fire distinction; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/impact/frame_00_256.png",
+      "sha256": "d4ee97bb8865700266a81042d8b6244a3a34b070e08d633ee9c4546ae3669c9b",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/impact/frame_01_256.png",
+      "sha256": "982ce07d556f56de7679eb9d1918e6fcadf57b123d589f799dbd91bb111e1234",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/impact/frame_02_256.png",
+      "sha256": "70f43453de540354a4eab2be403105eb634b75868cc46809b342779ae39c45b7",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/impact/frame_03_256.png",
+      "sha256": "5cd7f81d01d1e9471ac4aefdab721890e0a870ac63905728921f0bf5a12621c9",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/impact/frame_04_256.png",
+      "sha256": "92ad5778f4380f77481da2e7f7453520f59a5fb5b4e59dec7455aa9405c945cd",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/impact/frame_05_256.png",
+      "sha256": "0e7c6923aaf6a9c67aab2752d558704644063fedad54cd97bddf7a0e6bab49bb",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/impact/frame_06_256.png",
+      "sha256": "7957e08ce14c6b56e89afc199e4c91ce5ca5503f7e612bccaa06cbb7d5ba4e2b",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/impact/frame_07_256.png",
+      "sha256": "18dd019ae5777eff2a3085e8bece9d47fbfd34c37e0ecbdd02fb1bf1b2ca6997",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/core_collapse/frame_00_256.png",
+      "sha256": "f3c8c21f4a5dc3f3728af489104b0de96cbbafa560b7f4f6dd227520b8fff8a1",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/core_collapse/frame_01_256.png",
+      "sha256": "967a3f63ddf8b9ac7549a7599f8587b03710a587823a2963730e80ce68bb3729",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/core_collapse/frame_02_256.png",
+      "sha256": "f3912eb7f2e688f28617a17b951b0098713fed03e63953134ee3ae91a0cb8771",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/core_collapse/frame_03_256.png",
+      "sha256": "64a43ac32bfa3a2cb1223986e3e13050ad167e6fa78c1ffdc563d116feba8cec",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/core_collapse/frame_04_256.png",
+      "sha256": "faa2662c47c46629332a85433ed5726bc19cc7ec6dd7d49181fded770bb06f6b",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/core_collapse/frame_05_256.png",
+      "sha256": "8d5baa84449d4efd5dd89814c8ac4775538848b21b895a12e227a1048f794710",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/core_collapse/frame_06_256.png",
+      "sha256": "18b0e7bb10727c1175f0d9bbee249ca95aa0d1956ae13352b6366d0583a3ccb8",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/core_collapse/frame_07_256.png",
+      "sha256": "20c848ddd9c2393838d1b76a2364c2fac6a6079cdeaa9bb64ea160ec00de432d",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/chain/frame_00_256.png",
+      "sha256": "20243f5e8a20100a98d6b029a739e94feaf12e7f91c8b81e63d08c3590a4e6fd",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/chain/frame_01_256.png",
+      "sha256": "5d17bc6389387dacfc84f39da3f71d3f24f567a94bccdff794840fbbcbdef5ab",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/chain/frame_02_256.png",
+      "sha256": "9173c2a13e6d3b2540d105b65567ea24e1bb7faa8247d22cd145098c33ff36e8",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/chain/frame_03_256.png",
+      "sha256": "d09be6c4b1f967255cddcc517c516a21e8ee6d0c082b3e059c91c2fdaf2eb03a",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/chain/frame_04_256.png",
+      "sha256": "74a61d6bbe72f391e40095c99b3c4b8a2a6392be153e7b99e4a381d295ce5912",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/chain/frame_05_256.png",
+      "sha256": "c755a5588caad0a4e52994440d40775c1a3deb07c406def13b27f2bcec2928b4",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/chain/frame_06_256.png",
+      "sha256": "531e5660ee42f8af206e9e3a22b603d1804bc45b33682e4a540cd361492983d2",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/chain/frame_07_256.png",
+      "sha256": "62a9de4c212a018dd30447cbbd472fe4f78810375139bbae2215e21a9f30d37a",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/shield_break/frame_00_256.png",
+      "sha256": "44084c26115d85696bfeba3bf2f088450f0d463e995e9ec85a5884a73e111628",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/shield_break/frame_01_256.png",
+      "sha256": "6e0e0640ecb2b61a84e6be4b4edde9b45a97f3aa4fb804ecd08d605e88d026a8",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/shield_break/frame_02_256.png",
+      "sha256": "ff138e14b2a6d2dc0db424e9d0d92bee80c5d861cb144126bf759082dbb6482b",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/shield_break/frame_03_256.png",
+      "sha256": "ff440548e8b835c5b2aa2dc9913d1b1d1c38ab0b726faef1377de221ba3bddc7",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/shield_break/frame_04_256.png",
+      "sha256": "4059dcf7167e2e906afb798a695a002bb1b823b47b7a9c3fa1343ef863887df7",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/shield_break/frame_05_256.png",
+      "sha256": "36bbe8f1bb21403a2b3ac3851bf2e22007553da84cdee8645cd992e3c82c5f7e",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/shield_break/frame_06_256.png",
+      "sha256": "17e92ab6b1d6a2683f7e1f333454f53c39bbf260b2c3aaa25bf82f10d647f1f3",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/shield_break/frame_07_256.png",
+      "sha256": "c6efc0df6a961aaa794b74f5373e5a875d829abdecd4f1a3db562a20df24b58a",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/override/frame_00_256.png",
+      "sha256": "8104317c53e79fc194fda1f7079f47c169d13c27136864090befda468d3e1738",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/override/frame_01_256.png",
+      "sha256": "4441e9fe75f4b953cd6ba2255d2037cb7db51297b9bb312a661b37a0b28f956e",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/override/frame_02_256.png",
+      "sha256": "13ecc6868c62a9eb97dcef8eefe2dfeac19c944683e085a997c684851a647dbf",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/override/frame_03_256.png",
+      "sha256": "8180da8a06e4723745ff998d1fb93193ae06dfc5c5acdddbf79c36d9f798a445",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/override/frame_04_256.png",
+      "sha256": "cc9015d86192648a660e0e1c81f2c6823d0fc5b46bffb58cf66a9ee0b7342e98",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/override/frame_05_256.png",
+      "sha256": "bb70f1a487e1a8bc1d5a66c8fd1916f3e35fe35e6870524bd061e6550ef617d3",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/override/frame_06_256.png",
+      "sha256": "91cde063bc0988119d1be06b0247a381d233751049db52fc5a43e916d7fee633",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/fx/override/frame_07_256.png",
+      "sha256": "41b2e57a662a2fe87e8d0af94abd7652d1e58ffb0cc0fabaeaa692918db2e544",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "HOLD: no demonstrated in-game improvement; see SOURCE_AUDIT_PL.md for family-specific corrections."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/environment/arena_firewall_1280x720.png",
+      "sha256": "1e2b861436ff7ef58ebc11a747e3ea17fc8bf5301cb254d525842fa08ebd4d29",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "REDO: perspective room and decorative central target compete with top-down play; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/environment/arena_memory_1280x720.png",
+      "sha256": "d6f6e433de647ed027dad74f0bdc169770807bdc8db9d4f41515b274eb1e0c98",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "REDO: perspective room and decorative central target compete with top-down play; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/environment/arena_neural_1280x720.png",
+      "sha256": "d87a5d7dda76dafb59e5d412a97fbb1277750b267cea1809b918b3b681fc6c36",
+      "productionDrawn": false,
+      "abFixtureDrawn": true,
+      "decision": "REDO: perspective room and decorative central target compete with top-down play; preserve V3."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/brand/wordmark-480.png",
+      "sha256": "f6f3db39cf56eecda450b58c4492f7983658a2802b920bbe35de265b32dc3127",
+      "productionDrawn": false,
+      "abFixtureDrawn": false,
+      "decision": "UNCHANGED: copies of existing brand PNGs, no demonstrated visual improvement."
+    },
+    {
+      "path": "assets/kernelfall-art-v6/brand/symbol-512.png",
+      "sha256": "36537f168182ae9108cd62f8abd33b6b31e9942773cbae87080da9a922f87331",
+      "productionDrawn": false,
+      "abFixtureDrawn": false,
+      "decision": "UNCHANGED: copies of existing brand PNGs, no demonstrated visual improvement."
+    }
+  ]
+}

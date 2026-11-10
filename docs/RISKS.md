@@ -75,3 +75,13 @@ owner visual approval, portal Preview and physical iPhone/Chromebook tests
 remain NOT VERIFIED. Final covers/videos await the explicit name/gameplay
 approval required by the supplied package. NC-13/NC-20: bounded power erosion
 requires base/candidate timing and performance evidence in the stage report.
+
+## ART V6 pre-integration review
+
+The ART V6 visual gate is BLOCKED; V3 remains unchanged. Source alpha residue,
+module/collider readability, role/state legibility and perspective backgrounds
+are documented with real Canvas A/B in `art/kernelfall-v6/REPORT_PL.md`.
+This does not reopen NC-21 for the retained V3 renderer. NC-13 remains a
+device-performance risk: V6 has no production rendering benchmark because
+the aesthetic gate stopped integration. Physical iPhone and real portal tests
+are NOT RUN. No merge or production deployment is authorized by this review.
