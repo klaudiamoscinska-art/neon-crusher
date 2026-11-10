@@ -13,8 +13,8 @@ player aims OVERRIDE pulses at critical supply nodes or the heart. The AI
 reacts with temporary shields from sector 3; disconnected branches erode
 through their supply topology. Destroy the final core after twelve sectors,
 then continue endlessly. One screen, no menus, dialogue or blocking finale.
-Rules and source assets: `docs/KERNELFALL_BASIC.md`. Technical names (`balls`,
-`volley`, `heart`, `level`) and the v1 save contract stay unchanged.
+Specification: `docs/KERNELFALL_BASIC.md`. Technical identifiers and v1 saves
+stay unchanged.
 
 ## Breach (NC-ORIGINAL-1) — the core mechanic (now "override" in the UI)
 
