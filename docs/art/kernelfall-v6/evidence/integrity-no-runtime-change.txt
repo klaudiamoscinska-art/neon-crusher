@@ -1,0 +1,15 @@
+PASS    syntax: node --check on 30 JS files
+PASS    index.html loads stylesheet, script and approved local icon -- assets/kernelfall-v3/brand/symbol-128.png, game.js, style.css
+PASS    runtime references are relative (CrazyGames: no absolute paths)
+PASS    every runtime file exists
+PASS    ART V3 contains exactly the 100 manifest PNGs -- 100 PNGs
+PASS    ART V3 original PNG signatures, dimensions, bytes and SHA-256 match the manifest
+PASS    HTML and CSS asset paths are local and included in the release
+PASS    runtime makes no external requests (no http(s) URLs in index.html/style.css/game.js; the SVG namespace identifier allowed once)
+PASS    save key literal is 'neonCrusher.save.v1'
+PASS    no eval / new Function / document.write in the runtime
+PASS    no innerHTML in the runtime (text goes through textContent)
+PASS    Pages/Jekyll: no Liquid tags ({{ or {%) in 31 published Markdown files
+PASS    runtime unchanged vs origin/main (committed + working tree)
+
+[integrity] 13/13 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 0 => PASS: all checks pass

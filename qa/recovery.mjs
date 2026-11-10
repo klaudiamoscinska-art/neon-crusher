@@ -224,8 +224,9 @@ export function run({ quick = false } = {}) {
     for (const lang of ['en', 'pl']) {
       for (const [w, h] of sizes) {
         for (const lvl of [3, 4, 5, 8, 11, 14]) {
-          const hx = loadGame({ seed: 3, width: w, height: h, navigator: lang === 'pl' ? { languages: ['pl-PL'] } : undefined });
+          const hx = loadGame({ seed: 3, width: w, height: h, search: `?lang=${lang}` });
           const g = hx.newGame();
+          if (g.lang !== lang) { bad.push(`${lang} ${w}x${h} L${lvl}: wrong language ${g.lang}`); continue; }
           g.level = lvl; g.generateCore(lvl); g.balls = []; g.maxBalls = 0; g.chargeTime = 1e9; g.volleyCharge = 0;
           stepUntil(g, () => g.defense !== null, 30);
           if (!g.defense) { bad.push(`${lang} ${w}x${h} L${lvl}: no shield`); continue; }
