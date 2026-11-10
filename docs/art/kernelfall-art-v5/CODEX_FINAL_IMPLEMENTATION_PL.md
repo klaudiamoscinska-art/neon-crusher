@@ -1,3 +1,9 @@
+# ⛔ STOP — ODRZUCONY KIERUNEK ART V5 (2026-11-10)
+
+Decyzja właścicielki: grafiki produkcyjne KERNELFALL **nie mogą być wektorowymi SVG**. ART V5 jest zestawem koncepcyjnych źródeł wektorowych, **NIE finalnymi assetami**. Tego dokumentu NIE WYKONYWAĆ jako finalnego zadania integracji. Nie konwertuj SVG na PNG jako pozorowanego finalnego zestawu. Nie wykonuj merge V5 do main; zachowaj istniejące V3 jako bezpieczny baseline aż powstanie nowy, zaakceptowany jakościowo komplet oryginalnych rasterów PNG z przeźroczystością, osobnymi stanami uszkodzeń, spójnym stylem i manifestem. 
+
+---
+
 # CODEX — KERNELFALL FINAL VISUAL INTEGRATION (jedyny wykonawca)
 
 **Koncepcję i QA koordynuje GPT; implementuje wyłącznie Codex.** Raport końcowy po polsku; widoczne UI po angielsku.
