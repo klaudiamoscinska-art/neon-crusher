@@ -185,7 +185,7 @@ PASS    sanitizeSave is idempotent (sanitised values are a valid exact save)
 ===== i18n =====
 PASS    exactly two languages: en, pl -- en,pl
 PASS    default (fallback) language is English
-PASS    en and pl tables have the same keys -- en-only: , pl-only: 
+PASS    en and pl tables have the same keys -- en-only: , pl-only:
 PASS    no empty or non-string entries
 PASS    placeholders ({n}) match between languages
 PASS    English table contains no Polish text
@@ -321,16 +321,16 @@ PASS    [NC-05] corrupted save: game starts (level 1, no page error), original k
 [browser-smoke] 20/20 checks PASS, FAIL 0, KNOWN 0, NOT RUN 1, INFO 1 => PASS+NOT RUN: passing checks; also NOT RUN rows (listed above)
 
 ===== SUMMARY =====
-PASS+NOT RUN     integrity      PASS 12  FAIL 0  KNOWN 0  NOT RUN 1  
-PASS             instructions   PASS 12  FAIL 0  KNOWN 0  NOT RUN 0  
-PASS             runner         PASS 18  FAIL 0  KNOWN 0  NOT RUN 0  
-PASS             physics        PASS 20  FAIL 0  KNOWN 0  NOT RUN 0  
-PASS             levels         PASS 25  FAIL 0  KNOWN 0  NOT RUN 0  
-PASS             economy        PASS 30  FAIL 0  KNOWN 0  NOT RUN 0  
-PASS             save           PASS 24  FAIL 0  KNOWN 0  NOT RUN 0  
-PASS             i18n           PASS 18  FAIL 0  KNOWN 0  NOT RUN 0  
-PASS             collapse       PASS 64  FAIL 0  KNOWN 0  NOT RUN 0  
-PASS             recovery       PASS 17  FAIL 0  KNOWN 0  NOT RUN 0  
-PASS+NOT RUN     browser-smoke  PASS 20  FAIL 0  KNOWN 0  NOT RUN 1  
+PASS+NOT RUN     integrity      PASS 12  FAIL 0  KNOWN 0  NOT RUN 1
+PASS             instructions   PASS 12  FAIL 0  KNOWN 0  NOT RUN 0
+PASS             runner         PASS 18  FAIL 0  KNOWN 0  NOT RUN 0
+PASS             physics        PASS 20  FAIL 0  KNOWN 0  NOT RUN 0
+PASS             levels         PASS 25  FAIL 0  KNOWN 0  NOT RUN 0
+PASS             economy        PASS 30  FAIL 0  KNOWN 0  NOT RUN 0
+PASS             save           PASS 24  FAIL 0  KNOWN 0  NOT RUN 0
+PASS             i18n           PASS 18  FAIL 0  KNOWN 0  NOT RUN 0
+PASS             collapse       PASS 64  FAIL 0  KNOWN 0  NOT RUN 0
+PASS             recovery       PASS 17  FAIL 0  KNOWN 0  NOT RUN 0
+PASS+NOT RUN     browser-smoke  PASS 20  FAIL 0  KNOWN 0  NOT RUN 1
 
 RESULT: PASS (no blocking suite)
