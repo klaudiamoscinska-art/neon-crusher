@@ -97,7 +97,7 @@ export async function run() {
     r.check('no page scroll at any frame', scroll.length === 0, scroll.join(', '));
     r.check('shop fully visible at every frame', shopOff.length === 0, shopOff.join(', '));
     r.check('canvas animates (two screenshots 400 ms apart differ)', still.length === 0, still.join(', '));
-    r.check('[NC-07] English browser -> English UI (lang="en", "Buy new ball") at every frame', [...langs['en-US']].join() === 'en' && [...titles['en-US']].join() === 'Buy new ball', `lang=${[...langs['en-US']]}, "${[...titles['en-US']]}"`);
+    r.check('[NC-07] English browser -> English UI (lang="en", "New drone") at every frame', [...langs['en-US']].join() === 'en' && [...titles['en-US']].join() === 'New drone', `lang=${[...langs['en-US']]}, "${[...titles['en-US']]}"`);
     r.check('[NC-07] Polish browser -> Polish UI kept (lang="pl", "Nowy dron") at every frame', [...langs['pl-PL']].join() === 'pl' && [...titles['pl-PL']].join() === 'Nowy dron', `lang=${[...langs['pl-PL']]}, "${[...titles['pl-PL']]}"`);
     r.check('[NC-17] no text overflows its box in the top bar or the shop (both languages)', overflow.length === 0, overflow.slice(0, 4).join(' | '));
     r.check('first-minute hint on a fresh save: visible, inside the field, not cut off, taps pass through to the game (both languages)', hintBad.length === 0, hintBad.slice(0, 2).join(' | ') || `en: ${[...hintTexts['en-US']]} | pl: ${[...hintTexts['pl-PL']]}`);
