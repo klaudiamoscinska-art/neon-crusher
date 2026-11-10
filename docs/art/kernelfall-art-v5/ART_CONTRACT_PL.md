@@ -1,7 +1,7 @@
 # KERNELFALL — ART V5 / KONTRAKT INTEGRACJI (PL)
 
 **Repo:** klaudiamoscinska-art/neon-crusher
-**Status:** 91 nowych, samodzielnych plików SVG + manifest. To oddzielne assety, nie makieta; NIE są jeszcze podłączone do gry. Gałąź nie zmienia `main`.
+**Status:** 90 nowych, samodzielnych plików SVG + manifest. To oddzielne assety, nie makieta; NIE są jeszcze podłączone do gry. Gałąź nie zmienia `main`.
 **Istniejący runtime:** ART V3 z PR #12 jest już scalony do `main`; 100 oryginalnych PNG pozostaje nienaruszonych. V5 to alternatywne źródła do rzetelnego A/B; nie używaj V5 automatycznie, jeśli wizualnie pogarsza grę.
 
 ## Decyzje bazowe
