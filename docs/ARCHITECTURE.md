@@ -163,6 +163,10 @@ Every drawable glows in its own colour (look and palette:
   `netSpeed`, `syncFlash`, block `layer`/`seed`/
   `outCorner`/`variant`, label `big`) never feeds the simulation;
   `qa/sim-compare.mjs` proves the simulation is bit-identical to a base build.
+- **No raster sprites.** NC-ART-ASSETS-1 (2026-11-10) tried the owner's
+  candidate PNG pack in game and dropped it (less legible than vector art at
+  20–50 px); a browser-tested loader with fallback and a pre-scaled cache is kept as
+  a patch in `docs/art/nc-art-assets-1/` for a future art round.
 - Every glow change goes through `nc-performance` with a measurement
   (`qa/art-shots.mjs` frame probe, `qa/sim-compare.mjs` draw counters).
 
