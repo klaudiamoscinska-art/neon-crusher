@@ -4,6 +4,8 @@ Werdykt: **READY FOR GPT REVIEW**. Jest to przekazanie implementacji i dowodów 
 
 ## Baza i historia
 
+PR: https://github.com/klaudiamoscinska-art/neon-crusher/pull/12 (otwarty do `main`). Commit implementacji i dowodów: `67ae2000d933da0e41f704e656a2f44c3adfdf2f`; późniejszy commit aktualizuje wyłącznie metadane przekazania w tym raporcie.
+
 Repozytorium: `klaudiamoscinska-art/neon-crusher`. Zweryfikowano zdalne referencje ponownie po integracji:
 
 | Referencja | Pełny SHA |
