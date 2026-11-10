@@ -1,0 +1,19 @@
+KERNELFALL — CLAUDE CODE: WDROŻENIE PRAWDZIWEJ GRAFIKI V3
+
+Repo: https://github.com/klaudiamoscinska-art/neon-crusher
+Źródło assetów: `KERNELFALL_ART_V3_REPO.zip`, katalog `assets/kernelfall-v3/`.
+Najpierw sprawdź najnowszy origin/main, PR #11 i obecny renderer. Przeczytaj README.md, INTEGRATION_SPEC_PL.md i manifest.json; obejrzyj previews/ (oznaczone CONCEPT). Odpowiadaj, raportuj, komentuj QA i HANDOFF wyłącznie po polsku.
+
+CEL: dostarczyć wyraźnie lepszy, atrakcyjny wygląd prawdziwej gry KERNELFALL, zgodny stylistycznie z ilustracjami GPT, bez fałszywych PASS i bez zmian mechaniki. Właścicielka nie zaakceptowała wyglądu PR #11: małe powtarzalne kwadraty, mały rdzeń, zalew zielonych kwot, słabe wrażenie walki z AI.
+
+1. Rozpakuj całą paczkę i skopiuj `assets/kernelfall-v3/` w dokładnie tę samą ścieżkę repo, pod nową gałęzią `feature/kernelfall-visual-v3`.
+2. Wprowadź lokalny loader obrazów (wyłącznie względne URL), preload, cache wersji DPR; w razie niedostępnego obrazu pokaż dotychczasowe Canvas fallback — ale nie używaj fallback jako docelowego wyniku wizualnego.
+3. Zintegruj bossy jako duże wizualne sylwetki 3 archetypów + odrębne interaktywne moduły w pierwszym i dalszych sektorach. Rozdziel warstwy i kolejność draw tak, by wielki boss nie zasłaniał realnych modułów i łatwych celów OVERRIDE; żadnych zmian w hitboxach ani w geometrii.
+4. Użyj stanów damaged/critical/isolated/shatter/captured w prawdziwym lifecycle uszkodzeń i NEURAL COLLAPSE. Drony, emiter, główne efekty, UI i podłoga muszą być wizualnie spójne. Zachowaj kolory o jednoznacznym znaczeniu.
+5. Popraw nadmiar zielonych `+$...` przez ograniczenie prezentacji (liczb i nakładania) bez zmiany pieniędzy i naliczania.
+6. Zachowaj: idle bez kar, ręczne OVERRIDE, AI shield, 12 sektorów/endless, save v1 (5 pól), ceny, fizykę fixed 1/240, EN/PL, reduced motion, brak SDK i frameworków, support CrazyGames.
+7. Zrób lokalne QA i screenshoty REALNEGO runtime Chromium: 390x844 (pierwsza minuta i sektor późny), 800x450, 907x510, 1920x1080, boss damaged, NEURAL COLLAPSE, zwycięstwo, reduced motion; na minimum 3 archetypach. Pokaż BEFORE/AFTER i listę realnie użytych sprite'ów. Oceniaj interakcję, nie tylko rendering statyczny.
+8. Jeśli użycie samego PNG bossa tworzy fałszywe wrażenie kolizji, dostosuj kompozycję i podziel warstwy; nie pozoruj ukończenia. Bez pozostawienia starej planszy kwadratów jako wizualnej dominanty.
+9. PR do origin/main + raport PL + screenshoty; ZAKAZ merge/deploy bez zgody właścicielki. W razie braku write auth wygeneruj `git format-patch --binary origin/main..HEAD` i kompletny ZIP, nie trać pracy.
+
+OSTATECZNY WARUNEK: realne screenshoty muszą być zauważalnie bliższe prezentacji GPT niż PR #11. Nie oznaczaj wizualnego QA jako PASS przed akceptacją właścicielki. Brak kolejnych pomysłów na dodatkowy gameplay — domykamy Basic Launch.
