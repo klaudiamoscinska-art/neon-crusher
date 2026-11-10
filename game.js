@@ -1481,7 +1481,8 @@ class Ball {
   /** All drones in batched passes (NC-AI-RECOVERY-1: the balls are the
    *  player's autonomous recovery drones). A floor shadow offset down-right
    *  (they fly above the network), a short motion trail, a soft halo, a cyan
-   *  hull, a dark band and a white-hot core. No shadowBlur: a blurred batch
+   *  hull and a white-hot core (a dark casing band was measured at ~0.5 ms
+   *  per frame with 60 drones at 1920x1080 and dropped). No shadowBlur: a blurred batch
    *  spanning the whole field cost ~22 ms per frame at 1920x1080 with 60
    *  balls in software raster (NC-13). Drones stay the brightest small
    *  objects on the field. */
@@ -1529,16 +1530,6 @@ class Ball {
       }
       ctx.fill();
     }
-    // Dark band (the drone's casing) and white-hot core.
-    ctx.strokeStyle = COLORS.tileSide;
-    ctx.globalAlpha = 0.85;
-    ctx.lineWidth = 1.1;
-    ctx.beginPath();
-    for (const b of balls) {
-      ctx.moveTo(b.x + b.radius * 0.72, b.y);
-      ctx.arc(b.x, b.y, b.radius * 0.72, 0, Math.PI * 2);
-    }
-    ctx.stroke();
     ctx.globalAlpha = 1;
     ctx.fillStyle = COLORS.white;
     ctx.beginPath();

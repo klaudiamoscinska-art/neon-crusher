@@ -11,7 +11,8 @@
 //   core     fires every ready pulse at the core, ignoring the AI's shields
 //            (shows whether breaking the node is worth a pulse).
 // Per build x bot x canvas: median sector reached and median cash earned
-// (spent + kept) at 1/3/5/10 min, plus shields raised / broken.
+// (spent + kept) at 1/3/5/10 min, median seconds to first reach sectors
+// 3/5/7/9/11 (only sectors every run reached), plus shields raised / broken.
 import path from 'node:path';
 import os from 'node:os';
 import { spawn } from 'node:child_process';
@@ -28,6 +29,7 @@ export function play({ seed, w, h, hz, minutes, bot }) {
   const g = hx.newGame();
   let spent = 0;
   const at = {};
+  const reach = {}; // sector -> seconds when first reached
   for (let s = 1; s <= minutes * 60; s++) {
     for (let q = 0; q < 4; q++) {
       hx.run(0.25, hz);
@@ -40,8 +42,9 @@ export function play({ seed, w, h, hz, minutes, bot }) {
     }
     for (;;) { const before = g.cash; if (!greedyBuy(hx, g)) break; spent += before - g.cash; }
     if (MARKS.includes(s / 60)) at[s / 60] = { level: g.level, earned: Math.round(g.cash + spent) };
+    for (let l = 2; l <= g.level; l++) if (reach[l] === undefined) reach[l] = s;
   }
-  return { at, reroutes: g.reroutes || 0, broken: g.shieldsBroken || 0, playerBreaks: g.playerBreaks || 0 };
+  return { at, reach, reroutes: g.reroutes || 0, broken: g.shieldsBroken || 0, playerBreaks: g.playerBreaks || 0 };
 }
 
 const median = (xs) => { const s = [...xs].sort((a, b) => a - b); return (s[(s.length - 1) >> 1] + s[s.length >> 1]) / 2; };
@@ -88,8 +91,10 @@ async function main() {
     const marks = MARKS.filter((m) => m <= minutes);
     const lv = marks.map((m) => median(rs.map((r) => r.at[m].level)));
     const cash = marks.map((m) => median(rs.map((r) => r.at[m].earned)));
-    table[key] = { levels: lv, earned: cash, reroutes: median(rs.map((r) => r.reroutes)), broken: median(rs.map((r) => r.broken)), playerBreaks: median(rs.map((r) => r.playerBreaks)), finalLevels: rs.map((r) => r.at[minutes].level) };
-    console.log(`${key.padEnd(36)} sector at ${marks.join('/')} min: ${lv.join('/')}  earned $ ${cash.join('/')}  shields ${table[key].reroutes} broken ${table[key].broken} (by player ${table[key].playerBreaks})  final sectors ${table[key].finalLevels.join(',')}`);
+    const sectors = [3, 5, 7, 9, 11].filter((l) => rs.every((r) => r.reach[l] !== undefined));
+    const reachT = sectors.map((l) => median(rs.map((r) => r.reach[l])));
+    table[key] = { reachSectors: sectors, reachT, levels: lv, earned: cash, reroutes: median(rs.map((r) => r.reroutes)), broken: median(rs.map((r) => r.broken)), playerBreaks: median(rs.map((r) => r.playerBreaks)), finalLevels: rs.map((r) => r.at[minutes].level) };
+    console.log(`${key.padEnd(36)} sector at ${marks.join('/')} min: ${lv.join('/')}  earned $ ${cash.join('/')}  reach sector ${sectors.join('/')} at ${reachT.join('/')} s  shields ${table[key].reroutes} broken ${table[key].broken} (by player ${table[key].playerBreaks})  final sectors ${table[key].finalLevels.join(',')}`);
   }
   console.log(JSON.stringify(table));
 }
