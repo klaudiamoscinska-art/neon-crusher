@@ -262,6 +262,17 @@ body {
   to { box-shadow: 0 0 18px rgba(255, 43, 176, 0.8); }
 }
 
+/* A bottom uplink exists (3+ uplinks): the pill moves to the bottom-left
+   corner so it never covers it (NC-AI-RECOVERY-1 R2). Landscape only: in
+   portrait the bottom uplink sits well above the pill. */
+@media (min-aspect-ratio: 1/1) {
+  .hint--side {
+    left: 12px;
+    transform: none;
+    max-width: calc(50% - 40px);
+  }
+}
+
 /* The AI raised a shield (NC-AI-RECOVERY-1): amber, the AI's power. */
 .hint--alert {
   border-color: rgba(255, 196, 0, 0.85);

@@ -211,6 +211,52 @@ export function run({ quick = false } = {}) {
     r.check('shield hint (amber) while a shield is up, until the player breaks one node with their own pulse', shown && (hint.hidden || hint.textContent !== g.t('hintDefense')));
   }
 
+  // --- HUD safe areas (R2): meters, AI alert and event toasts never overlap
+  //     each other, stay inside the field and never cover the core, the
+  //     firewall node, relays or an uplink. Worst case: shield or exposure
+  //     up + three toasts with the longest texts, EN and PL, 8 field sizes
+  //     (CrazyGames canvases + phone portrait), sectors 3-14.
+  {
+    const sizes = [[800, 279], [821, 291], [907, 339], [1077, 435], [1080, 436], [1216, 513], [1920, 909], [390, 620]];
+    const bad = [];
+    let cases = 0;
+    const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    for (const lang of ['en', 'pl']) {
+      for (const [w, h] of sizes) {
+        for (const lvl of [3, 4, 5, 8, 11, 14]) {
+          const hx = loadGame({ seed: 3, width: w, height: h, navigator: lang === 'pl' ? { languages: ['pl-PL'] } : undefined });
+          const g = hx.newGame();
+          g.level = lvl; g.generateCore(lvl); g.balls = []; g.maxBalls = 0; g.chargeTime = 1e9; g.volleyCharge = 0;
+          stepUntil(g, () => g.defense !== null, 30);
+          if (!g.defense) { bad.push(`${lang} ${w}x${h} L${lvl}: no shield`); continue; }
+          const node = g.defense.node;
+          const money = '+$9,999,999';
+          for (const phase of ['shield', 'exposed']) {
+            if (phase === 'exposed') { g.hitBlock(node, 1e12, node.cx, node.cy, 'ball'); }
+            g.toasts = [];
+            g.addToast(g.t('levelUp', { n: 14 }), '#fff', true);
+            g.addToast(`${g.t('relay')} ${money}`, '#fff');
+            g.addToast(`${g.t(phase === 'shield' ? 'breached' : 'shieldBroken')} ${money}`, '#fff');
+            const k = g.viewScale;
+            const hud = g.hudLayout();
+            const fieldW = g.width * k; const fieldH = g.height * k;
+            const box = (b) => ({ x: b.x * k, y: b.y * k, w: b.size * k, h: b.size * k });
+            const targets = g.blocks.filter((b) => b.alive && (b.kind !== 'armor' || b === node)).map((b) => ({ id: b.kind === 'armor' ? 'node' : b.kind, ...box(b) }));
+            for (const t of g.turrets) targets.push({ id: 'uplink', x: (t.x - 14) * k, y: (t.y - 14) * k, w: 28 * k, h: 28 * k });
+            cases++;
+            for (let i = 0; i < hud.length; i++) {
+              const a = hud[i];
+              if (a.x < 0 || a.y < 0 || a.x + a.w > fieldW + 0.5 || a.y + a.h > fieldH + 0.5) bad.push(`${lang} ${w}x${h} L${lvl} ${phase}: ${a.id} outside the field`);
+              for (let j = i + 1; j < hud.length; j++) if (hit(a, hud[j])) bad.push(`${lang} ${w}x${h} L${lvl} ${phase}: ${a.id} overlaps ${hud[j].id}`);
+              for (const t of targets) if (hit(a, t)) bad.push(`${lang} ${w}x${h} L${lvl} ${phase}: ${a.id} covers ${t.id}`);
+            }
+          }
+        }
+      }
+    }
+    r.check(`HUD text (meters, AI alert, 3 longest event toasts) never overlaps itself, leaves the field or covers the core / node / relays / uplinks (EN + PL, 8 field sizes, sectors 3-14, shield and exposure: ${cases} layouts)`, bad.length === 0, bad.slice(0, 6).join('; ') + (bad.length > 6 ? ` ... (${bad.length})` : ''));
+  }
+
   // --- Pace: active play that breaks nodes stays clearly ahead of passive play.
   if (!quick) {
     const play = (seed, active) => {

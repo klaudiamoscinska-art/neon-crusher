@@ -13,9 +13,10 @@ const COLORS = {
   ember: '#ff7a2a',
   coreHot: '#ff9a8a',
   // 2.5D hardware tones: tile tops, side walls, bevel light, floor shadow.
-  tileTop: '#262d42',
-  tileSide: '#10131d',
-  tileHi: '#56628a',
+  tileTop: '#2a3044',
+  tileSide: '#0a0c13',
+  tileWall: '#1b2030',
+  tileHi: '#8a95bd',
   shadow: 'rgba(0, 0, 0, 0.5)',
   cyan: '#00f3ff',
   ice: '#9ff8ff',
@@ -831,7 +832,7 @@ class Block {
    *  the side walls show at the bottom and right (light from the top-left,
    *  true top-down view). */
   get wall() {
-    return Math.max(1.6, this.size * 0.13);
+    return Math.max(1.8, this.size * 0.15);
   }
 
   bodyPath(ctx) {
@@ -999,20 +1000,62 @@ class Block {
         ctx.closePath();
       }
       ctx.fill();
-      // 2. Body = side walls, 3. raised top face, 4. lit bevel.
+      // 2. Side walls: the body in the darkest tone (right wall), then the
+      //    bottom wall a step lighter, so every tile reads as a solid block.
       ctx.fillStyle = COLORS.tileSide;
       ctx.beginPath();
       for (const b of tiles) b.bodyPath(ctx);
       ctx.fill();
-      ctx.fillStyle = COLORS.tileTop;
+      ctx.fillStyle = COLORS.tileWall;
       ctx.beginPath();
-      for (const b of tiles) b.topPath(ctx);
+      for (const b of tiles) {
+        const w = b.wall;
+        const y0 = b.y + b.size - w;
+        ctx.moveTo(b.x, y0);
+        ctx.lineTo(b.x + b.size - w, y0);
+        ctx.lineTo(b.x + b.size - 0.5, b.y + b.size - 0.5);
+        ctx.lineTo(b.x + 0.8, b.y + b.size - 0.5);
+        ctx.closePath();
+      }
+      ctx.fill();
+      // 3. Raised top faces. AI-held hardware is tinted by its layer (wine
+      //    red outer, rust inner) and drains to neutral steel as it takes
+      //    damage; relays get a dark neutral top for their capacitor.
+      const faces = new Map();
+      for (const b of tiles) {
+        const key = b.kind === 'relay' ? COLORS.tileTop : b.shatter !== null ? '#1d4654'
+          : (b.color === COLORS.ember ? Block.EMBER_FACES : Block.HOSTILE_FACES)[b.damageStage];
+        if (!faces.has(key)) faces.set(key, []);
+        faces.get(key).push(b);
+      }
+      for (const [color, list] of faces) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        for (const b of list) b.topPath(ctx);
+        ctx.fill();
+      }
+      // 4. Sheen on the upper part of each face, lit bevel (top/left
+      //    edges), dark crease where the face meets the walls.
+      ctx.fillStyle = COLORS.white;
+      ctx.globalAlpha = 0.06;
+      ctx.beginPath();
+      for (const b of tiles) { const t = b.size - b.wall; ctx.rect(b.x + 1, b.y + 1, t - 2, t * 0.38); }
       ctx.fill();
       ctx.strokeStyle = COLORS.tileHi;
       ctx.lineWidth = 1;
-      ctx.globalAlpha = 0.9;
+      ctx.globalAlpha = 0.85;
       ctx.beginPath();
       for (const b of tiles) b.bevelPath(ctx);
+      ctx.stroke();
+      ctx.strokeStyle = '#05060a';
+      ctx.globalAlpha = 0.8;
+      ctx.beginPath();
+      for (const b of tiles) {
+        const t = b.size - b.wall;
+        ctx.moveTo(b.x + t, b.y + 1.5);
+        ctx.lineTo(b.x + t, b.y + t);
+        ctx.lineTo(b.x + 1.5, b.y + t);
+      }
       ctx.stroke();
       ctx.globalAlpha = 1;
     }
@@ -1043,14 +1086,14 @@ class Block {
       // Inlay: a glowing socket = a translucent wide stroke under a thin one.
       ctx.beginPath();
       for (const b of list) b.inlayPath(ctx);
-      ctx.globalAlpha = 0.24 * light;
+      ctx.globalAlpha = 0.3 * light;
       ctx.fill();
-      ctx.lineWidth = 1.1;
-      ctx.globalAlpha = 0.95 * light;
+      ctx.lineWidth = 1.3;
+      ctx.globalAlpha = Math.min(1, 1.05 * light);
       ctx.stroke();
       // Edge of the collision square in the layer colour.
       ctx.lineWidth = 1;
-      ctx.globalAlpha = 0.42 * light;
+      ctx.globalAlpha = 0.5 * light;
       ctx.beginPath();
       for (const b of list) b.bodyPath(ctx);
       ctx.stroke();
@@ -1258,15 +1301,36 @@ class Block {
     ctx.beginPath();
     this.bodyPath(ctx);
     ctx.fill();
-    ctx.fillStyle = '#1a1d2b';
+    ctx.fillStyle = '#2b1522';
     ctx.fillRect(this.x, this.y, top, top);
+    ctx.strokeStyle = COLORS.tileHi;
+    ctx.globalAlpha = 0.7;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(this.x + 0.6, this.y + top);
+    ctx.lineTo(this.x + 0.6, this.y + 0.6);
+    ctx.lineTo(this.x + top, this.y + 0.6);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    // Data ring: a dashed ring turning around the socket (the AI's
+    // signature; light only, nothing solid outside the collision box).
+    if (ctx.setLineDash) ctx.setLineDash([S * 0.09, S * 0.07]);
+    ctx.lineDashOffset = reducedMotion ? 0 : -time * S * 0.3;
+    ctx.strokeStyle = COLORS.hostile;
+    ctx.globalAlpha = 0.55 + 0.25 * pulse;
+    ctx.lineWidth = Math.max(1, S * 0.035);
+    ctx.beginPath();
+    ctx.arc(cx, cy, S * 0.76, 0, Math.PI * 2);
+    ctx.stroke();
+    if (ctx.setLineDash) ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
     // Pins: from the die to every edge of the socket.
     const die = top * 0.62;
     const d0 = (top - die) / 2;
     const pins = S >= 30 ? 5 : 3;
-    ctx.strokeStyle = COLORS.hostile;
-    ctx.globalAlpha = 0.75;
-    ctx.lineWidth = Math.max(0.8, top * 0.035);
+    ctx.strokeStyle = COLORS.coreHot;
+    ctx.globalAlpha = 0.9;
+    ctx.lineWidth = Math.max(0.9, top * 0.04);
     ctx.beginPath();
     for (let i = 0; i < pins; i++) {
       const f = this.y + d0 + die * ((i + 0.5) / pins);
@@ -1288,11 +1352,11 @@ class Block {
     ctx.globalAlpha = 1;
     // Die: dark, crimson rim with glow.
     const c = die * 0.18;
-    ctx.fillStyle = '#0c0d15';
+    ctx.fillStyle = '#3a0a1c';
     ctx.strokeStyle = COLORS.hostile;
     ctx.shadowColor = COLORS.hostile;
     ctx.shadowBlur = 10 + pulse * 6 + this.hitFlash * 16;
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = 2;
     ctx.beginPath();
     chamferPath(ctx, this.x + d0, this.y + d0, die, die, [c, c, c, c]);
     ctx.fill();
@@ -1313,7 +1377,7 @@ class Block {
     ctx.stroke();
     // Crystal: four facets around the centre (upper ones lit, lower ones
     // deep), drifting apart as HP falls; cyan light fills the gaps.
-    const r = die * 0.27;
+    const r = die * 0.34;
     const g = r * (0.06 + 0.5 * open);
     if (open > 0.02) {
       ctx.strokeStyle = COLORS.cyan;
@@ -1366,6 +1430,11 @@ class Block {
     ctx.restore();
   }
 }
+
+// Top-face tints of AI-held tiles by damage stage 0..3 (R2): saturated
+// wine/rust while intact, draining to neutral steel as recovery breaks in.
+Block.HOSTILE_FACES = ['#57233a', '#4a2739', '#3a2c3d', '#2e3346'];
+Block.EMBER_FACES = ['#58301f', '#4b2f26', '#3c2e30', '#2e3346'];
 
 class Ball {
   constructor(x, y, angle, speed, radius, color) {
@@ -1749,6 +1818,8 @@ class Game {
     // the AI-alert label at the top of the field.
     this.recovered = [];
     this.alert = 0;
+    // Event toasts in the HUD's left column (hudLayout).
+    this.toasts = [];
     // Cosmetic effects (NC-ART-1): relay surge arcs, the breach finale, the
     // moment the current core was generated (assembly animation), the cached
     // background.
@@ -1768,7 +1839,6 @@ class Game {
     this.bgCanvas = null;
     this.bgKey = '';
     this.aim = null;
-    this.banner = null;
     this.time = 0;
     this.screenFlash = 0;
     this.shake = 0;
@@ -2361,11 +2431,13 @@ class Game {
     if (manual) this.manualVolleys += 1;
     else this.autoVolleys += 1;
     this.lanceManual = !!manual;
+    const cash0 = this.cash;
     for (const turret of this.turrets) {
       this.castLance(turret, x, y);
       turret.flash = 1;
     }
     this.lanceManual = false;
+    if (this.cash > cash0) this.addFloatText(x, y, this.cash - cash0, COLORS.green);
     this.addRing(x, y, 14, COLORS.white, 0.3, 2);
     this.syncFlash = 1;
     this.shake = Math.max(this.shake, 0.12);
@@ -2437,7 +2509,9 @@ class Game {
   hitBlock(block, damage, x, y, source, scaled) {
     if (!scaled) damage *= this.damageFactor(block, source);
     this.cash += block.moneyPerHit;
-    this.addFloatText(x, y, block.moneyPerHit, COLORS.green);
+    // One "+$n" per drone hit; a pulse or a shockwave shows one total
+    // instead of a label on every block it crosses (R2: less clutter).
+    if (source === 'ball') this.addFloatText(x, y, block.moneyPerHit, COLORS.green);
     this.particles.burst(x, y, block.color, source === 'ball' ? 6 : 10, {
       minSpeed: 40, maxSpeed: 150, minLife: 0.25, maxLife: 0.5,
     });
@@ -2499,9 +2573,9 @@ class Game {
     this.sound.play('shield');
   }
 
-  /** The firewall node: an alive armour block that some turret can hit
-   *  first (nothing in front of it on the turret's line), so drones and
-   *  pulses can always reach it. Chosen with hash01 from the sector and the
+  /** The firewall node: an alive armour block that some turret's pulse
+   *  hits first (nothing in front of it on that turret's lance line, R2), so
+   *  drones and pulses can always reach it. Chosen with hash01 from the sector and the
    *  reroute count: no simulation RNG is consumed. */
   pickDefenseNode() {
     const alive = this.blocks.filter((b) => b.alive);
@@ -2516,11 +2590,15 @@ class Game {
         dy /= len;
         const tb = rayBoxEnter(t.x, t.y, dx, dy, b.x, b.y, b.x + b.size, b.y + b.size);
         if (tb === null) continue;
+        // Same geometry as a lance (boxes grown by LANCE_HALF_WIDTH): a
+        // pulse from this turret aimed at the node reaches it first.
+        const w = LANCE_HALF_WIDTH;
+        const tn = rayBoxEnter(t.x, t.y, dx, dy, b.x - w, b.y - w, b.x + b.size + w, b.y + b.size + w);
         let blocked = false;
         for (const o of alive) {
           if (o === b) continue;
-          const to = rayBoxEnter(t.x, t.y, dx, dy, o.x, o.y, o.x + o.size, o.y + o.size);
-          if (to !== null && to < tb) { blocked = true; break; }
+          const to = rayBoxEnter(t.x, t.y, dx, dy, o.x - w, o.y - w, o.x + o.size + w, o.y + o.size + w);
+          if (to !== null && to < tn) { blocked = true; break; }
         }
         if (!blocked) { candidates.push(b); break; }
       }
@@ -2565,8 +2643,7 @@ class Game {
     this.exposed = { t: EXPOSE_TIME, blocks: [heart, ...d.path.filter((b) => b.alive)], node: { x: node.cx, y: node.cy } };
     const bonus = OVERRIDE_BONUS * node.moneyPerHit;
     this.cash += bonus;
-    const top = this.height / 2 - this.coreRadius * this.coreScale - 14;
-    this.addBigText(this.width / 2, Math.max(14, top), `${this.t('shieldBroken')} +${formatMoney(bonus, this.lang)}`, COLORS.magenta);
+    this.addToast(`${this.t('shieldBroken')} +${formatMoney(bonus, this.lang)}`, COLORS.magenta);
     this.addRing(heart.cx, heart.cy, heart.size * 1.6, COLORS.magenta, 0.5, 3);
     if (this.arcs.length < MAX_ARCS) this.arcs.push(new Arc(node.cx, node.cy, heart.cx, heart.cy, node.seed, COLORS.cyan));
     this.alert = 0;
@@ -2579,9 +2656,8 @@ class Game {
     const bonus = RELAY_BONUS * relay.moneyPerHit;
     this.cash += bonus;
     // Above the core (never over the heart); chained relays stack upward.
-    const stacked = this.floatTexts.filter((f) => f.big && f.life > FLOAT_TEXT_LIFE * 0.8).length;
-    const top = this.height / 2 - this.coreRadius * this.coreScale - 14 - stacked * 16 / Math.max(1, this.viewScale);
-    this.addBigText(this.width / 2, Math.max(14, top), `${this.t('relay')} +${formatMoney(bonus, this.lang)}`, COLORS.cyan);
+
+    this.addToast(`${this.t('relay')} +${formatMoney(bonus, this.lang)}`, COLORS.cyan);
     if (this.volleyCharge < 1) {
       this.volleyCharge = 1;
       this.volleyReadyFor = 0;
@@ -2608,10 +2684,7 @@ class Game {
     const bonus = HEART_BONUS * heart.moneyPerHit;
     this.cash += bonus;
     this.coresShattered += 1;
-    // Below the core: not on top of the breaking plates, nor under the
-    // level banner that follows (NC-ART-1).
-    const below = heart.cy + this.coreRadius * this.coreScale + 16;
-    this.addBigText(heart.cx, Math.min(this.height - 14, below), `${this.t('breached')} +${formatMoney(bonus, this.lang)}`, COLORS.cyan);
+    this.addToast(`${this.t('breached')} +${formatMoney(bonus, this.lang)}`, COLORS.cyan);
     for (const b of this.blocks) {
       if (b.alive && b.shatter === null) b.shatter = Math.hypot(b.cx - heart.cx, b.cy - heart.cy) / SHATTER_SPEED;
     }
@@ -2634,7 +2707,6 @@ class Game {
       if (b.shatter > 0) continue;
       const pay = SHATTER_PAY * b.moneyPerHit;
       this.cash += pay;
-      this.addFloatText(b.cx, b.cy, pay, b.color);
       b.alive = false;
       b.hitFlash = 1;
       this.particles.burst(b.cx, b.cy, b.color, 10, {
@@ -2712,6 +2784,9 @@ class Game {
     }
     hint.classList.toggle('hint--action', volleyHint);
     hint.classList.toggle('hint--alert', defenseHint);
+    // From the third uplink on one sits at the bottom centre: the pill moves
+    // to the bottom-left corner so it never covers it (R2).
+    hint.classList.toggle('hint--side', this.turrets.length >= 3);
     this.ui.buyBall.classList.toggle('shop-btn--suggested', canBuy && !volleyHint);
   }
 
@@ -2739,17 +2814,6 @@ class Game {
     // 12 px on screen, growing gently on big screens (at most 18 px).
     const screenPx = 12 * Math.min(1.5, this.viewScale);
     this.floatTexts.push(new FloatText(x, y - 8, '+' + formatMoney(amount, this.lang), color, screenPx / this.viewScale));
-  }
-
-  /** Larger event label (relay, shatter); always shown, replaces the oldest
-   *  label when the cap is reached. */
-  addBigText(x, y, text, color) {
-    if (this.floatTexts.length >= MAX_FLOAT_TEXTS) this.floatTexts.shift();
-    const screenPx = 15 * Math.min(1.5, this.viewScale);
-    const label = new FloatText(x, y, text, color, screenPx / this.viewScale);
-    label.life = FLOAT_TEXT_LIFE * 1.6;
-    label.big = true;
-    this.floatTexts.push(label);
   }
 
   /** Share of the current core's HP already destroyed, 0..1. */
@@ -2781,9 +2845,7 @@ class Game {
     if (!aliveRemaining) {
       this.level += 1;
       this.generateCore(this.level);
-      this.banner = { text: this.t('levelUp', { n: this.level }), life: 1.4 };
-      // The banner owns the top of the field: event labels above the core go.
-      this.floatTexts = this.floatTexts.filter((f) => !(f.big && f.y < this.height / 2));
+      this.addToast(this.t('levelUp', { n: this.level }), COLORS.cyan, true);
       this.sound.play('level');
     }
 
@@ -2804,9 +2866,9 @@ class Game {
     if (this.syncFlash > 0) this.syncFlash = Math.max(0, this.syncFlash - dt * 3);
     this.netPhase += dt * this.netSpeed;
     if (this.shake > 0) this.shake = Math.max(0, this.shake - dt);
-    if (this.banner) {
-      this.banner.life -= dt;
-      if (this.banner.life <= 0) this.banner = null;
+    if (this.toasts.length) {
+      for (const t of this.toasts) t.life -= dt;
+      if (this.toasts[0].life <= 0) this.toasts = this.toasts.filter((t) => t.life > 0);
     }
 
     this.uiTimer += dt;
@@ -2868,10 +2930,7 @@ class Game {
       ctx.fillRect(0, 0, this.width, this.height);
       ctx.restore();
     }
-    this.drawCoreProgress(ctx);
-    this.drawVolleyMeter(ctx);
-    this.drawDefenseAlert(ctx);
-    this.drawBanner(ctx);
+    this.drawHud(ctx);
   }
 
   /** Cells recovered in this sector (NC-AI-RECOVERY-1, cosmetic): every
@@ -2884,13 +2943,16 @@ class Game {
     const k = this.coreScale;
     ctx.save();
     ctx.strokeStyle = COLORS.cyan;
-    ctx.globalAlpha = 0.24;
+    ctx.fillStyle = COLORS.cyan;
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (const b of this.recovered) {
-      const s = b.baseSize * k * 0.78;
+      const s = b.baseSize * k * 0.8;
       ctx.rect(cx + b.baseOffsetX * k - s / 2, cy + b.baseOffsetY * k - s / 2, s, s);
     }
+    ctx.globalAlpha = 0.1;
+    ctx.fill();
+    ctx.globalAlpha = 0.45;
     ctx.stroke();
     ctx.fillStyle = COLORS.cyan;
     ctx.globalAlpha = 0.55;
@@ -2995,8 +3057,13 @@ class Game {
       ctx.beginPath();
       n.bodyPath(ctx);
       ctx.stroke();
+      // White lock on a dark plate: the one white glyph on the core, so the
+      // node never reads as an amber relay.
       ctx.globalAlpha = 1;
-      ctx.fillStyle = COLORS.amber;
+      ctx.fillStyle = COLORS.tileSide;
+      ctx.fillRect(n.x + top * 0.16, n.y + top * 0.16, top * 0.68, top * 0.68);
+      ctx.fillStyle = COLORS.white;
+      ctx.strokeStyle = COLORS.white;
       ctx.fillRect(nx - L / 2, ny - L * 0.1, L, L * 0.62);
       ctx.lineWidth = Math.max(1, L * 0.16);
       ctx.beginPath();
@@ -3004,15 +3071,33 @@ class Game {
       ctx.stroke();
       ctx.fillStyle = COLORS.tileSide;
       ctx.fillRect(nx - L * 0.07, ny + L * 0.05, L * 0.14, L * 0.3);
-      this.drawBrackets(ctx, n.cx, n.cy, n.size / 2 + 3 + pulse * 2, Math.max(4, n.size * 0.3), COLORS.magenta, 0.95);
+      // Rotating magenta target reticle (the player's action colour): four
+      // brackets and four ticks pointing in, slowly turning.
+      const RR = n.size * 0.78 + pulse * 2;
+      const spin = this.reducedMotion ? 0 : this.time * 1.2;
+      ctx.strokeStyle = COLORS.magenta;
+      ctx.shadowColor = COLORS.magenta;
+      ctx.shadowBlur = 8;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i < 4; i++) {
+        const a = spin + (i * Math.PI) / 2;
+        ctx.moveTo(n.cx + Math.cos(a - 0.42) * RR, n.cy + Math.sin(a - 0.42) * RR);
+        ctx.arc(n.cx, n.cy, RR, a - 0.42, a + 0.42);
+        const b = a + Math.PI / 4;
+        ctx.moveTo(n.cx + Math.cos(b) * (RR + 4), n.cy + Math.sin(b) * (RR + 4));
+        ctx.lineTo(n.cx + Math.cos(b) * (RR - 3), n.cy + Math.sin(b) * (RR - 3));
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
     }
     if (e) {
       const h = this.heart;
       const k = clamp(e.t / EXPOSE_TIME, 0, 1);
       if (h && h.alive) {
         ctx.strokeStyle = COLORS.magenta;
-        ctx.globalAlpha = 0.35 + 0.45 * k;
-        ctx.lineWidth = 1.4;
+        ctx.globalAlpha = 0.45 + 0.45 * k;
+        ctx.lineWidth = 2;
         if (ctx.setLineDash) ctx.setLineDash([4, 4]);
         ctx.lineDashOffset = this.reducedMotion ? 0 : this.time * 30;
         ctx.beginPath();
@@ -3030,38 +3115,7 @@ class Game {
     ctx.restore();
   }
 
-  /** Top-centre HUD while the AI reacts: "AI SHIELD n s" (amber) with a
-   *  draining bar, or "CORE EXPOSED n s" (magenta). Screen pixels; on a
-   *  narrow field it sits below the two corner meters. */
-  drawDefenseAlert(ctx) {
-    const d = this.defense;
-    const e = this.exposed;
-    if (!d && !(e && this.heart && this.heart.alive)) return;
-    const fieldW = this.width * this.viewScale;
-    const meterW = Math.min(120, fieldW * 0.3);
-    const room = fieldW - 2 * (meterW + 24);
-    const narrow = room < 100;
-    const W = narrow ? Math.min(140, fieldW * 0.44) : Math.min(140, room);
-    const x = (fieldW - W) / 2;
-    const y = narrow ? 42 : 10;
-    const locale = (STRINGS[this.lang] || STRINGS[DEFAULT_LANGUAGE]).locale;
-    const secs = (v) => Math.max(0, v).toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-    const color = d ? COLORS.amber : COLORS.magenta;
-    const label = d ? `${this.t('shieldUp')} ${secs(SHIELD_TIME - d.t)} s` : `${this.t('exposed')} ${secs(e.t)} s`;
-    const value = d ? 1 - d.t / SHIELD_TIME : e.t / EXPOSE_TIME;
-    const blink = this.alert > 0 && !this.reducedMotion && Math.floor(this.alert * 5) % 2 === 0;
-    ctx.save();
-    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    ctx.font = 'bold 12px "Segoe UI", Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = blink ? COLORS.white : color;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 8;
-    ctx.fillText(label, x + W / 2, y);
-    this.drawSegmentBar(ctx, x, y + 16, W, 5, value, color, 6);
-    ctx.restore();
-  }
+
 
   /** Blocks to draw: while a new core assembles (CORE_ASSEMBLY_TIME after
    *  generation), plates appear outward from the heart. Drawing only; the
@@ -3130,9 +3184,9 @@ class Game {
     // ground everything else stands on. Fixed, low contrast.
     const panel = 46;
     g.lineWidth = 1;
-    for (const [color, dx] of [['#03040a', 0.5], ['#151b2c', -0.5]]) {
+    for (const [color, dx] of [['#03040a', 0.5], ['#131828', -0.5]]) {
       g.strokeStyle = color;
-      g.globalAlpha = 0.9;
+      g.globalAlpha = 0.5;
       g.beginPath();
       for (let x = (cx % panel) - panel; x < w + panel; x += panel) { g.moveTo(x + dx, 0); g.lineTo(x + dx, h); }
       for (let y = (cy % panel) - panel; y < h + panel; y += panel) { g.moveTo(0, y + dx); g.lineTo(w, y + dx); }
@@ -3145,7 +3199,7 @@ class Game {
     for (let y = (cy % step); y < h; y += step) {
       for (let x = (cx % step); x < w; x += step) {
         const d = Math.hypot(x - cx, y - cy) / far;
-        g.globalAlpha = 0.55 * (1 - d) * (1 - d);
+        g.globalAlpha = 0.3 * (1 - d) * (1 - d);
         g.fillRect(x - 0.5, y - 0.5, 1, 1);
       }
     }
@@ -3154,8 +3208,8 @@ class Game {
     // the field edges toward the core (orthogonal, one 45-degree bend, a pad
     // at the end). Fixed layout, very low contrast: depth, not a grid.
     // Routes are still the AI's: dim red.
-    g.strokeStyle = '#2a1420';
-    g.fillStyle = '#3d1826';
+    g.strokeStyle = '#1f121a';
+    g.fillStyle = '#2c141e';
     g.lineWidth = 1.2;
     g.lineJoin = 'round';
     const stopR = short * 0.5;
@@ -3185,14 +3239,14 @@ class Game {
     }
     // Containment rings and ticks.
     g.globalAlpha = 1;
-    g.strokeStyle = '#162033';
+    g.strokeStyle = '#121a2a';
     g.lineWidth = 1;
     for (const r of [short * 0.36, short * 0.47]) {
       g.beginPath();
       g.arc(cx, cy, r, 0, Math.PI * 2);
       g.stroke();
     }
-    g.strokeStyle = '#1e2b42';
+    g.strokeStyle = '#18233a';
     g.beginPath();
     for (let i = 0; i < 72; i++) {
       const a = (i / 72) * Math.PI * 2;
@@ -3230,7 +3284,7 @@ class Game {
     const tint = mixColor(COLORS.hostile, COLORS.cyan, this.uiProgress || 0);
     ctx.save();
     ctx.strokeStyle = tint;
-    ctx.globalAlpha = 0.2;
+    ctx.globalAlpha = 0.14;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(cx, cy, r, a, a + 0.9);
@@ -3242,7 +3296,7 @@ class Game {
     const m = 3;
     const cut = Math.min(22, Math.min(w, h) * 0.08);
     ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.6;
+    ctx.globalAlpha = 0.45;
     ctx.beginPath();
     for (const fy of [0.38, 0.62]) {
       ctx.moveTo(m, h * fy - 7); ctx.lineTo(m, h * fy + 7);
@@ -3687,87 +3741,122 @@ class Game {
     ctx.fill();
   }
 
-  /** Volley charge meter in the field's top-right corner (screen pixels). */
-  drawVolleyMeter(ctx) {
+  /**
+   * HUD safe areas (NC-AI-RECOVERY-1 R2), CSS pixels of the field; the one
+   * source of truth for where HUD text goes (drawing and `qa/recovery.mjs`
+   * both read it). The uplinks sit on the axes (one at top centre) and the
+   * core in the middle, so text lives in the two top corners only:
+   * left column = recovery meter, then event toasts ("SECTOR n", "SHIELD
+   * BROKEN", "RELAY CAPTURED", "SECTOR RECOVERED"); right column = override
+   * meter, then the AI alert ("AI SHIELD" / "CORE EXPOSED").
+   */
+  hudLayout() {
     const fieldW = this.width * this.viewScale;
-    const w = Math.min(120, fieldW * 0.3);
-    const x = fieldW - 10 - w;
-    const y = 10;
-    const ready = this.volleyReady;
-    const label = ready ? this.t('volleyReady') : `${this.t('volley')} ${Math.floor(this.volleyCharge * 100)}%`;
+    const colW = Math.min(150, (fieldW - 40) / 2);
+    const meterW = Math.min(120, colW);
+    const rects = [
+      { id: 'progress', x: 10, y: 10, w: meterW, h: 22 },
+      { id: 'override', x: fieldW - 10 - meterW, y: 10, w: meterW, h: 22 },
+    ];
+    const e = this.exposed && this.heart && this.heart.alive ? this.exposed : null;
+    if (this.defense || e) rects.push({ id: 'alert', x: fieldW - 10 - colW, y: 40, w: colW, h: 22 });
+    const maxW = Math.max(colW, Math.min(fieldW * 0.42, 230));
+    let y = 40;
+    for (const t of this.toasts) {
+      let size = t.big ? 15 : 12;
+      let w = this.hudTextWidth(t.text, size) + 18;
+      if (w > maxW) { size = Math.max(10, Math.floor(size * (maxW - 18) / (w - 18))); w = Math.min(maxW, this.hudTextWidth(t.text, size) + 18); }
+      rects.push({ id: 'toast', x: 10, y, w, h: size + 8, size, toast: t });
+      y += size + 12;
+    }
+    return rects;
+  }
+
+  /** Text width in CSS px for HUD layout (bold UI font); an upper estimate
+   *  where the context cannot measure (the QA harness). */
+  hudTextWidth(text, size) {
+    const ctx = this.ctx;
+    if (typeof ctx.measureText === 'function') {
+      ctx.save();
+      ctx.font = `bold ${size}px "Segoe UI", Arial, sans-serif`;
+      const m = ctx.measureText(text);
+      ctx.restore();
+      if (m && m.width) return m.width;
+    }
+    return text.length * size * 0.66;
+  }
+
+  /** Event toast (cosmetic): newest at the bottom of the stack, at most 3. */
+  addToast(text, color, big) {
+    if (this.toasts.length >= 3) this.toasts.shift();
+    this.toasts.push({ text, color, life: big ? 1.6 : 1.8, big: !!big });
+  }
+
+  /** Screen-space HUD: meters, AI alert, event toasts (hudLayout). */
+  drawHud(ctx) {
     const pulse = this.reducedMotion ? 0.5 : 0.5 + 0.5 * Math.sin(this.time * 6);
+    const locale = (STRINGS[this.lang] || STRINGS[DEFAULT_LANGUAGE]).locale;
     ctx.save();
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    ctx.font = 'bold 12px "Segoe UI", Arial, sans-serif';
-    ctx.textAlign = 'right';
     ctx.textBaseline = 'top';
-    ctx.fillStyle = ready ? COLORS.white : COLORS.magenta;
-    ctx.shadowColor = COLORS.magenta;
-    ctx.shadowBlur = ready ? 8 + 8 * pulse : 6;
-    ctx.fillText(label, x + w, y);
-    this.drawSegmentBar(ctx, x, y + 16, w, 5, this.volleyCharge, COLORS.magenta, ready ? 8 + 6 * pulse : 5);
-    ctx.restore();
-  }
-
-  /** "LEVEL n" banner after a level-up, centred, screen pixels, between two
-   *  bracket rules that open as it appears. */
-  drawBanner(ctx) {
-    if (!this.banner) return;
-    const t = clamp(this.banner.life / 1.4, 0, 1);
-    const size = Math.round(22 * Math.min(1.6, this.viewScale));
-    const cx = (this.width * this.viewScale) / 2;
-    const cy = (this.height * this.viewScale) * 0.18;
-    ctx.save();
-    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    ctx.globalAlpha = Math.min(1, t * 2);
-    ctx.font = `bold ${size}px "Segoe UI", Arial, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    const m = typeof ctx.measureText === 'function' ? ctx.measureText(this.banner.text) : null;
-    const tw = m && m.width ? m.width : this.banner.text.length * size * 0.6;
-    const open = this.reducedMotion ? 1 : Math.min(1, (1 - t) * 6);
-    const half = tw / 2 + 14;
-    const rule = 40 * open;
-    ctx.strokeStyle = COLORS.cyan;
-    ctx.shadowColor = COLORS.cyan;
-    ctx.shadowBlur = 10;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(cx - half, cy - size * 0.4);
-    ctx.lineTo(cx - half - 6, cy);
-    ctx.lineTo(cx - half, cy + size * 0.4);
-    ctx.moveTo(cx - half - 10, cy);
-    ctx.lineTo(cx - half - 10 - rule, cy);
-    ctx.moveTo(cx + half, cy - size * 0.4);
-    ctx.lineTo(cx + half + 6, cy);
-    ctx.lineTo(cx + half, cy + size * 0.4);
-    ctx.moveTo(cx + half + 10, cy);
-    ctx.lineTo(cx + half + 10 + rule, cy);
-    ctx.stroke();
-    ctx.fillStyle = COLORS.white;
-    ctx.shadowBlur = 16;
-    ctx.fillText(this.banner.text, cx, cy);
-    ctx.restore();
-  }
-
-  /** Core destruction meter in the top-left corner of the field, drawn in
-   *  screen pixels (a HUD element: same size at any world scale). */
-  drawCoreProgress(ctx) {
-    const x = 10;
-    const y = 10;
-    const w = Math.min(120, this.width * this.viewScale * 0.3);
-    const progress = this.coreProgress;
-    const label = `${this.t('core')} ${Math.floor(progress * 100)}%`;
-    ctx.save();
-    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    ctx.font = 'bold 12px "Segoe UI", Arial, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = COLORS.cyan;
-    ctx.shadowColor = COLORS.cyan;
-    ctx.shadowBlur = 6;
-    ctx.fillText(label, x, y);
-    this.drawSegmentBar(ctx, x, y + 16, w, 5, progress, COLORS.cyan, 6);
+    for (const r of this.hudLayout()) {
+      if (r.id === 'progress' || r.id === 'override' || r.id === 'alert') {
+        let label;
+        let value;
+        let color;
+        let glow = 6;
+        let textColor;
+        if (r.id === 'progress') {
+          value = this.uiProgress || 0;
+          label = `${this.t('core')} ${Math.floor(this.coreProgress * 100)}%`;
+          color = COLORS.cyan;
+          ctx.textAlign = 'left';
+        } else if (r.id === 'override') {
+          const ready = this.volleyReady;
+          value = this.volleyCharge;
+          label = ready ? this.t('volleyReady') : `${this.t('volley')} ${Math.floor(this.volleyCharge * 100)}%`;
+          color = COLORS.magenta;
+          textColor = ready ? COLORS.white : COLORS.magenta;
+          glow = ready ? 8 + 6 * pulse : 5;
+          ctx.textAlign = 'right';
+        } else {
+          const d = this.defense;
+          const secs = (v) => Math.max(0, v).toLocaleString(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+          color = d ? COLORS.amber : COLORS.magenta;
+          label = d ? `${this.t('shieldUp')} ${secs(SHIELD_TIME - d.t)} s` : `${this.t('exposed')} ${secs(this.exposed.t)} s`;
+          value = d ? 1 - d.t / SHIELD_TIME : this.exposed.t / EXPOSE_TIME;
+          const blink = this.alert > 0 && !this.reducedMotion && Math.floor(this.alert * 5) % 2 === 0;
+          textColor = blink ? COLORS.white : color;
+          ctx.textAlign = 'right';
+        }
+        ctx.font = 'bold 12px "Segoe UI", Arial, sans-serif';
+        ctx.fillStyle = textColor || color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 6;
+        const tx = ctx.textAlign === 'left' ? r.x : ctx.textAlign === 'right' ? r.x + r.w : r.x + r.w / 2;
+        ctx.fillText(label, tx, r.y, r.w);
+        this.drawSegmentBar(ctx, r.x, r.y + 16, r.w, 5, value, color, glow);
+      } else if (r.id === 'toast') {
+        const t = r.toast;
+        const a = clamp(t.life / 0.3, 0, 1);
+        ctx.globalAlpha = a;
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(9, 11, 18, 0.88)';
+        ctx.strokeStyle = t.color;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        chamferPath(ctx, r.x + 0.5, r.y + 0.5, r.w - 1, r.h - 1, [r.h * 0.3, 0, r.h * 0.3, 0]);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = t.color;
+        ctx.shadowColor = t.color;
+        ctx.shadowBlur = 6;
+        ctx.textAlign = 'left';
+        ctx.font = `bold ${r.size}px "Segoe UI", Arial, sans-serif`;
+        ctx.fillText(t.text, r.x + 9, r.y + 4, r.w - 14);
+        ctx.globalAlpha = 1;
+      }
+    }
     ctx.restore();
   }
 
