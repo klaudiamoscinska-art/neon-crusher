@@ -68,9 +68,16 @@ Note: GitHub Pages currently publishes the whole repo root (`docs/RELEASE.md`).
   `castLance` (`scaled` flag: the lance budget is spent in unscaled units).
   `lanceManual` is true while `fireVolley(…, manual)` casts, so a node broken
   by the player's own pulse refunds charge. `autoTarget` prefers the node.
+  The node is picked with the lance geometry (boxes grown by
+  `LANCE_HALF_WIDTH`), so its turret's pulse reaches it first.
   Cosmetic only: `recovered` (cells broken this sector), `alert`,
-  `uiProgress` (recovery tint), `drawDefense`, `drawDefenseAlert`,
+  `uiProgress` (recovery tint), `toasts` (`addToast`), `drawDefense`,
   `drawRecovered`, `drawBrackets`, `mixColor`.
+- HUD (R2): `hudLayout()` returns the CSS-pixel rects of every HUD text
+  (meters, AI alert, toasts) and is the only place that positions them;
+  `drawHud` draws from it and `qa/recovery.mjs` checks it for overlaps.
+  `hudTextWidth` measures with the context (an upper estimate in the
+  harness).
 - `Sound` — synthesised Web Audio (oscillators only), created/resumed in a
   user gesture, per-sound minimum gap, mute under `AUDIO_PREF_KEY`. Neither
   `Sound` nor `draw()` may call `Math.random` (the simulation RNG must not

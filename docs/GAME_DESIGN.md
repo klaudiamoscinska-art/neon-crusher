@@ -38,8 +38,9 @@ AI, core exposed / rdzeń odsłonięty. Code names stay (`balls`, `volley`,
 
 Feedback (look: "Visual identity"): magenta pulses, rings (shockwave,
 "not ready" tap), cyan relay-capture arcs to the uplinks, recovery finale,
-`RELAY CAPTURED +$n` / `SHIELD BROKEN +$n` / `SECTOR RECOVERED +$n` labels
-on a graphite backing (above / below the core), `SECTOR n` banner, uplink capacitors fill while
+`RELAY CAPTURED +$n` / `SHIELD BROKEN +$n` / `SECTOR RECOVERED +$n` /
+`SECTOR n` toasts (HUD left column, see "Presentation"), one `+$n` per
+pulse at its aim point, uplink capacitors fill while
 charging and spark when ready, lock-on brackets on the heart when ready
 (plus dashed lines from the turrets until the first hand-aimed volley), aim
 preview (dashed lines + reticle) when a mouse hovers a ready field, volley
@@ -136,12 +137,9 @@ NC-ORIGINAL-1 and NC-AI-RECOVERY-1 PRs). Design targets: first purchase
 15–45 s and median < 60 s on every size; active play clearly ahead of
 passive (`qa/economy.mjs` pins all three).
 
-NC-AI-RECOVERY-1 (adaptive defense), greedy buyer, `qa/idle-balance.mjs`,
-same machine and seeds as `main` (numbers in the PR): passive play keeps
-the base's pace (target: never more than 10 % slower), active play that
-breaks firewall nodes stays clearly ahead of passive play and of active play
-that ignores the shields (`qa/recovery.mjs` pins active ≥ passive + 3
-sectors at 5 min and idle safety).
+NC-AI-RECOVERY-1 (`qa/idle-balance.mjs` vs `main`, PR table): passive
+pace within 10 % of the base; breaking nodes beats passive play and play
+that ignores shields (`qa/recovery.mjs` pins it).
 
 | Feature | Status |
 |---|---|
@@ -163,7 +161,8 @@ sectors at 5 min and idle safety).
 | Purchase feedback: one-shot button flash + sound; Hit power also flashes every ball white | IMPLEMENTED (NC-ORIGINAL-1) |
 | Hit feedback: `+$n` label at the hit (money format of the UI language), rises and fades in 0.8 s; at most 10 at once; 12 px on screen (up to 18 px on big screens) | IMPLEMENTED (NC-CORE-1A) |
 | Sector progress: "Recovered n%" / "Odzyskano n%" + cyan bar (destroyed HP ÷ core HP) in the field's top-left corner, CSS pixels; the arena light strips shift from red to cyan with it | IMPLEMENTED (NC-CORE-1A, NC-AI-RECOVERY-1) |
-| AI alert: "AI SHIELD n s" / "OSŁONA AI n s" (amber) or "CORE EXPOSED n s" / "RDZEŃ ODSŁONIĘTY n s" (magenta) + draining bar, top centre | IMPLEMENTED (NC-AI-RECOVERY-1) |
+| AI alert: "AI SHIELD n s" / "OSŁONA AI n s" (amber) or "CORE EXPOSED n s" / "RDZEŃ ODSŁONIĘTY n s" (magenta) + draining bar, right column under the override meter | IMPLEMENTED (NC-AI-RECOVERY-1) |
+| HUD safe areas (R2, `Game.hudLayout`): text only in the two top corners (an uplink sits at top centre, the core in the middle). Left: recovery meter, then up to 3 event toasts (newest last, 1.6–1.8 s). Right: override meter, then the AI alert. Toasts shrink to fit 42 % of the field. The DOM hint moves to the bottom-left corner in landscape once a bottom uplink exists. Never overlapping each other or the core / node / relays / uplinks: `qa/recovery.mjs` (EN + PL, 8 sizes, sectors 3–14) | IMPLEMENTED (NC-AI-RECOVERY-1 R2) |
 | Responsive layout (phone/desktop), safe areas (all sides), no text selection | IMPLEMENTED; smallest text 11.2 px at DPR 1; canvas share at 800×450 still 62 % (NC-17); notched device NOT VERIFIED |
 | Save across reloads | IMPLEMENTED (`docs/SAVE.md`) |
 
@@ -199,8 +198,8 @@ sectors at 5 min and idle safety).
 Owner decisions that change this file are recorded here with a date.
 
 - 2026-11-10 (NC-AI-RECOVERY-1, owner-approved stage prompt; PR pending GPT review + owner approval): direction change to **active idle about recovering a network from a rogue AI**. Adaptive defense (shield, firewall node, exposure, autopilot answer), UI names (drones, override, sector, recovered), new visual identity "Network Recovery" (stylized 2.5D, true top-down, footprints = collision boxes; NC-21 closed), EN + PL texts. Prices, block HP, money per hit, level count/shapes and the save format unchanged; new income only the node bonus (3 × money per hit). Title unchanged (NC-ID-1 open).
-- 2026-11-09 (NC-ART-1, PR pending GPT review + owner approval; the stage prompt set the direction "Neon Breach — Signal Fracture", refined by the owner the same day to "Fractured Intelligence" (rogue AI, title unchanged), and the palette graphite/cyan/magenta/amber, green as an accent): visual identity above; drawing, colours, HUD/shop styling only. Simulation bit-identical to the base (same seeds, same inputs: `qa/sim-compare.mjs`); no change to mechanics, numbers, save, text or layout sizes.
+- 2026-11-09 (NC-ART-1, merged PR #8): visual identity "Fractured Intelligence" (rogue AI, title unchanged; replaced by "Network Recovery" in NC-AI-RECOVERY-1); drawing, colours, HUD/shop styling only, simulation bit-identical to its base.
 - 2026-11-09 (NC-FOUNDATION-1): baseline documented; no gameplay change.
-- 2026-11-09 (NC-ORIGINAL-1, PR pending GPT review + owner approval; the stage prompt authorised the concept choice and balance tuning): breach mechanic (heart, relays, aimed volley, autopilot, shatter), Fire rate → Volley charge (NC-10), ball refill fixed 700 ms, new income sources (above), audio + sound toggle, first-purchase target 20–45 s → 15–45 s. Prices, block HP, money per hit and the save format unchanged.
+- 2026-11-09 (NC-ORIGINAL-1, merged PR #7): breach mechanic (heart, relays, aimed volley, autopilot, shatter), Fire rate → Volley charge (NC-10), ball refill fixed 700 ms, new income sources (above), audio + sound toggle, first-purchase target 20–45 s → 15–45 s. Prices, block HP, money per hit and the save format unchanged.
 - 2026-11-09 (NC-CORE-1A, merged PR #6 with scale 250): first minute — world scale 250 (NC-09), turrets aim at the core, core progress bar, `+$n` labels, first-minute hint; no price, reward, HP or save change. Alternative for the owner: world scale 280 (800×450 unchanged 1:1, slower mid-game). Active-play twist (NC-10/11/12) proposed, not implemented.
 - 2026-11-09 (NC-BASIC-1, fast track to Basic Launch): English UI added (Polish kept), save validation + backup; no gameplay, balance or canvas-size change. UI copy: Cash/Kasa, Level/Poziom, Buy new ball/Kup nową kulę, Balls: n/Kulki: n, Fire rate/Szybkość strzału, Hit power/Siła uderzenia, Lvl n.
