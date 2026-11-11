@@ -1011,6 +1011,12 @@ class Block {
         const state = !b.alive ? 'broken' : b.offline || b.shatter !== null ? 'isolated' : b.hp / b.maxHp > 0.7 ? 'intact' : b.hp / b.maxHp > 0.35 ? 'damaged' : 'critical';
         ctx.globalAlpha = b.alive ? 1 : Math.max(0, b.hitFlash);
         Block.atlas.draw(ctx, `modules/${type}_${state}_256.png`, b.x, b.y, b.size);
+        if (b.alive) {
+          // Exact collider remains visible even where damaged metal is missing.
+          ctx.strokeStyle = state === 'isolated' ? COLORS.cyan : b.firewall ? COLORS.magenta : type === 'relay' ? COLORS.amber : COLORS.plateHi;
+          ctx.lineWidth = 0.55;
+          ctx.strokeRect(b.x, b.y, b.size, b.size);
+        }
         if (b.alive && b.hitFlash > 0) {
           ctx.globalAlpha = b.hitFlash * 0.6;
           ctx.strokeStyle = COLORS.white;
@@ -1705,8 +1711,9 @@ class Ball {
         const b = balls[i];
         const size = b.radius * 4;
         ctx.save(); ctx.translate(b.x, b.y);
-        ctx.rotate(Math.atan2(b.vy, b.vx) + Math.PI / 2);
-        Block.atlas.draw(ctx, `drones/${['scout', 'assault', 'support'][i % 3]}_256.png`, -size / 2, -size / 2, size);
+        const id = `drones/${['scout', 'assault', 'support'][i % 3]}_256.png`;
+        ctx.rotate(Math.atan2(b.vy, b.vx) + Block.atlas.rotationOffset(id));
+        Block.atlas.draw(ctx, id, -size / 2, -size / 2, size);
         ctx.restore();
       }
       ctx.fillStyle = COLORS.white;
@@ -1937,10 +1944,18 @@ class Turret {
   }
 }
 
-// V3 is the same renderer at every viewport / DPR. Legacy vector code below
+// The same raster materials ship at every viewport / DPR. Legacy vector code below
 // is retained only for non-browser simulation tests, never selected by size.
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const SPRITE_USE = { core: false, node: true, drone: true };
+// Explicit production roles. Unapproved V6 families retain their V3 artwork.
+// Source provenance, hashes and repair decisions: kernelfall-v6-runtime/manifest.json.
+const V6_ROLES = new Set([
+  'drones/scout_256.png', 'drones/assault_256.png', 'drones/support_256.png',
+  'uplinks/idle_256.png', 'uplinks/charging_256.png', 'uplinks/ready_256.png', 'uplinks/firing_256.png',
+  ...['armor', 'memory', 'relay', 'port', 'firewall'].flatMap(role =>
+    ['intact', 'damaged', 'critical', 'isolated', 'broken'].map(state => `modules/${role}_${state}_256.png`)),
+]);
 
 class SpriteAtlas {
   constructor() {
@@ -1949,6 +1964,9 @@ class SpriteAtlas {
     this.cache = new Map();
     this.cachePixels = 0;
     this.used = new Set();
+    this.sources = new Map();
+    this.usedSources = new Set();
+    this.fallbacks = [];
     this.errors = [];
     this.loaded = false;
     this.revision = 0;
@@ -1965,16 +1983,33 @@ class SpriteAtlas {
     paths.push('environment/arena_floor_1024.png', 'ui/network_128.png', 'ui/shield_128.png');
     // Remaining brand and UI assets belong to the DOM/CSS; all 100 remain in
     // the package and are checksum-validated against its original manifest.
-    this.ready = this.browser ? Promise.all(paths.map(path => new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => {
-        this.images.set(path, img);
-        if (/^(bosses|drones|uplinks)\//.test(path)) this.alphaBounds(path);
-        this.revision++; resolve();
+    this.ready = this.browser ? Promise.all(paths.map(path => this.load(path)))
+      .then(() => { this.loaded = this.errors.length === 0; }) : Promise.resolve();
+  }
+
+  load(id) {
+    return new Promise(resolve => {
+      const attempt = v6 => {
+        const source = `assets/${v6 ? 'kernelfall-v6-runtime' : 'kernelfall-v3'}/${id}`;
+        const img = new Image();
+        img.onload = () => {
+          this.images.set(id, img); this.sources.set(id, source);
+          if (/^(bosses|drones|uplinks)\//.test(id)) this.alphaBounds(id);
+          this.revision++; resolve();
+        };
+        img.onerror = () => {
+          if (v6) { this.fallbacks.push(source); attempt(false); }
+          else { this.errors.push(id); resolve(); }
+        };
+        img.src = source;
       };
-      img.onerror = () => { this.errors.push(path); resolve(); };
-      img.src = `assets/kernelfall-v3/${path}`;
-    }))).then(() => { this.loaded = this.errors.length === 0; }) : Promise.resolve();
+      attempt(V6_ROLES.has(id));
+    });
+  }
+
+  rotationOffset(id) {
+    // Repaired drones point +X; original V3 drones and both uplinks point -Y.
+    return id.startsWith('drones/') && this.sources.get(id)?.startsWith('assets/kernelfall-v6-runtime/') ? 0 : Math.PI / 2;
   }
 
   get(id, px) {
@@ -1989,7 +2024,7 @@ class SpriteAtlas {
     g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
     // Module source padding is transparent. Crop the solid footprint to the
     // real collision square (source x/y 28..232); keep baked 2.5D shading.
-    if (id.startsWith('modules/')) g.drawImage(img, 28, 28, 204, 204, 0, 0, n, n);
+    if (id.startsWith('modules/') && !this.sources.get(id)?.startsWith('assets/kernelfall-v6-runtime/')) g.drawImage(img, 28, 28, 204, 204, 0, 0, n, n);
     else g.drawImage(img, 0, 0, n, n);
     this.storeRaster(key, c);
     return c;
@@ -2043,6 +2078,7 @@ class SpriteAtlas {
     const r = this.get(id, size * pxScale);
     if (!r) return false;
     this.used.add(id);
+    this.usedSources.add(this.sources.get(id));
     // At <=2048px the cached raster is already the device size. Drawing at
     // its exact pixel extent avoids a second filtering pass (rounding <1px).
     const extent = size * pxScale <= 2048 ? r.width / pxScale : size;

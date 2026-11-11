@@ -1,0 +1,525 @@
+{
+  "status": "Podłączone do produkcyjnego renderera; odbiór właścicielki NOT VERIFIED",
+  "method": "Edycja image_gen oryginałów V6; mechaniczne kadrowanie arkuszy i resize PNG. Bez masek, blur, progowania alfy i zmian colliderów.",
+  "files": [
+    {
+      "role": "drones/scout_256.png",
+      "sheet": "drones-repaired.png",
+      "crop": [
+        512,
+        512,
+        0,
+        256
+      ],
+      "nose": "+X",
+      "path": "assets/kernelfall-v6-runtime/drones/scout_256.png",
+      "original": "assets/kernelfall-art-v6/drones/scout_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 55853,
+      "sha256": "ffd44fcdd3c2be4e23bab6681e300ba0a20e5b6b6c968edf436baf8cfd5ec7c1"
+    },
+    {
+      "role": "drones/assault_256.png",
+      "sheet": "drones-repaired.png",
+      "crop": [
+        512,
+        512,
+        512,
+        256
+      ],
+      "nose": "+X",
+      "path": "assets/kernelfall-v6-runtime/drones/assault_256.png",
+      "original": "assets/kernelfall-art-v6/drones/assault_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 56659,
+      "sha256": "e2288de6e2f3f1375f30e7e9ced7ecfce35b1792e3ebd94be093ef1133eb8a44"
+    },
+    {
+      "role": "drones/support_256.png",
+      "sheet": "drones-repaired.png",
+      "crop": [
+        512,
+        512,
+        1024,
+        256
+      ],
+      "nose": "+X",
+      "path": "assets/kernelfall-v6-runtime/drones/support_256.png",
+      "original": "assets/kernelfall-art-v6/drones/support_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 50624,
+      "sha256": "6c3271751a9272e60eb058349d4e37bc0f72d46f3dd2275a5fa4c3262f754b78"
+    },
+    {
+      "role": "uplinks/idle_256.png",
+      "sheet": "uplinks-repaired.png",
+      "crop": [
+        627,
+        627,
+        0,
+        0
+      ],
+      "nose": "-Y",
+      "path": "assets/kernelfall-v6-runtime/uplinks/idle_256.png",
+      "original": "assets/kernelfall-art-v6/uplinks/idle_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 55648,
+      "sha256": "5bae7c7703ef43a95fa96a2eb304c68ec49563c045ca140bed07320106655fbf"
+    },
+    {
+      "role": "uplinks/charging_256.png",
+      "sheet": "uplinks-repaired.png",
+      "crop": [
+        627,
+        627,
+        627,
+        0
+      ],
+      "nose": "-Y",
+      "path": "assets/kernelfall-v6-runtime/uplinks/charging_256.png",
+      "original": "assets/kernelfall-art-v6/uplinks/charging_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 56129,
+      "sha256": "d2979c65263c7823ee486b764d64493d22ac942522cbb95efe759f519eb4d8c4"
+    },
+    {
+      "role": "uplinks/ready_256.png",
+      "sheet": "uplinks-repaired.png",
+      "crop": [
+        627,
+        627,
+        0,
+        627
+      ],
+      "nose": "-Y",
+      "path": "assets/kernelfall-v6-runtime/uplinks/ready_256.png",
+      "original": "assets/kernelfall-art-v6/uplinks/ready_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 56505,
+      "sha256": "00e36d246b51960fd8ab66d595fa1f52bc5bb4479c212c8512df9d6ecb0b4221"
+    },
+    {
+      "role": "uplinks/firing_256.png",
+      "sheet": "uplinks-repaired.png",
+      "crop": [
+        627,
+        627,
+        627,
+        627
+      ],
+      "nose": "-Y",
+      "path": "assets/kernelfall-v6-runtime/uplinks/firing_256.png",
+      "original": "assets/kernelfall-art-v6/uplinks/firing_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 59156,
+      "sha256": "0933ffab2bc2048d02f6fc04c11712f3f7a4ba85931528f93a98cdc3a7f1cee9"
+    },
+    {
+      "role": "modules/armor_intact_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        28,
+        30
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/armor_intact_256.png",
+      "original": "assets/kernelfall-art-v6/modules/armor_intact_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 123952,
+      "sha256": "9e05c1d1157a0daad81a6927ec23573104e78c5eb45cb30ab19af7454cb2d2a1"
+    },
+    {
+      "role": "modules/armor_damaged_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        271,
+        30
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/armor_damaged_256.png",
+      "original": "assets/kernelfall-art-v6/modules/armor_damaged_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 125890,
+      "sha256": "3d18f03629d935c77c67e247afb620a8bb7626f1f5c7febfc753e3f0ea72150d"
+    },
+    {
+      "role": "modules/armor_critical_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        514,
+        30
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/armor_critical_256.png",
+      "original": "assets/kernelfall-art-v6/modules/armor_critical_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 109025,
+      "sha256": "d55a1c30a2da2d7dbae98ebcce62bcadb5f65e4b699df6e22ff2d04a41e7c863"
+    },
+    {
+      "role": "modules/armor_isolated_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        757,
+        30
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/armor_isolated_256.png",
+      "original": "assets/kernelfall-art-v6/modules/armor_isolated_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 121747,
+      "sha256": "ef39c1965e8b032d10faf1d6995cc0ae95389c668dc3d6f727a984b9909e9d8a"
+    },
+    {
+      "role": "modules/armor_broken_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        1000,
+        30
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/armor_broken_256.png",
+      "original": "assets/kernelfall-art-v6/modules/armor_broken_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 99570,
+      "sha256": "ab141dc3dbed216aa97541db8d3b12b8f4ff7703ac45065b0f7d1f06fb44123e"
+    },
+    {
+      "role": "modules/memory_intact_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        28,
+        270
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/memory_intact_256.png",
+      "original": "assets/kernelfall-art-v6/modules/memory_intact_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 103153,
+      "sha256": "263ed9de5778b9cc4de4dfd357ccaa5e4d53248fb5ba4c1be9e84e4d3929e827"
+    },
+    {
+      "role": "modules/memory_damaged_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        271,
+        270
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/memory_damaged_256.png",
+      "original": "assets/kernelfall-art-v6/modules/memory_damaged_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 110487,
+      "sha256": "81431b877042946bd73fc15e6b4f197f52870b677b39f7155fe70672eaa7591b"
+    },
+    {
+      "role": "modules/memory_critical_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        514,
+        270
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/memory_critical_256.png",
+      "original": "assets/kernelfall-art-v6/modules/memory_critical_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 98691,
+      "sha256": "e48bfa4c32891689475b29b176c4cb1869601f39c5c627088e4ab3f9600a5d5f"
+    },
+    {
+      "role": "modules/memory_isolated_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        757,
+        270
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/memory_isolated_256.png",
+      "original": "assets/kernelfall-art-v6/modules/memory_isolated_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 103616,
+      "sha256": "cece6e5be17ea218bfc47ec457769653dd60b9ed59d2bb660f0d02c38c6be25f"
+    },
+    {
+      "role": "modules/memory_broken_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        1000,
+        270
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/memory_broken_256.png",
+      "original": "assets/kernelfall-art-v6/modules/memory_broken_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 92746,
+      "sha256": "576705fa36e92fffa69c26d04f33cbae3e04d18ec56f0425cd9581af54db1a87"
+    },
+    {
+      "role": "modules/relay_intact_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        28,
+        510
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/relay_intact_256.png",
+      "original": "assets/kernelfall-art-v6/modules/relay_intact_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 117820,
+      "sha256": "db90d8b2bd6e7257877fe581b0671e3d5a0c1122be983c85097ba21a8c214ba5"
+    },
+    {
+      "role": "modules/relay_damaged_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        271,
+        510
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/relay_damaged_256.png",
+      "original": "assets/kernelfall-art-v6/modules/relay_damaged_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 117121,
+      "sha256": "e2a2ea2c54a463581e31980681b80d13137f7af8d4fa3d0f45c7394670e18102"
+    },
+    {
+      "role": "modules/relay_critical_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        514,
+        510
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/relay_critical_256.png",
+      "original": "assets/kernelfall-art-v6/modules/relay_critical_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 103832,
+      "sha256": "a5ee883d89e7ec077117908eb766f4630aff907773577ad24283c8614f20c312"
+    },
+    {
+      "role": "modules/relay_isolated_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        757,
+        510
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/relay_isolated_256.png",
+      "original": "assets/kernelfall-art-v6/modules/relay_isolated_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 113149,
+      "sha256": "823f936029d7c3009322b42dd6d65e127fd58ea68609eb532a0e8f25a71edd37"
+    },
+    {
+      "role": "modules/relay_broken_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        1000,
+        510
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/relay_broken_256.png",
+      "original": "assets/kernelfall-art-v6/modules/relay_broken_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 94650,
+      "sha256": "8f3defb4ad5df7b8a2ee2af4eb6f9e54f82d7f2c541e92ee410be7887b35c848"
+    },
+    {
+      "role": "modules/port_intact_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        28,
+        750
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/port_intact_256.png",
+      "original": "assets/kernelfall-art-v6/modules/port_intact_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 108162,
+      "sha256": "27e04a2664575b601509fe843ca12a8e66f69a5e3ff876d95646d2d96dfc0324"
+    },
+    {
+      "role": "modules/port_damaged_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        271,
+        750
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/port_damaged_256.png",
+      "original": "assets/kernelfall-art-v6/modules/port_damaged_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 109782,
+      "sha256": "5aef43cd35ede10e9bd7d42d0c06658db8fcf6ed2b025035eab25f131a06feaf"
+    },
+    {
+      "role": "modules/port_critical_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        514,
+        750
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/port_critical_256.png",
+      "original": "assets/kernelfall-art-v6/modules/port_critical_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 95241,
+      "sha256": "55ca33265e0cfa95c3643f610450269405cf1ffe9c81126ebfbff35168d99b9e"
+    },
+    {
+      "role": "modules/port_isolated_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        757,
+        750
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/port_isolated_256.png",
+      "original": "assets/kernelfall-art-v6/modules/port_isolated_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 110791,
+      "sha256": "8b03c92845f6f57a04003d0e97ec1b3e10f8f5447269e96fa83f9de01bac0b32"
+    },
+    {
+      "role": "modules/port_broken_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        1000,
+        750
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/port_broken_256.png",
+      "original": "assets/kernelfall-art-v6/modules/port_broken_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 90629,
+      "sha256": "f56a71331ca3e3f3ae2d5083e79923c2c399f749c3b8028b639097bd0562f285"
+    },
+    {
+      "role": "modules/firewall_intact_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        28,
+        990
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/firewall_intact_256.png",
+      "original": "assets/kernelfall-art-v6/modules/firewall_intact_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 114777,
+      "sha256": "c2618a801817d8cd52385c0137255da4313c2ebcfb1b52a822635ebfb65d7b79"
+    },
+    {
+      "role": "modules/firewall_damaged_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        271,
+        990
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/firewall_damaged_256.png",
+      "original": "assets/kernelfall-art-v6/modules/firewall_damaged_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 119315,
+      "sha256": "51b2d4891c5c1f57fcc7cf235913455115c791bb02e9bcb2c4874a2b075659ff"
+    },
+    {
+      "role": "modules/firewall_critical_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        514,
+        990
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/firewall_critical_256.png",
+      "original": "assets/kernelfall-art-v6/modules/firewall_critical_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 102547,
+      "sha256": "d3825bb8907ba7c527dc22ed1918d9056f8db4083331ef3bcb8bc1646004beb8"
+    },
+    {
+      "role": "modules/firewall_isolated_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        757,
+        990
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/firewall_isolated_256.png",
+      "original": "assets/kernelfall-art-v6/modules/firewall_isolated_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 115077,
+      "sha256": "5b79bcb29c4af36e5400dac278f10db1f28124685caf07006842974daec81ae5"
+    },
+    {
+      "role": "modules/firewall_broken_256.png",
+      "sheet": "modules-repaired.png",
+      "crop": [
+        230,
+        230,
+        1000,
+        990
+      ],
+      "path": "assets/kernelfall-v6-runtime/modules/firewall_broken_256.png",
+      "original": "assets/kernelfall-art-v6/modules/firewall_broken_256.png",
+      "width": 256,
+      "height": 256,
+      "bytes": 90974,
+      "sha256": "f02e6c8eadb81d3a256605ecb9c6dc7b3854c9a06a961491b5233e0260be8164"
+    }
+  ]
+}

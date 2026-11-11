@@ -4,7 +4,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {ROOT,OUT} from './lib.mjs';
-import {RUNTIME_FILES, ART_MANIFEST, ART_ROOT} from './integrity.mjs';
+import {RUNTIME_FILES, ART_MANIFEST, ART_ROOT, V6_MANIFEST} from './integrity.mjs';
 const files=RUNTIME_FILES;
 const dir=path.join(OUT,'crazygames-html5');
 // Rebuild this tool-owned output folder so stale files cannot enter an upload.
@@ -22,10 +22,14 @@ for(const asset of ART_MANIFEST.files){
  if(!entry||entry.bytes!==asset.bytes||entry.sha256!==asset.sha256)throw Error(`V3 original mismatch: ${file}`);
 }
 for(const match of fs.readFileSync(path.join(dir,'style.css'),'utf8').matchAll(/url\(\s*['"]?([^)'"\s]+)['"]?\s*\)/g))if(!files.includes(match[1]))throw Error(`missing CSS file ${match[1]}`);
+for(const asset of V6_MANIFEST.files){
+ const entry=manifest.find(f=>f.file===asset.path);
+ if(!entry||entry.bytes!==asset.bytes||entry.sha256!==asset.sha256)throw Error(`V6 runtime mismatch: ${asset.path}`);
+}
 const totalBytes=manifest.reduce((s,f)=>s+f.bytes,0);
 if(totalBytes>20_000_000)throw Error(`HTML5 package exceeds 20 MB: ${totalBytes}`);
 if(ART_MANIFEST.files.length!==100)throw Error('ART V3 manifest must contain 100 PNGs');
-const zip=path.join(OUT,'kernelfall-art-v3.zip');if(fs.existsSync(zip))fs.unlinkSync(zip);
+const zip=path.join(OUT,'kernelfall-art-v6.zip');if(fs.existsSync(zip))fs.unlinkSync(zip);
 execFileSync('zip',['-q',zip,...files],{cwd:dir});
 execFileSync('unzip',['-t',zip],{stdio:'pipe'});
 fs.writeFileSync(path.join(OUT,'package-manifest.json'),JSON.stringify({files:manifest,totalBytes,zipBytes:fs.statSync(zip).size,zipSHA256:crypto.createHash('sha256').update(fs.readFileSync(zip)).digest('hex')},null,2));

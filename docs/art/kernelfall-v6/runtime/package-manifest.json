@@ -1,0 +1,692 @@
+{
+  "files": [
+    {
+      "file": "index.html",
+      "bytes": 2745,
+      "sha256": "1592a19ac4dfa91c751c55f4bb81a58cba311197cc9337b6ab543a100bfba499"
+    },
+    {
+      "file": "style.css",
+      "bytes": 13069,
+      "sha256": "81a11f56591fab8ee6e3bdf331db1c4cd719462afe2e810b04546a66f3264483"
+    },
+    {
+      "file": "game.js",
+      "bytes": 169173,
+      "sha256": "e4d94f31b6022e9e3ed0e01c04cb21a8b601c4eaf20c7b213e7e26eb70afceab"
+    },
+    {
+      "file": "assets/kernelfall-v3/manifest.json",
+      "bytes": 31268,
+      "sha256": "3b8fef22e43a00ea3c71d3a088683c684eaf919acb65fde35bbb70dcba2fad44"
+    },
+    {
+      "file": "assets/kernelfall-v3/brand/symbol-128.png",
+      "bytes": 20822,
+      "sha256": "736162eee5d77190bc944c4ca38882bdf18c919b610d785859862633ffac6718"
+    },
+    {
+      "file": "assets/kernelfall-v3/brand/symbol-256.png",
+      "bytes": 69585,
+      "sha256": "f86cbac12cd0276ca4ae5bb521d37cc4e1c7de5602b80fa5d20aaa4b47422449"
+    },
+    {
+      "file": "assets/kernelfall-v3/brand/symbol-512.png",
+      "bytes": 245659,
+      "sha256": "36537f168182ae9108cd62f8abd33b6b31e9942773cbae87080da9a922f87331"
+    },
+    {
+      "file": "assets/kernelfall-v3/brand/wordmark-480.png",
+      "bytes": 98708,
+      "sha256": "f6f3db39cf56eecda450b58c4492f7983658a2802b920bbe35de265b32dc3127"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/firewall_intact_512.png",
+      "bytes": 392768,
+      "sha256": "0f33e9bf6e3da881451070c5cfd886565f635ad747b98c6553d2f4386a1965d4"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/firewall_damaged_512.png",
+      "bytes": 392856,
+      "sha256": "e4bf8cb91a132a2a644b9ee2b2e0c852d111d1c016e9dae1ad9a8c0c035e0f51"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/firewall_critical_512.png",
+      "bytes": 387851,
+      "sha256": "34be6d9556487b3e378833629719cede8a5ab24362ff2edc7c6958784551e87f"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/firewall_shatter_512.png",
+      "bytes": 389319,
+      "sha256": "9e016b123f74981813fd26341f25262c7b1d9e7e906655a8eb1e78fb5949c648"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/firewall_captured_512.png",
+      "bytes": 328446,
+      "sha256": "fc8c9e08f53c3db40b4358b51f11b98c7c80e5889e2d59fa868d3a2dc24046a1"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/memory_intact_512.png",
+      "bytes": 359211,
+      "sha256": "4787af63f128fa43bcb34507b0bb9f10ec445dc785518e7607dd75335335562f"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/memory_damaged_512.png",
+      "bytes": 359342,
+      "sha256": "9babc926414d64ea6cdfb45e64e62600fe1656909bdcb3a79fdf22e067fafbcb"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/memory_critical_512.png",
+      "bytes": 354509,
+      "sha256": "20f084928a6258e4a76563e44f3fa5fd1355d520fb431d958d8106cb92773218"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/memory_shatter_512.png",
+      "bytes": 357264,
+      "sha256": "ae4e97c19da6f4a94c0a6a10ef69e4f5ce3cba719dad94d9dcb269acb1ef30ff"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/memory_captured_512.png",
+      "bytes": 297093,
+      "sha256": "8ad4a6a6b28c17711493337ae0f37b95672b0b763f49146a7a746b119e7fded6"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/neural_intact_512.png",
+      "bytes": 425826,
+      "sha256": "954fc7c5a28d39a4bf5ec2116f6a370b644532f98f24785ea2f132d1dcdf8612"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/neural_damaged_512.png",
+      "bytes": 425756,
+      "sha256": "7de02d76b2dc0ee360d40e5e0ea7519f5a5617a35ab6ed1f54c2ac0681dd6732"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/neural_critical_512.png",
+      "bytes": 421580,
+      "sha256": "d81ffbe583eb5541de03fe371e8eb72c9920148071123f2a3869659430b584b0"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/neural_shatter_512.png",
+      "bytes": 423398,
+      "sha256": "f38bcbd74ef0c0846dfffa78f86828b93658d01fbfc6686a55e3342db980e719"
+    },
+    {
+      "file": "assets/kernelfall-v3/bosses/neural_captured_512.png",
+      "bytes": 358353,
+      "sha256": "35a4d925957fefa7cadab91166d79c8226a9de5af7c99d9fa1bb5e6fa4caba95"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/armor_intact_256.png",
+      "bytes": 2585,
+      "sha256": "ee0e1bc9c986c46f5b24618fe4297f13b45476f946abc41cce0e90c89f23336d"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/armor_damaged_256.png",
+      "bytes": 6960,
+      "sha256": "6038a54df21bc3e96da1d5993594aa8b14a06f35b90bca625091000deb722114"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/armor_critical_256.png",
+      "bytes": 11646,
+      "sha256": "8fe4648ea1d711f98c6f1cbb090c12e3c43665786d7be523fbd16597412f1da2"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/armor_isolated_256.png",
+      "bytes": 2701,
+      "sha256": "a95998e6b1d777d89a3a132de1f44da9e028c4ecba5daec08a72d4977130625c"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/armor_broken_256.png",
+      "bytes": 10715,
+      "sha256": "c5a6c3990ce2f665ac4d623bdca98634622a3709382d6d064ca02a20a0b2edf2"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/memory_intact_256.png",
+      "bytes": 2045,
+      "sha256": "c3d8d77f209701663ebe2c4f20e2171864cbc3d13b8c0ba7e6b9b2f928bfaf30"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/memory_damaged_256.png",
+      "bytes": 7593,
+      "sha256": "e819b61acae702f054a83d5ff44280683266ae492ec4edac3e5701c3c338dd3d"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/memory_critical_256.png",
+      "bytes": 11509,
+      "sha256": "b78e1631d075ee2616d13805e08b561538dba18d0ef69cef39dfaaffec3d9567"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/memory_isolated_256.png",
+      "bytes": 2303,
+      "sha256": "9ff0ac58e94390b36d095626e1a943126fc953a2218edabfec48615dfed06f22"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/memory_broken_256.png",
+      "bytes": 11371,
+      "sha256": "fac83e7003709e39316f63bdd31bd335110783020a73ecba87f73e8df2f70455"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/port_intact_256.png",
+      "bytes": 2501,
+      "sha256": "ca2b12c1f025b473c515676dfa843a8f11428ecd86c45a59ba67bb9120999c23"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/port_damaged_256.png",
+      "bytes": 7675,
+      "sha256": "f1e9a417015907289eb2058a415cd5c5274770b3d7b8ac1124c73854347c12ec"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/port_critical_256.png",
+      "bytes": 12939,
+      "sha256": "1c492782864dcd07a01aa890017e8881365c345a22074bb31eef2cc900d13f8d"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/port_isolated_256.png",
+      "bytes": 2732,
+      "sha256": "1b2794e197e86cde6810e7abd8be606277767375bc3a3242cdec3d1697985605"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/port_broken_256.png",
+      "bytes": 11330,
+      "sha256": "4a2f26b1200cd39fcf562d182b9644e52933b8bec56654d71a4a92e783b23c96"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/relay_intact_256.png",
+      "bytes": 2839,
+      "sha256": "323108aa2f0ad0b2a8317f3032344988968864481ef46a95fc7610fca2faeb0e"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/relay_damaged_256.png",
+      "bytes": 7279,
+      "sha256": "70d2180b40c16287fd2f03f0a5c39d3ee1ebf940790bf4d9bd34447f9568e43b"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/relay_critical_256.png",
+      "bytes": 13139,
+      "sha256": "62d93eda93ed66836d97d8510123c0e474072013ffef29c6263a9df59d372725"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/relay_isolated_256.png",
+      "bytes": 2823,
+      "sha256": "ade0f11064fcd7bcad1e6259538d11d793ec6df8c10b59e74e29a762f4fdb3ea"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/relay_broken_256.png",
+      "bytes": 12609,
+      "sha256": "825f7d5beb52ef654e4f825c312703633f6a5a9584624dd4ad0d9ba6fbdf410b"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/firewall_intact_256.png",
+      "bytes": 2455,
+      "sha256": "dd4c516a8689c439f367f869c7fcaab46f95fa9584f5373063da108de5fd0292"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/firewall_damaged_256.png",
+      "bytes": 7083,
+      "sha256": "f12cae7298926b9373a034a90718d7d5c7b5ba84cc86aa51d4c321ecca94d8ed"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/firewall_critical_256.png",
+      "bytes": 11271,
+      "sha256": "e9a150afec4c11883a91ed22143d547569adf5bebe4ef3f3dda9196b7625ffe0"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/firewall_isolated_256.png",
+      "bytes": 2704,
+      "sha256": "7957f2a4266aee3343373e5ad176d4136cc3d989ed5fd92b298a28ca096d1ba9"
+    },
+    {
+      "file": "assets/kernelfall-v3/modules/firewall_broken_256.png",
+      "bytes": 11459,
+      "sha256": "31e783b9b9e6acbd06db745b74971571ca04eb94d46cbccc9e45470d752377c6"
+    },
+    {
+      "file": "assets/kernelfall-v3/drones/scout_256.png",
+      "bytes": 2736,
+      "sha256": "0fe2a5aa9482496d380f74aea0f9d946709d63c6e5709faf29ffa2ac538b386c"
+    },
+    {
+      "file": "assets/kernelfall-v3/drones/assault_256.png",
+      "bytes": 2835,
+      "sha256": "7d9bb40b599d058c46b025a7d57a6297d336c0df40c5d966a678ace42e5b29f5"
+    },
+    {
+      "file": "assets/kernelfall-v3/drones/support_256.png",
+      "bytes": 3067,
+      "sha256": "3fcd09120abbe711ba735b39dfb98cd32796b3b0bc8a820398608da01ab5c0d8"
+    },
+    {
+      "file": "assets/kernelfall-v3/uplinks/idle_256.png",
+      "bytes": 1657,
+      "sha256": "5a6b00b285eded4725ae68730b7eb32f58c7f235dc25e3e36f901699cf6aa665"
+    },
+    {
+      "file": "assets/kernelfall-v3/uplinks/charging_256.png",
+      "bytes": 1890,
+      "sha256": "c5c2ca11be70556a461f62674484a69aa34de31e11de87eb85a229564fbccb0d"
+    },
+    {
+      "file": "assets/kernelfall-v3/uplinks/ready_256.png",
+      "bytes": 6476,
+      "sha256": "5c4b402b13c2561c18923d197fa30a393c5f159fbb74ee9e081f909458f0ac69"
+    },
+    {
+      "file": "assets/kernelfall-v3/uplinks/firing_256.png",
+      "bytes": 5563,
+      "sha256": "f65b21bf2f99d5ba65895df7412365b828d257af2448f6481355215acad351ab"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/impact/frame_00_256.png",
+      "bytes": 5124,
+      "sha256": "394b99f5fc666079aace5c1426f021fef122b40808b35484e9b3ea447310aab6"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/impact/frame_01_256.png",
+      "bytes": 9395,
+      "sha256": "a3d5244212ea5ae455e282f4af657637c3e0aecdf766842e9b1cafb548a8966a"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/impact/frame_02_256.png",
+      "bytes": 12649,
+      "sha256": "3cbea7f6deeb6fb9d054d5b3df5326c3d82af4cd81aee0ab48bf93fa4f7547d0"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/impact/frame_03_256.png",
+      "bytes": 14224,
+      "sha256": "888a88ccd075da80adfed94b2b0aad27fbc44c0654b3699edba36b6c35289e28"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/impact/frame_04_256.png",
+      "bytes": 15293,
+      "sha256": "67a508d65b95facd075039ce320995a9b9ec5b75382df5ba40e5c285544c4fb4"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/impact/frame_05_256.png",
+      "bytes": 14335,
+      "sha256": "66286b10cb8dff6c61be63b5d8fee8fa870dfc1ab98ec958533349304750fa25"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/impact/frame_06_256.png",
+      "bytes": 10854,
+      "sha256": "d9129c9010b73825a0bbdc53156240d5aafdbd494022223e376ea3b6dd4834e5"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/impact/frame_07_256.png",
+      "bytes": 1650,
+      "sha256": "f051e741fb5eb71e0412195a17c38d2a9b3d7b324876bc2ca207823149e5f3ab"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/chain/frame_00_256.png",
+      "bytes": 13914,
+      "sha256": "1db371cdc02486cfb15daf73d95156ed34d28d93b2a6a98d97a903dd4b117653"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/chain/frame_01_256.png",
+      "bytes": 17025,
+      "sha256": "a5401a397f7854a4c86fa7f7720ca301b0bd15eb8e974c6c4a6cc404a50685d0"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/chain/frame_02_256.png",
+      "bytes": 18129,
+      "sha256": "051793907372f8873abed0876e5c159b2e7215cca892168d4042fa1f9df38109"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/chain/frame_03_256.png",
+      "bytes": 17429,
+      "sha256": "98337bb5acd255d531ae6d6064e806e9a88a88c1bb56291ebb6a81bb9107d705"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/chain/frame_04_256.png",
+      "bytes": 19025,
+      "sha256": "fec666cae6a36865ff75947486629e093f8759ff52a246039de20ace392ca8c1"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/chain/frame_05_256.png",
+      "bytes": 19588,
+      "sha256": "e61f9140d9bdd2eae21a701f3569bca8cafc9ea2737a2c0598ed5f279cc99462"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/chain/frame_06_256.png",
+      "bytes": 19822,
+      "sha256": "9ad51b0ee566aa70eac9e3239b407a676d7f43ce886c1d34bdfa982cda992195"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/chain/frame_07_256.png",
+      "bytes": 859,
+      "sha256": "dff5571a904a7d4e5a58dc648833e18f1191d72c2b967fbd4f8bcc34906635a3"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/shield_break/frame_00_256.png",
+      "bytes": 5665,
+      "sha256": "75032cbf2e14b82a7c227f5b2748b3451fe7032d952942f4cd209efe930f1515"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/shield_break/frame_01_256.png",
+      "bytes": 10655,
+      "sha256": "1733203850f535b89fe89f791dc7d509547c71f06c126bf4f24396e6d5ced928"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/shield_break/frame_02_256.png",
+      "bytes": 13719,
+      "sha256": "067d1287fa50b11d7b506179fe9ca3067f1692450a66f55b28ad1837435d49cd"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/shield_break/frame_03_256.png",
+      "bytes": 15623,
+      "sha256": "19590680820c5c53be5ef21199325eb415863557e24c4cb7bcfd2dc228f2c28f"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/shield_break/frame_04_256.png",
+      "bytes": 17411,
+      "sha256": "d51f6af0caa357fcd8f2e7519310a29bed56d7b5dc2ef77206a3e806371be4e1"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/shield_break/frame_05_256.png",
+      "bytes": 16250,
+      "sha256": "a02245bdd3253051db73776a159e0c443b94555faf6270004371a4c6224c3520"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/shield_break/frame_06_256.png",
+      "bytes": 12944,
+      "sha256": "7611fc068eda9aababfa35b9b4f315499a3e865ad6e6dd249a4e4b98fca02d40"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/shield_break/frame_07_256.png",
+      "bytes": 1657,
+      "sha256": "694441b926f65574148afcf8a2ca860956bd599fc2657d7bb9e3fa63e3b0c3f7"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/core_collapse/frame_00_256.png",
+      "bytes": 6247,
+      "sha256": "fff1c8dad4db139c31246b0ef8174b6d2729344efc1af56493d57f83bba187fc"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/core_collapse/frame_01_256.png",
+      "bytes": 11895,
+      "sha256": "b38fac03c7c06dc6a086d9ec592798e7b7b57c610a48ac505751770c5d1d0a1e"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/core_collapse/frame_02_256.png",
+      "bytes": 17643,
+      "sha256": "2bdd4010a7cdb52ce96561b975171f7248c05a5bc5de94569c740504a3b726fe"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/core_collapse/frame_03_256.png",
+      "bytes": 22605,
+      "sha256": "d8914d3c51029314abf9badbf4543daf90f3c1ca63ddd43dda3176c85973c1a3"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/core_collapse/frame_04_256.png",
+      "bytes": 25459,
+      "sha256": "0922b2c4a276379e532afed632cb8ecf75edf7e43302a6685404d0b588e6fbaa"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/core_collapse/frame_05_256.png",
+      "bytes": 25009,
+      "sha256": "5db4cbc7d915935ca4456a024ae9c280efacc6a2c20d00ec0bbffb216a2b0dd1"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/core_collapse/frame_06_256.png",
+      "bytes": 18887,
+      "sha256": "e851eb421cf63b77294b7b471c5d3911f9596061d6d4748cda63353a1f3e840b"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/core_collapse/frame_07_256.png",
+      "bytes": 1656,
+      "sha256": "9bd749abce187945e9b100ad08d4c4c7caccffc07b5c39a86e6b7b24748af374"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/override/frame_00_256.png",
+      "bytes": 837,
+      "sha256": "9291f3782f61d267d9c09066b19c965f79a3b6d31319cdbd3e8f716898999a35"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/override/frame_01_256.png",
+      "bytes": 855,
+      "sha256": "5826c09953686a286fccdaef9a4fbe6dc1b8ce2fb3f74ea18e4ad058620e3f45"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/override/frame_02_256.png",
+      "bytes": 856,
+      "sha256": "2b740d00acee89b0409aa044155e27953dc7546639662a191011a7618e63ac31"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/override/frame_03_256.png",
+      "bytes": 840,
+      "sha256": "b99f85656dc38700c51f1c26453e8923391c4c73acae77fdabfcd59440665ed1"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/override/frame_04_256.png",
+      "bytes": 818,
+      "sha256": "aaec1b931008990e7a5236929bed65d79d828d25e2525b9f5014e78b524a5362"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/override/frame_05_256.png",
+      "bytes": 794,
+      "sha256": "697162961c32fa57118d7c24e0fe95ab362352892f16c52bd0d5dc96e39b87fa"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/override/frame_06_256.png",
+      "bytes": 806,
+      "sha256": "638ae2377331e74b6fce35fa9cba8b5bb34219d4c87fd70e82626afffa01c917"
+    },
+    {
+      "file": "assets/kernelfall-v3/fx/override/frame_07_256.png",
+      "bytes": 641,
+      "sha256": "db540e45e2da22b2ac3a22d697b6f3e22b3cd10742636b106ec9d59db80b1ed9"
+    },
+    {
+      "file": "assets/kernelfall-v3/ui/drone_128.png",
+      "bytes": 907,
+      "sha256": "e5ad487f94158520dde0dfba7335d261358e5f298bfa4b1b59607f90524d2977"
+    },
+    {
+      "file": "assets/kernelfall-v3/ui/charge_128.png",
+      "bytes": 734,
+      "sha256": "b4a4c83bf53e5903fbb4c76758b47b50150313826124d1e23f47b1342a02123d"
+    },
+    {
+      "file": "assets/kernelfall-v3/ui/power_128.png",
+      "bytes": 556,
+      "sha256": "ccb69ec1d1b2e96e78296ba786bb0577f0d4a69500003d94aa16d56c3a0b3db2"
+    },
+    {
+      "file": "assets/kernelfall-v3/ui/network_128.png",
+      "bytes": 826,
+      "sha256": "5f2faae1a241bd9c37987b83556cd6030393467eb46168823d79f827affebd5d"
+    },
+    {
+      "file": "assets/kernelfall-v3/ui/shield_128.png",
+      "bytes": 949,
+      "sha256": "2b936cc2656aaaad4e6acb381591f38cec136891fc597dabd37e6792e8a07335"
+    },
+    {
+      "file": "assets/kernelfall-v3/environment/arena_floor_1024.png",
+      "bytes": 25013,
+      "sha256": "7edeacd8e0ec71a1029405c21c5f06915c0e96e39c4d3aefa1c27f67eb30e692"
+    },
+    {
+      "file": "assets/kernelfall-v3/ui/hud_cyan_panel_512x128.png",
+      "bytes": 870,
+      "sha256": "6fa67682755ae390aebd211abf9f3ea6e42e0872cc19c2768884e681965f4eef"
+    },
+    {
+      "file": "assets/kernelfall-v3/ui/hud_pink_panel_512x128.png",
+      "bytes": 876,
+      "sha256": "aa1b11d71335daffa4c6a26a4043a48e6914bdeb3e2b858e623bcf0ac648698b"
+    },
+    {
+      "file": "assets/kernelfall-v3/ui/hud_amber_panel_512x128.png",
+      "bytes": 876,
+      "sha256": "2ca728dfad2e5cbb9a8e1467b2098220aa051134874554041fe6193b727a29d3"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/manifest.json",
+      "bytes": 15426,
+      "sha256": "6141efb8509042011bd518c1672343553f46139dec30e4762fe1224ccda8d584"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/drones/scout_256.png",
+      "bytes": 55853,
+      "sha256": "ffd44fcdd3c2be4e23bab6681e300ba0a20e5b6b6c968edf436baf8cfd5ec7c1"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/drones/assault_256.png",
+      "bytes": 56659,
+      "sha256": "e2288de6e2f3f1375f30e7e9ced7ecfce35b1792e3ebd94be093ef1133eb8a44"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/drones/support_256.png",
+      "bytes": 50624,
+      "sha256": "6c3271751a9272e60eb058349d4e37bc0f72d46f3dd2275a5fa4c3262f754b78"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/uplinks/idle_256.png",
+      "bytes": 55648,
+      "sha256": "5bae7c7703ef43a95fa96a2eb304c68ec49563c045ca140bed07320106655fbf"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/uplinks/charging_256.png",
+      "bytes": 56129,
+      "sha256": "d2979c65263c7823ee486b764d64493d22ac942522cbb95efe759f519eb4d8c4"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/uplinks/ready_256.png",
+      "bytes": 56505,
+      "sha256": "00e36d246b51960fd8ab66d595fa1f52bc5bb4479c212c8512df9d6ecb0b4221"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/uplinks/firing_256.png",
+      "bytes": 59156,
+      "sha256": "0933ffab2bc2048d02f6fc04c11712f3f7a4ba85931528f93a98cdc3a7f1cee9"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/armor_intact_256.png",
+      "bytes": 123952,
+      "sha256": "9e05c1d1157a0daad81a6927ec23573104e78c5eb45cb30ab19af7454cb2d2a1"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/armor_damaged_256.png",
+      "bytes": 125890,
+      "sha256": "3d18f03629d935c77c67e247afb620a8bb7626f1f5c7febfc753e3f0ea72150d"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/armor_critical_256.png",
+      "bytes": 109025,
+      "sha256": "d55a1c30a2da2d7dbae98ebcce62bcadb5f65e4b699df6e22ff2d04a41e7c863"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/armor_isolated_256.png",
+      "bytes": 121747,
+      "sha256": "ef39c1965e8b032d10faf1d6995cc0ae95389c668dc3d6f727a984b9909e9d8a"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/armor_broken_256.png",
+      "bytes": 99570,
+      "sha256": "ab141dc3dbed216aa97541db8d3b12b8f4ff7703ac45065b0f7d1f06fb44123e"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/memory_intact_256.png",
+      "bytes": 103153,
+      "sha256": "263ed9de5778b9cc4de4dfd357ccaa5e4d53248fb5ba4c1be9e84e4d3929e827"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/memory_damaged_256.png",
+      "bytes": 110487,
+      "sha256": "81431b877042946bd73fc15e6b4f197f52870b677b39f7155fe70672eaa7591b"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/memory_critical_256.png",
+      "bytes": 98691,
+      "sha256": "e48bfa4c32891689475b29b176c4cb1869601f39c5c627088e4ab3f9600a5d5f"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/memory_isolated_256.png",
+      "bytes": 103616,
+      "sha256": "cece6e5be17ea218bfc47ec457769653dd60b9ed59d2bb660f0d02c38c6be25f"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/memory_broken_256.png",
+      "bytes": 92746,
+      "sha256": "576705fa36e92fffa69c26d04f33cbae3e04d18ec56f0425cd9581af54db1a87"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/relay_intact_256.png",
+      "bytes": 117820,
+      "sha256": "db90d8b2bd6e7257877fe581b0671e3d5a0c1122be983c85097ba21a8c214ba5"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/relay_damaged_256.png",
+      "bytes": 117121,
+      "sha256": "e2a2ea2c54a463581e31980681b80d13137f7af8d4fa3d0f45c7394670e18102"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/relay_critical_256.png",
+      "bytes": 103832,
+      "sha256": "a5ee883d89e7ec077117908eb766f4630aff907773577ad24283c8614f20c312"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/relay_isolated_256.png",
+      "bytes": 113149,
+      "sha256": "823f936029d7c3009322b42dd6d65e127fd58ea68609eb532a0e8f25a71edd37"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/relay_broken_256.png",
+      "bytes": 94650,
+      "sha256": "8f3defb4ad5df7b8a2ee2af4eb6f9e54f82d7f2c541e92ee410be7887b35c848"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/port_intact_256.png",
+      "bytes": 108162,
+      "sha256": "27e04a2664575b601509fe843ca12a8e66f69a5e3ff876d95646d2d96dfc0324"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/port_damaged_256.png",
+      "bytes": 109782,
+      "sha256": "5aef43cd35ede10e9bd7d42d0c06658db8fcf6ed2b025035eab25f131a06feaf"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/port_critical_256.png",
+      "bytes": 95241,
+      "sha256": "55ca33265e0cfa95c3643f610450269405cf1ffe9c81126ebfbff35168d99b9e"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/port_isolated_256.png",
+      "bytes": 110791,
+      "sha256": "8b03c92845f6f57a04003d0e97ec1b3e10f8f5447269e96fa83f9de01bac0b32"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/port_broken_256.png",
+      "bytes": 90629,
+      "sha256": "f56a71331ca3e3f3ae2d5083e79923c2c399f749c3b8028b639097bd0562f285"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/firewall_intact_256.png",
+      "bytes": 114777,
+      "sha256": "c2618a801817d8cd52385c0137255da4313c2ebcfb1b52a822635ebfb65d7b79"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/firewall_damaged_256.png",
+      "bytes": 119315,
+      "sha256": "51b2d4891c5c1f57fcc7cf235913455115c791bb02e9bcb2c4874a2b075659ff"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/firewall_critical_256.png",
+      "bytes": 102547,
+      "sha256": "d3825bb8907ba7c527dc22ed1918d9056f8db4083331ef3bcb8bc1646004beb8"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/firewall_isolated_256.png",
+      "bytes": 115077,
+      "sha256": "5b79bcb29c4af36e5400dac278f10db1f28124685caf07006842974daec81ae5"
+    },
+    {
+      "file": "assets/kernelfall-v6-runtime/modules/firewall_broken_256.png",
+      "bytes": 90974,
+      "sha256": "f02e6c8eadb81d3a256605ecb9c6dc7b3854c9a06a961491b5233e0260be8164"
+    }
+  ],
+  "totalBytes": 10098529,
+  "zipBytes": 9924034,
+  "zipSHA256": "6f77499ee5c71f44f328fe132da19fef957ed7c67dff5c8e02a556379592f82a"
+}

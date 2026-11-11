@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "scope": "source integrity and pixel measurements; aesthetic and runtime acceptance NOT VERIFIED by this script",
+  "manifest_files": 92,
+  "actual_png_files": 92,
+  "svg_files": [],
+  "failures": [],
+  "compressed_bytes": 10746471,
+  "decoded_rgba_bytes_all_92": 46979584,
+  "decoded_rgba_bytes_excluding_brand": 45662208,
+  "identical_decoded_images": [],
+  "manifest_coverage_matches_ge13_rounded_count": 92,
+  "manifest_alpha_coverage_definition": "NOT VERIFIED: manifest does not define an alpha threshold. All entries observationally match fraction alpha>=13 rounded to 3 decimals. This inferred convention is separate from the PASS checksum/signature/dimensions/bytes checks.",
+  "pixel_metrics_limit": "Partial alpha and border occupancy are measurements, not a fringing detector. Compare over the real game floor. Identical alpha among damage states can be intentional."
+}

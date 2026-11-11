@@ -1,0 +1,28 @@
+[
+  {
+    "canvas": "800x279",
+    "firstPurchaseSeconds": 13,
+    "firstCutWithAtLeastThreeOfflineSeconds": 99,
+    "maxOffline": 15,
+    "archetypesSeen": [
+      0,
+      1,
+      2
+    ],
+    "sectorAtFiveMinutes": 7,
+    "pass": true
+  },
+  {
+    "canvas": "907x339",
+    "firstPurchaseSeconds": 13,
+    "firstCutWithAtLeastThreeOfflineSeconds": 118,
+    "maxOffline": 7,
+    "archetypesSeen": [
+      0,
+      1,
+      2
+    ],
+    "sectorAtFiveMinutes": 6,
+    "pass": true
+  }
+]
