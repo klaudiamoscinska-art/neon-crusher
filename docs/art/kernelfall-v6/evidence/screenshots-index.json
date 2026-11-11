@@ -1,0 +1,796 @@
+{
+  "screenshots": [
+    {
+      "path": "docs/art/kernelfall-v6/evidence/idle/natural-idle-00s-907x510.png",
+      "bytes": 222515,
+      "sha256": "80ef2963df11ec9941739b85de024f2b1683926a238c7421c4e4b1b6a3a3b5ca",
+      "width": 907,
+      "height": 510,
+      "scope": "Natural idle / real unpaused V3 runtime"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/idle/natural-idle-15s-907x510.png",
+      "bytes": 234441,
+      "sha256": "017643cc813a549a00e3253f5208ad46af74e37061a0a46695cdf36a9b9ec45b",
+      "width": 907,
+      "height": 510,
+      "scope": "Natural idle / real unpaused V3 runtime"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/idle/natural-idle-30s-907x510.png",
+      "bytes": 227830,
+      "sha256": "766df52cac8cb6aa85bc753a91b4a6bbf0fdd9488a47a2f48db43128c114c3fa",
+      "width": 907,
+      "height": 510,
+      "scope": "Natural idle / real unpaused V3 runtime"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/idle/natural-idle-45s-907x510.png",
+      "bytes": 233491,
+      "sha256": "a75fa57731d579558b9c7d096b8daf8df72dd0d6430e299514fbb110f8b66fb8",
+      "width": 907,
+      "height": 510,
+      "scope": "Natural idle / real unpaused V3 runtime"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/idle/natural-idle-60s-907x510.png",
+      "bytes": 237726,
+      "sha256": "b195244238bb8cb04856e9a63186cd0f39ef8190bd4b714d93f0a702d6280a4f",
+      "width": 907,
+      "height": 510,
+      "scope": "Natural idle / real unpaused V3 runtime"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/1366x768-dpr1-sector7-v3.png",
+      "bytes": 448048,
+      "sha256": "3bbb55aa30e02a1f2cdf8611a09828d72fcde08e774edfb4482ab4566ac13b62",
+      "width": 1366,
+      "height": 768,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/1366x768-dpr1-sector7-v6.png",
+      "bytes": 806197,
+      "sha256": "3517bb6937769a65843f3de56c2015d23ed7c952255152b2352a310a0cd4c365",
+      "width": 1366,
+      "height": 768,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/1920x1080-dpr1-sector7-v3.png",
+      "bytes": 773375,
+      "sha256": "808750f9a773b13eba3b25ffda3789cf32e25ab277768c152f55dff07776d006",
+      "width": 1920,
+      "height": 1080,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/1920x1080-dpr1-sector7-v6.png",
+      "bytes": 1428742,
+      "sha256": "120dbd59fbba70b7851f8378fd842f2660242aeba0e1835faed8ed0c49a3e0ba",
+      "width": 1920,
+      "height": 1080,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/1920x1080-dpr3-neural-critical-v3.png",
+      "bytes": 3972838,
+      "sha256": "205fec68565674ffbd5364269a1aae7e7eedaf3adeda33bacafec3fee14a39d9",
+      "width": 5760,
+      "height": 3240,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/1920x1080-dpr3-neural-critical-v6.png",
+      "bytes": 7888033,
+      "sha256": "4bb588a43c147f5cb5add00456e0fd89cf05efeb72389b7a3b30c9655d70b603",
+      "width": 5760,
+      "height": 3240,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/375x812-dpr2-sector7-v3.png",
+      "bytes": 571868,
+      "sha256": "6efc59f940624fec09e2931cf7243e978438b2f56e6f249eff2ed6117a0d68ff",
+      "width": 750,
+      "height": 1624,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/375x812-dpr2-sector7-v6.png",
+      "bytes": 979914,
+      "sha256": "9c818656e50c48ecca498774020d0093f0240ff34ba499e51a8ed3a7cf46ec60",
+      "width": 750,
+      "height": 1624,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/390x844-dpr2-sector7-v3.png",
+      "bytes": 625896,
+      "sha256": "55167990a38fc9c40e2afc11483f1ea9d0985fc3dec0097ed35847388eb3e44e",
+      "width": 780,
+      "height": 1688,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/390x844-dpr2-sector7-v6.png",
+      "bytes": 1099610,
+      "sha256": "b3790e2c3d699fc24fec9c32794b676206c61f550e8837e8606c32a199f9c589",
+      "width": 780,
+      "height": 1688,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/390x844-dpr3-sector7-v3.png",
+      "bytes": 1153930,
+      "sha256": "c1d0cfe51fc63fa855fb183647247d032499bc1dbea11825acb7a9f26da44bc8",
+      "width": 1170,
+      "height": 2532,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/390x844-dpr3-sector7-v6.png",
+      "bytes": 2031045,
+      "sha256": "7498fe7338ad1a424f6c6fb595fc19f2924a5b5554309471bcf0ae4e66a76889",
+      "width": 1170,
+      "height": 2532,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/844x390-dpr2-sector7-v3.png",
+      "bytes": 503520,
+      "sha256": "2684b15828ca26cfcd3fd647c6fa3d204f1af2610f33bb1cd37292e13d182184",
+      "width": 1688,
+      "height": 780,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/844x390-dpr2-sector7-v6.png",
+      "bytes": 858241,
+      "sha256": "7117d8d82ffecca7444fa3c10743760c5a9750e9b1b596ba1b70d9233916316c",
+      "width": 1688,
+      "height": 780,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/907x510-dpr1-sector7-v3.png",
+      "bytes": 228255,
+      "sha256": "da067c8de9fc2255d1b08990bdbcad32d3facee9b793c2fe456f2684a786132e",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/907x510-dpr1-sector7-v6.png",
+      "bytes": 393943,
+      "sha256": "a7481da757a24fb6bc0311acb11b69c701df917aa82afa2746b0f6bdcf9f10bd",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/active-override-v3.png",
+      "bytes": 232585,
+      "sha256": "b9e43ec9bd975966f46aa60074423bc83211996bce6b55e85c66546b2f8ff782",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/active-override-v6.png",
+      "bytes": 395548,
+      "sha256": "82ab8f1ce5c6e49b8404684cb87f9e9eda09df8e37feaf2d196552e460e4f722",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/aspect-cover-390x844-dpr3-sector7-v3.png",
+      "bytes": 1153918,
+      "sha256": "486d00bac284df8cf694e142b8d7575efe896ddcb24dd75b20f011c6d97619ce",
+      "width": 1170,
+      "height": 2532,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/aspect-cover-390x844-dpr3-sector7-v6.png",
+      "bytes": 1940518,
+      "sha256": "637ea944c3477513412098a2ff3ca1c4db5753a61e75f1e7395ef52a921f6180",
+      "width": 1170,
+      "height": 2532,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/aspect-cover-907x510-dpr1-sector7-v3.png",
+      "bytes": 228260,
+      "sha256": "22e10514d2e85d98fec6419f28c89a1aebc8b274412b374aaa85173d7f4588d5",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/aspect-cover-907x510-dpr1-sector7-v6.png",
+      "bytes": 431832,
+      "sha256": "89b1bf8d09d99852b32ec3e5eadd7031f20f5dbaf734578c67b536bb13672bd5",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/aspect-cover-907x510-dpr1-sector8-v3.png",
+      "bytes": 229518,
+      "sha256": "7a707b71db6428ec79c71d5243fe45723d002eab36a294d0a7997a1c804435a7",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/aspect-cover-907x510-dpr1-sector8-v6.png",
+      "bytes": 443851,
+      "sha256": "16ea1c094af6c793621fcdb57711e8125b5819dda0d58f4754358dd7a9b126ef",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/aspect-cover-907x510-dpr1-sector9-v3.png",
+      "bytes": 235638,
+      "sha256": "7e4f712e24699bbcbb6306436b8fc8643ae0d7a4dee403b2ff47d3144976a78b",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/aspect-cover-907x510-dpr1-sector9-v6.png",
+      "bytes": 462160,
+      "sha256": "fe01fed06c3434d5affbdf6ec44065dc062a9f3782a048cff738df8a24cf4653",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/default-v3-module-crop-v3.png",
+      "bytes": 228467,
+      "sha256": "f54cdfd608ebe27d1dea5ca77e3b6bbe1a58377f0f6d4825d16cfc35e810d8ec",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/default-v3-module-crop-v6.png",
+      "bytes": 393102,
+      "sha256": "01e77b13676800376dcdd0ad7e8a3647dd02e12120012c99f134e13ef47fc664",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/firewall-captured-v3.png",
+      "bytes": 217981,
+      "sha256": "0011bc5856797523505761d54af4aa3f3e3a1886acd737b795f776b86d6dc1dd",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/firewall-captured-v6.png",
+      "bytes": 350762,
+      "sha256": "a7f2a51cdff77dfff8b483fba8f92ce106dc0058f069e0967d4f4292f6735801",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/firewall-critical-v3.png",
+      "bytes": 232322,
+      "sha256": "c2df1b205baf25cb5aa678a56008a9efe4acf9b941a683f804d5a49739bb6ae6",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/firewall-critical-v6.png",
+      "bytes": 394685,
+      "sha256": "e0045d75d2d0d16d217d86f53e64ae91babb0225d0b9f0fd652c0c8e48c13b47",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/firewall-damaged-v3.png",
+      "bytes": 229794,
+      "sha256": "b2a2f0a2087aee3e07aad636d28a337f02a36cbfa1afb5527fb57e232c54b5b2",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/firewall-damaged-v6.png",
+      "bytes": 388767,
+      "sha256": "60b2488ab2aa193846fe7fab1aaaa3dfd959e6070de0616e5d0906940d4eedfe",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/firewall-graph-cut-v3.png",
+      "bytes": 238953,
+      "sha256": "d81c1d77a1514b2f69f6422082e81c68f6192d590d822cbb11c1063ef2102c06",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/firewall-graph-cut-v6.png",
+      "bytes": 400152,
+      "sha256": "b601516da53640e5e636f0dc28c2f68e4a1dd89506213be08cf645e60a5ada1e",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/firewall-intact-v3.png",
+      "bytes": 228260,
+      "sha256": "22e10514d2e85d98fec6419f28c89a1aebc8b274412b374aaa85173d7f4588d5",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/firewall-intact-v6.png",
+      "bytes": 393946,
+      "sha256": "77c4a3cc9751bf7c80b55a1886f5069ef33ba0fc1f4bf345a3b8534dd9877083",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/firewall-shatter-v3.png",
+      "bytes": 239064,
+      "sha256": "0ab6a45cd1e67097a57c42b52b3452eb99e316844013862d3eca34ef37ef5777",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/firewall-shatter-v6.png",
+      "bytes": 357400,
+      "sha256": "91c3425fe17c2bf0072bde53522616a108a39f600223b85fa15e3b5460c6f6e0",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/fx-frames-specimen-v3.png",
+      "bytes": 68012,
+      "sha256": "ae58c46d250f2b9c90ac6ee6b21d18ac8e4d27c10d578f021e8b956e4f5b7e72",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/fx-frames-specimen-v6.png",
+      "bytes": 193868,
+      "sha256": "423b1ab414c47370bb8e74d95b23f295902572df31613fcb6355812fbce43ba4",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/fx-specimen-page-v3.png",
+      "bytes": 68012,
+      "sha256": "ae58c46d250f2b9c90ac6ee6b21d18ac8e4d27c10d578f021e8b956e4f5b7e72",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/fx-specimen-page-v6.png",
+      "bytes": 193868,
+      "sha256": "423b1ab414c47370bb8e74d95b23f295902572df31613fcb6355812fbce43ba4",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/memory-captured-v3.png",
+      "bytes": 219672,
+      "sha256": "0cc24946242d9e579a3779f5058bd2b14178ba9334be204029b3fff6c2dd7f01",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/memory-captured-v6.png",
+      "bytes": 370453,
+      "sha256": "8ea7ccbbb609c24e90e6fc9139d38270012e0b8dc59fd0979f9ad091f77e83f6",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/memory-critical-v3.png",
+      "bytes": 233917,
+      "sha256": "797baecb55ab75e2287c8034e9457949e6b50956bb77b1756d6addd5b90ba35f",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/memory-critical-v6.png",
+      "bytes": 410227,
+      "sha256": "1396b7ab9164c99fb70e997734677cf6cc53fa200addddf4a735e2829c4207bd",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/memory-damaged-v3.png",
+      "bytes": 231340,
+      "sha256": "32ef0e8d0894b1816cd010dd59e7678be4bd946a728b1fba134e6e63d44b70ac",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/memory-damaged-v6.png",
+      "bytes": 415340,
+      "sha256": "358f094246c4f0d0fc248c11fca12703d174a0e7adb55ebf8084c5caf9b160f9",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/memory-graph-cut-v3.png",
+      "bytes": 240059,
+      "sha256": "3f33a92ff56fdba4ae0ac61cfef903f51746115bc4fd41b780f26fbceb545361",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/memory-graph-cut-v6.png",
+      "bytes": 418639,
+      "sha256": "e0e25734ea26305ecbd1354790504870f66c03e85854e41590a78c40adecff6a",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/memory-intact-v3.png",
+      "bytes": 229506,
+      "sha256": "67ff1cafc8dd223c5dbde9903e68a5d594414d0ca29921f209c2720f30d947da",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/memory-intact-v6.png",
+      "bytes": 413754,
+      "sha256": "34eacc29694031245232aecadd9dbf109b3ed530c0267938de589e956c1e5e5d",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/memory-shatter-v3.png",
+      "bytes": 237109,
+      "sha256": "3035b3468846d559ce5beb35aee85d8ec4ad544a6ff9691200652eee1237b650",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/memory-shatter-v6.png",
+      "bytes": 379000,
+      "sha256": "93ef10258c3a931a65c62a2120248a251e939e88f3be07c5f0281acd4fb7a32f",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/modules-broken-v3.png",
+      "bytes": 239903,
+      "sha256": "fc94fd87c1e755a589e6f08bdebc88acc4277d67c8f5a9826074223bdcb1207a",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/modules-broken-v6.png",
+      "bytes": 395640,
+      "sha256": "92958d27e78d31cb00c60a6c963c2b234a2ccf5ab9abc8d086bf1a42ce9a52a3",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/modules-critical-v3.png",
+      "bytes": 233558,
+      "sha256": "546bc530116c07d9c1299452216b64af352a989cf6e8b9276ff6993c524dd69e",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/modules-critical-v6.png",
+      "bytes": 397031,
+      "sha256": "84e90903e018c570b33d23b79f19fcffa05ee89f93be2f63073ff07453f18239",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/modules-damaged-v3.png",
+      "bytes": 231366,
+      "sha256": "0af39283093a739a7de431bceff0d1ea2830cff759a246f74a399e8c6dbef368",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/modules-damaged-v6.png",
+      "bytes": 396722,
+      "sha256": "2688e96b43ab89dd941a74d06c0b287590a71274c682139383f1a2f917b7d6e6",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/modules-intact-v3.png",
+      "bytes": 230068,
+      "sha256": "5ff69f24331e7a8f30501111ab69ef8cc470808565120ce9d13b505f9950a0f2",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/modules-intact-v6.png",
+      "bytes": 396513,
+      "sha256": "3fa6d5f25760f90072d705e1328dd198011c8f695b07d236e857803099977043",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/modules-isolated-v3.png",
+      "bytes": 243158,
+      "sha256": "6ec4c382a276eea6c009d438728dbd98ea047e4b20f0bf935463912c49322311",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/modules-isolated-v6.png",
+      "bytes": 399175,
+      "sha256": "d5232d3f18758cb48bead95fe3a8b09d3c2d02f9a3329484c6feeca1fdb4120d",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/neural-captured-v3.png",
+      "bytes": 226976,
+      "sha256": "af18e9e0d2f18637e3d6275e185e61ab939f791fe2c3195865448636afd79161",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/neural-captured-v6.png",
+      "bytes": 390661,
+      "sha256": "8de24c07fdb3eced2c2a7bfb55004932928691e822b72ffae302e5dbd43bc730",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/neural-critical-v3.png",
+      "bytes": 240985,
+      "sha256": "6a7ea308c4732ca0844290ceb5585be1a98277bade03563b9d4b9abefdbcc1b2",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/neural-critical-v6.png",
+      "bytes": 430631,
+      "sha256": "ee261e6b6bee217261284bbcd5166aff146de1abbb8df4b6554c4a71ea9c9e98",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/neural-damaged-v3.png",
+      "bytes": 237961,
+      "sha256": "7f856f9f932f260b33b05de517a05cc71b7218b8c1ac8c67be6a857a9bdfc387",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/neural-damaged-v6.png",
+      "bytes": 428341,
+      "sha256": "5d3ea8402f05fec8e2b3677db9224fc4b2fc689a99f2898986e33cda49bf1a4f",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/neural-graph-cut-v3.png",
+      "bytes": 244533,
+      "sha256": "9f1f6320c3e9cacc28685282f9be34b121ab8be63195f6f3be8c447ecdd5bd79",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/neural-graph-cut-v6.png",
+      "bytes": 433827,
+      "sha256": "b691bc481c950829fc7e0dec58be99ce5e576c041149b18be8b9b901e6baba46",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/neural-intact-v3.png",
+      "bytes": 235635,
+      "sha256": "f93665999f4cdcadc26650d3e7a601d2282963cb96ab7da92cb6962788d19aca",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/neural-intact-v6.png",
+      "bytes": 429753,
+      "sha256": "445ee7e30d9c8eb5e365df2e2fc0c39bf8531547448fbd0ca0ecd683c1c166ec",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/neural-shatter-v3.png",
+      "bytes": 248291,
+      "sha256": "b1b3b108a04e204a34aaac0ee2b80736c9febc5ca70e7b6e695e9c8e37113bac",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/neural-shatter-v6.png",
+      "bytes": 396782,
+      "sha256": "62c314ff4eb699877c47fe2006e6b47cfd85f1de179837c23a5dd69e5c6424e0",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/sector12-finale-v3.png",
+      "bytes": 253650,
+      "sha256": "abf29a9dd2ae31b69a687670cbbc46b5b7871d088517265366cb09bb292ad4b2",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/sector12-finale-v6.png",
+      "bytes": 405412,
+      "sha256": "588be9471fd6cac7478ef5f5be783eb197d367773109253f9c1b2750d6cfdd30",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/sector13-endless-v3.png",
+      "bytes": 254247,
+      "sha256": "42b947a28734e3642b3d195096dbc7117e90904eac468eb4c9c12f3c0824fd99",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/sector13-endless-v6.png",
+      "bytes": 410560,
+      "sha256": "014e2bfaf9eed183716bd803d5e741ea65889ab3751a634ec811885a97f06958",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/shield-break-v3.png",
+      "bytes": 241031,
+      "sha256": "ceedd76f76d2f8a86a341cdba2ebb2358cdaa88c832407ea67f618e707d101e2",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/shield-break-v6.png",
+      "bytes": 402771,
+      "sha256": "60a12717fc74e7b4224ebac7775bb66987fd48a1c5e1331af87010fbb3efdea3",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/shield-up-v3.png",
+      "bytes": 237497,
+      "sha256": "8b3ad1dc38db9bee4a79cecbe89d42f54744e0c8fb34461f254f06ebccb05f0f",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/shield-up-v6.png",
+      "bytes": 400113,
+      "sha256": "4fc26b32c1ece5d7c82e6a6638dc7846b1e8572ab39a01c495bb5e076b2c714a",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/uplinks-charging-drones-v3.png",
+      "bytes": 231271,
+      "sha256": "4b9309b5a53613a9d015ab9d589105af326da5ac2f65bc697d745a9dfeb5d179",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/uplinks-charging-drones-v6.png",
+      "bytes": 396906,
+      "sha256": "737c5ce69fa307b5ed9441b3f607c57d00a2e748c25438e7b6474675a8275730",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/uplinks-firing-drones-v3.png",
+      "bytes": 229353,
+      "sha256": "20e0d0412c38ae6f75abe096d77a6d93d8726e2014a50cb58e446c3c604f970d",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/uplinks-firing-drones-v6.png",
+      "bytes": 396118,
+      "sha256": "48ff860bc2c1f1cd55bcbf0e46bb977d5e7076fe60928d6e581d5cf87901186d",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/uplinks-idle-drones-v3.png",
+      "bytes": 228883,
+      "sha256": "d4c2e900209ab6e43f3fb3aa0366faccfaed938cc0dddcaef13b178b20ad15c3",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/uplinks-idle-drones-v6.png",
+      "bytes": 395814,
+      "sha256": "94bea7c5e5a650d601e74bcc731ac27e54934dfe133c6fdaa49b2e2d7731c33b",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/uplinks-ready-drones-v3.png",
+      "bytes": 234663,
+      "sha256": "323ffc8fbf960bee7c286932172e72ade6efef996c79dd2b985a88d71ffac1a8",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    },
+    {
+      "path": "docs/art/kernelfall-v6/evidence/screenshots/uplinks-ready-drones-v6.png",
+      "bytes": 399001,
+      "sha256": "7143ac01289717fb9bb763d092918796a3568faf892e7ac6019248c4a69d9599",
+      "width": 907,
+      "height": 510,
+      "scope": "Explicit QA fixture / real Canvas; V6 only browser-side preview"
+    }
+  ]
+}

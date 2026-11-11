@@ -1,0 +1,16 @@
+PASS    syntax: node --check on 36 JS files
+PASS    index.html loads stylesheet, script and approved local icon -- assets/kernelfall-v3/brand/symbol-128.png, game.js, style.css
+PASS    runtime references are relative (CrazyGames: no absolute paths)
+PASS    every runtime file exists
+PASS    ART V3 contains exactly the 100 manifest PNGs -- 100 PNGs
+PASS    ART V3 original PNG signatures, dimensions, bytes and SHA-256 match the manifest
+PASS    poprawione PNG V6 mają prawidłowe rozmiary i SHA manifestu
+PASS    HTML and CSS asset paths are local and included in the release
+PASS    runtime makes no external requests (no http(s) URLs in index.html/style.css/game.js; the SVG namespace identifier allowed once)
+PASS    save key literal is 'neonCrusher.save.v1'
+PASS    no eval / new Function / document.write in the runtime
+PASS    no innerHTML in the runtime (text goes through textContent)
+PASS    Pages/Jekyll: no Liquid tags ({{ or {%) in 37 published Markdown files
+INFO    runtime files changed vs origin/main -- assets/kernelfall-v6-runtime/drones/assault_256.png, assets/kernelfall-v6-runtime/drones/scout_256.png, assets/kernelfall-v6-runtime/drones/support_256.png, assets/kernelfall-v6-runtime/manifest.json, assets/kernelfall-v6-runtime/modules/armor_broken_256.png, assets/kernelfall-v6-runtime/modules/armor_critical_256.png, assets/kernelfall-v6-runtime/modules/armor_damaged_256.png, assets/kernelfall-v6-runtime/modules/armor_intact_256.png, assets/kernelfall-v6-runtime/modules/armor_isolated_256.png, assets/kernelfall-v6-runtime/modules/firewall_broken_256.png, assets/kernelfall-v6-runtime/modules/firewall_critical_256.png, assets/kernelfall-v6-runtime/modules/firewall_damaged_256.png, assets/kernelfall-v6-runtime/modules/firewall_intact_256.png, assets/kernelfall-v6-runtime/modules/firewall_isolated_256.png, assets/kernelfall-v6-runtime/modules/memory_broken_256.png, assets/kernelfall-v6-runtime/modules/memory_critical_256.png, assets/kernelfall-v6-runtime/modules/memory_damaged_256.png, assets/kernelfall-v6-runtime/modules/memory_intact_256.png, assets/kernelfall-v6-runtime/modules/memory_isolated_256.png, assets/kernelfall-v6-runtime/modules/port_broken_256.png, assets/kernelfall-v6-runtime/modules/port_critical_256.png, assets/kernelfall-v6-runtime/modules/port_damaged_256.png, assets/kernelfall-v6-runtime/modules/port_intact_256.png, assets/kernelfall-v6-runtime/modules/port_isolated_256.png, assets/kernelfall-v6-runtime/modules/relay_broken_256.png, assets/kernelfall-v6-runtime/modules/relay_critical_256.png, assets/kernelfall-v6-runtime/modules/relay_damaged_256.png, assets/kernelfall-v6-runtime/modules/relay_intact_256.png, assets/kernelfall-v6-runtime/modules/relay_isolated_256.png, assets/kernelfall-v6-runtime/uplinks/charging_256.png, assets/kernelfall-v6-runtime/uplinks/firing_256.png, assets/kernelfall-v6-runtime/uplinks/idle_256.png, assets/kernelfall-v6-runtime/uplinks/ready_256.png, game.js
+
+[integrity] 13/13 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 1 => PASS: all checks pass

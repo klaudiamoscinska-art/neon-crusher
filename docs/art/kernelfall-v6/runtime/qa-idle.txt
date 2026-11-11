@@ -1,0 +1,37 @@
+{"targetSeconds":0,"time":0.6291666666666657,"level":1,"cash":2,"autoVolleys":0,"manualVolleys":0}
+{"targetSeconds":15,"time":15.012499999999468,"level":1,"cash":11,"autoVolleys":1,"manualVolleys":0}
+{"targetSeconds":30,"time":30.029166666665283,"level":1,"cash":17,"autoVolleys":2,"manualVolleys":0}
+{"targetSeconds":45,"time":45.008333333342186,"level":1,"cash":25,"autoVolleys":3,"manualVolleys":0}
+{"targetSeconds":60,"time":60.00833333335412,"level":1,"cash":32,"autoVolleys":4,"manualVolleys":0}
+[
+  {
+    "name": "natural first 60 s ran without manual override",
+    "status": "PASS"
+  },
+  {
+    "name": "autopilot fires during natural idle",
+    "status": "PASS"
+  },
+  {
+    "name": "exactly three existing upgrades, no purchases",
+    "status": "PASS"
+  },
+  {
+    "name": "English default in Polish browser, no runtime asset load failures or page errors",
+    "status": "PASS"
+  },
+  {
+    "name": "zero external requests",
+    "status": "PASS"
+  },
+  {
+    "name": "physical iPhone",
+    "status": "NOT RUN",
+    "reason": "Chromium Linux viewport recording only"
+  },
+  {
+    "name": "CrazyGames real portal",
+    "status": "NOT RUN",
+    "reason": "Local HTTP only; no portal session available"
+  }
+]

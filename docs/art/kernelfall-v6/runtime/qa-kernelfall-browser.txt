@@ -1,0 +1,44 @@
+[
+  {
+    "name": "nested iframe starts and logo images decode",
+    "pass": true
+  },
+  {
+    "name": "firewall: real graph disconnect visible",
+    "pass": true
+  },
+  {
+    "name": "data-memory: real graph disconnect visible",
+    "pass": true
+  },
+  {
+    "name": "neural-core: real graph disconnect visible",
+    "pass": true
+  },
+  {
+    "name": "sector 12 continues to endless with victory",
+    "pass": true
+  },
+  {
+    "name": "zero errors or external requests",
+    "pass": true,
+    "errors": [],
+    "external": []
+  },
+  {
+    "name": "907x510: logo and goal fit",
+    "pass": true
+  },
+  {
+    "name": "800x450: logo and goal fit",
+    "pass": true
+  },
+  {
+    "name": "390x844: logo and goal fit",
+    "pass": true
+  },
+  {
+    "name": "1920x1080: logo and goal fit",
+    "pass": true
+  }
+]

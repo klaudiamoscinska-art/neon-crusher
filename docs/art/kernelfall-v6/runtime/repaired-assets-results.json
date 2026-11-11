@@ -1,0 +1,293 @@
+{
+  "scope": "SHA, rozmiary i alfa na granicy obrazu. Brak ucięcia nie jest automatycznym odbiorem estetycznym; krawędzie oceniono także na tle gry.",
+  "rows": [
+    {
+      "path": "assets/kernelfall-v6-runtime/drones/scout_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        254
+      ],
+      "maxBorderAlpha": 0
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/drones/assault_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        254
+      ],
+      "maxBorderAlpha": 0
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/drones/support_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        254
+      ],
+      "maxBorderAlpha": 0
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/uplinks/idle_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/uplinks/charging_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/uplinks/ready_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        254
+      ],
+      "maxBorderAlpha": 0
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/uplinks/firing_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        254
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/armor_intact_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        254
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/armor_damaged_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        253
+      ],
+      "maxBorderAlpha": 0
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/armor_critical_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        254
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/armor_isolated_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/armor_broken_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/memory_intact_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/memory_damaged_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/memory_critical_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 0
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/memory_isolated_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/memory_broken_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        254
+      ],
+      "maxBorderAlpha": 0
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/relay_intact_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/relay_damaged_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/relay_critical_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/relay_isolated_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/relay_broken_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 4
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/port_intact_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/port_damaged_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/port_critical_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/port_isolated_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 1
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/port_broken_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 2
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/firewall_intact_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        254
+      ],
+      "maxBorderAlpha": 4
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/firewall_damaged_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 2
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/firewall_critical_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        254
+      ],
+      "maxBorderAlpha": 2
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/firewall_isolated_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 2
+    },
+    {
+      "path": "assets/kernelfall-v6-runtime/modules/firewall_broken_256.png",
+      "status": "PASS",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "maxBorderAlpha": 2
+    }
+  ]
+}

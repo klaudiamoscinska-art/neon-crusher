@@ -1,0 +1,214 @@
+{
+  "generatedAt": "2026-11-10T21:10:36.575Z",
+  "runtimeSHA256": "59fc166f2d76ed6bc52954fc8c811a8fe05fb22069bb95ba704413e98c544bc6",
+  "scope": "Node VM / v1 save reconstruction; no browser or device claim",
+  "fixture": {
+    "seed": 11,
+    "canvas": [
+      907,
+      344
+    ],
+    "cash": 1234,
+    "maxBalls": 7,
+    "fireRateLevel": 4,
+    "damageLevel": 5
+  },
+  "counts": {
+    "PASS": 12,
+    "FAIL": 0
+  },
+  "rows": [
+    {
+      "sector": 1,
+      "status": "PASS",
+      "blocks": 9,
+      "archetype": 0,
+      "edges": 8,
+      "checks": {
+        "fields": true,
+        "oneHeart": true,
+        "archetype": true,
+        "hp": true,
+        "gridCount": true,
+        "supplyTree": true,
+        "roundTrip": true
+      }
+    },
+    {
+      "sector": 2,
+      "status": "PASS",
+      "blocks": 16,
+      "archetype": 1,
+      "edges": 15,
+      "checks": {
+        "fields": true,
+        "oneHeart": true,
+        "archetype": true,
+        "hp": true,
+        "gridCount": true,
+        "supplyTree": true,
+        "roundTrip": true
+      }
+    },
+    {
+      "sector": 3,
+      "status": "PASS",
+      "blocks": 13,
+      "archetype": 2,
+      "edges": 12,
+      "checks": {
+        "fields": true,
+        "oneHeart": true,
+        "archetype": true,
+        "hp": true,
+        "gridCount": true,
+        "supplyTree": true,
+        "roundTrip": true
+      }
+    },
+    {
+      "sector": 4,
+      "status": "PASS",
+      "blocks": 18,
+      "archetype": 0,
+      "edges": 17,
+      "checks": {
+        "fields": true,
+        "oneHeart": true,
+        "archetype": true,
+        "hp": true,
+        "gridCount": true,
+        "supplyTree": true,
+        "roundTrip": true
+      }
+    },
+    {
+      "sector": 5,
+      "status": "PASS",
+      "blocks": 25,
+      "archetype": 1,
+      "edges": 24,
+      "checks": {
+        "fields": true,
+        "oneHeart": true,
+        "archetype": true,
+        "hp": true,
+        "gridCount": true,
+        "supplyTree": true,
+        "roundTrip": true
+      }
+    },
+    {
+      "sector": 6,
+      "status": "PASS",
+      "blocks": 32,
+      "archetype": 2,
+      "edges": 31,
+      "checks": {
+        "fields": true,
+        "oneHeart": true,
+        "archetype": true,
+        "hp": true,
+        "gridCount": true,
+        "supplyTree": true,
+        "roundTrip": true
+      }
+    },
+    {
+      "sector": 7,
+      "status": "PASS",
+      "blocks": 33,
+      "archetype": 0,
+      "edges": 32,
+      "checks": {
+        "fields": true,
+        "oneHeart": true,
+        "archetype": true,
+        "hp": true,
+        "gridCount": true,
+        "supplyTree": true,
+        "roundTrip": true
+      }
+    },
+    {
+      "sector": 8,
+      "status": "PASS",
+      "blocks": 36,
+      "archetype": 1,
+      "edges": 35,
+      "checks": {
+        "fields": true,
+        "oneHeart": true,
+        "archetype": true,
+        "hp": true,
+        "gridCount": true,
+        "supplyTree": true,
+        "roundTrip": true
+      }
+    },
+    {
+      "sector": 9,
+      "status": "PASS",
+      "blocks": 49,
+      "archetype": 2,
+      "edges": 48,
+      "checks": {
+        "fields": true,
+        "oneHeart": true,
+        "archetype": true,
+        "hp": true,
+        "gridCount": true,
+        "supplyTree": true,
+        "roundTrip": true
+      }
+    },
+    {
+      "sector": 10,
+      "status": "PASS",
+      "blocks": 40,
+      "archetype": 0,
+      "edges": 39,
+      "checks": {
+        "fields": true,
+        "oneHeart": true,
+        "archetype": true,
+        "hp": true,
+        "gridCount": true,
+        "supplyTree": true,
+        "roundTrip": true
+      }
+    },
+    {
+      "sector": 11,
+      "status": "PASS",
+      "blocks": 49,
+      "archetype": 1,
+      "edges": 48,
+      "checks": {
+        "fields": true,
+        "oneHeart": true,
+        "archetype": true,
+        "hp": true,
+        "gridCount": true,
+        "supplyTree": true,
+        "roundTrip": true
+      }
+    },
+    {
+      "sector": 12,
+      "status": "PASS",
+      "blocks": 44,
+      "archetype": 2,
+      "edges": 43,
+      "checks": {
+        "fields": true,
+        "oneHeart": true,
+        "archetype": true,
+        "hp": true,
+        "gridCount": true,
+        "supplyTree": true,
+        "roundTrip": true
+      }
+    }
+  ]
+}

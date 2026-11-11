@@ -1,0 +1,15 @@
+PASS    CLAUDE.md within 9000 bytes -- 5032 bytes
+PASS    CLAUDE.md states 15 required rules
+PASS    skills exist under .claude/skills/ -- 12
+PASS    every skill: SKILL.md, frontmatter, name = folder, lowercase-hyphen name, description
+PASS    every description <= 300 chars (loaded into every session)
+PASS    every SKILL.md body <= 6000 bytes
+INFO    always-loaded context -- CLAUDE.md 5032 B + 12 skill descriptions 3007 chars
+PASS    docs/claude/SKILLS.md lists exactly the installed skills -- listed=nc-audio,nc-crazygames,nc-economy,nc-engineering,nc-gameplay,nc-performance,nc-physics,nc-qa,nc-release,nc-save,nc-ux,nc-visual-fx installed=nc-audio,nc-crazygames,nc-economy,nc-engineering,nc-gameplay,nc-performance,nc-physics,nc-qa,nc-release,nc-save,nc-ux,nc-visual-fx
+PASS    skills only reference existing skills
+PASS    every backticked repo path in 28 instruction/doc files exists
+PASS    every doc <= 20000 bytes (split or trim when it grows)
+PASS    no instruction line (>= 80 chars) duplicated across files
+PASS    2 known-defect ids used by qa/ are registered in docs/RISKS.md
+
+[instructions] 12/12 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 1 => PASS: all checks pass

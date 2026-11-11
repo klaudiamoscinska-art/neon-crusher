@@ -1,0 +1,20 @@
+PASS    no AI shield on sectors 1-2 (60 s each, drones on) -- reroutes 0, 0
+PASS    sector 3: the AI raises its first shield 8 s into the sector (±1 step) -- started at 8.004166666666533 s
+PASS    the shield guards the AI core; its firewall node is an alive armour block marked as breakable, hit first on some turret's line
+PASS    shielded core takes x0.5 damage; the shield never restores HP -- hp 138 -> 136
+PASS    an unbroken shield ends by itself after 7 s; the next one comes 10 s later -- ended after 7.004 s, next after 10.00416666666642 s
+PASS    node destroyed by the player's pulse: shield gone, core + power line exposed for 5 s, +3x money per hit, +50 % override charge -- cash +20 (mph 5), charge 0.60, path 2
+PASS    node destroyed by a drone: same collapse and bonus, but no override refund and not counted as the player's break
+PASS    exposed core: x2.5 damage from shockwaves and override pulses, x1 from drones -- drone 2, shock 5, pulse (2 turrets x power 8) 40
+PASS    exposure ends after 5 s with no new shield during it; the next shield comes 10 s after the exposure -- exposure 5.000000000000036 s, next shield after 9.999999999999753 s
+PASS    an override pulse aimed at the firewall node breaks it and collapses the shield in the same step (counted as the player's break)
+PASS    while a shield is up the autopilot's target is the firewall node
+PASS    the core breaking ends the shield and any exposure; save keeps exactly its five v1 fields; a reload starts unshielded with the 8 s delay
+PASS    same seed -> identical shields (step, sector, node), cash and sector at 60/144/165 Hz (90 s, drones + autopilot) -- 60 Hz: 5 shields, broken 2, cash 1160; 144 Hz cash 1160; 165 Hz cash 1160
+PASS    no input (autopilot + greedy buyer), 4 min from sector 3: >= 3 sectors recovered, no shield lasts > 7 s, the sector and cash never go back -- seed 1: sector 3 -> 8, shields 12, broken 6 (autopilot/drones), longest 7.00 s; seed 2: sector 3 -> 7, shields 10, broken 6 (autopilot/drones), longest 7.00 s; seed 3: sector 3 -> 7, shields 11, broken 7 (autopilot/drones), longest 7.00 s
+PASS    shield hint (amber) while a shield is up, until the player breaks one node with their own pulse
+PASS    HUD text (meters, AI alert, 3 longest event toasts) never overlaps itself, leaves the field or covers the core / node / relays / uplinks (EN + PL, 8 field sizes, sectors 3-14, shield and exposure: 192 layouts)
+INFO    sector at 5 min, 907x339: active (breaks nodes, else aims at the core) / passive -- 11,10,11 / 6,6,7
+PASS    active play >= passive play + 3 sectors at 5 min in every seed; passive still reaches sector 5 -- active 11,10,11, passive 6,6,7
+
+[recovery] 17/17 checks PASS, FAIL 0, KNOWN 0, NOT RUN 0, INFO 1 => PASS: all checks pass

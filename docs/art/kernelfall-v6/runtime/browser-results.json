@@ -1,0 +1,2054 @@
+{
+  "runtimeSHA256": "e4d94f31b6022e9e3ed0e01c04cb21a8b601c4eaf20c7b213e7e26eb70afceab",
+  "generatedAt": "2026-11-11T09:16:12.245Z",
+  "browser": "Chromium /usr/bin/chromium",
+  "scope": "Chromium desktop + viewport/touch/DPR emulation; fixtures labelled; no physical device claim",
+  "rows": [
+    {
+      "status": "PASS",
+      "name": "1920x1080-dpr1: V6/V3 Canvas and DOM assets decoded",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          1920,
+          1080
+        ],
+        "viewport": [
+          1920,
+          1080
+        ],
+        "canvas": [
+          1920,
+          914
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 180,
+            "h": 33
+          },
+          {
+            "id": "override",
+            "x": 1730.0000000000002,
+            "y": 10,
+            "w": 180,
+            "h": 33
+          }
+        ],
+        "shop": [
+          {
+            "x": 526,
+            "y": 989,
+            "w": 281.328125,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 819.328125,
+            "y": 989,
+            "w": 281.328125,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 1112.65625,
+            "y": 989,
+            "w": 281.34375,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "1920x1080-dpr1: English default with Polish browser"
+    },
+    {
+      "status": "PASS",
+      "name": "1920x1080-dpr1: HUD, shop and arena fit viewport",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          1920,
+          1080
+        ],
+        "viewport": [
+          1920,
+          1080
+        ],
+        "canvas": [
+          1920,
+          914
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 180,
+            "h": 33
+          },
+          {
+            "id": "override",
+            "x": 1730.0000000000002,
+            "y": 10,
+            "w": 180,
+            "h": 33
+          }
+        ],
+        "shop": [
+          {
+            "x": 526,
+            "y": 989,
+            "w": 281.328125,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 819.328125,
+            "y": 989,
+            "w": 281.328125,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 1112.65625,
+            "y": 989,
+            "w": 281.34375,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "1920x1080-dpr1: mouse click fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "1920x1080-dpr1: Space fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "1366x768-dpr1: V6/V3 Canvas and DOM assets decoded",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          1366,
+          768
+        ],
+        "viewport": [
+          1366,
+          768
+        ],
+        "canvas": [
+          1366,
+          602
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 144.48,
+            "h": 26
+          },
+          {
+            "id": "override",
+            "x": 1211.52,
+            "y": 10,
+            "w": 144.48,
+            "h": 26
+          }
+        ],
+        "shop": [
+          {
+            "x": 249,
+            "y": 677,
+            "w": 281.328125,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 542.328125,
+            "y": 677,
+            "w": 281.328125,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 835.65625,
+            "y": 677,
+            "w": 281.34375,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "1366x768-dpr1: English default with Polish browser"
+    },
+    {
+      "status": "PASS",
+      "name": "1366x768-dpr1: HUD, shop and arena fit viewport",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          1366,
+          768
+        ],
+        "viewport": [
+          1366,
+          768
+        ],
+        "canvas": [
+          1366,
+          602
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 144.48,
+            "h": 26
+          },
+          {
+            "id": "override",
+            "x": 1211.52,
+            "y": 10,
+            "w": 144.48,
+            "h": 26
+          }
+        ],
+        "shop": [
+          {
+            "x": 249,
+            "y": 677,
+            "w": 281.328125,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 542.328125,
+            "y": 677,
+            "w": 281.328125,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 835.65625,
+            "y": 677,
+            "w": 281.34375,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "1366x768-dpr1: mouse click fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "1366x768-dpr1: Space fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "907x510-dpr1: V6/V3 Canvas and DOM assets decoded",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          907,
+          510
+        ],
+        "viewport": [
+          907,
+          510
+        ],
+        "canvas": [
+          907,
+          344
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          },
+          {
+            "id": "override",
+            "x": 777,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          }
+        ],
+        "shop": [
+          {
+            "x": 19.5,
+            "y": 419,
+            "w": 281.328125,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 312.828125,
+            "y": 419,
+            "w": 281.328125,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 606.15625,
+            "y": 419,
+            "w": 281.34375,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "907x510-dpr1: English default with Polish browser"
+    },
+    {
+      "status": "PASS",
+      "name": "907x510-dpr1: HUD, shop and arena fit viewport",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          907,
+          510
+        ],
+        "viewport": [
+          907,
+          510
+        ],
+        "canvas": [
+          907,
+          344
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          },
+          {
+            "id": "override",
+            "x": 777,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          }
+        ],
+        "shop": [
+          {
+            "x": 19.5,
+            "y": 419,
+            "w": 281.328125,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 312.828125,
+            "y": 419,
+            "w": 281.328125,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 606.15625,
+            "y": 419,
+            "w": 281.34375,
+            "h": 77,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "907x510-dpr1: mouse click fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "907x510-dpr1: Space fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "390x844-dpr2: V6/V3 Canvas and DOM assets decoded",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          390,
+          844
+        ],
+        "viewport": [
+          390,
+          844
+        ],
+        "canvas": [
+          390,
+          660
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          },
+          {
+            "id": "override",
+            "x": 260,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          }
+        ],
+        "shop": [
+          {
+            "x": 8,
+            "y": 727,
+            "w": 119.328125,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 135.328125,
+            "y": 727,
+            "w": 119.328125,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 262.65625,
+            "y": 727,
+            "w": 119.34375,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "390x844-dpr2: English default with Polish browser"
+    },
+    {
+      "status": "PASS",
+      "name": "390x844-dpr2: HUD, shop and arena fit viewport",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          390,
+          844
+        ],
+        "viewport": [
+          390,
+          844
+        ],
+        "canvas": [
+          390,
+          660
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          },
+          {
+            "id": "override",
+            "x": 260,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          }
+        ],
+        "shop": [
+          {
+            "x": 8,
+            "y": 727,
+            "w": 119.328125,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 135.328125,
+            "y": 727,
+            "w": 119.328125,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 262.65625,
+            "y": 727,
+            "w": 119.34375,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "390x844-dpr2: touch tap fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "390x844-dpr2: Space fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "390x844-dpr3: V6/V3 Canvas and DOM assets decoded",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          390,
+          844
+        ],
+        "viewport": [
+          390,
+          844
+        ],
+        "canvas": [
+          390,
+          660
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          },
+          {
+            "id": "override",
+            "x": 260,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          }
+        ],
+        "shop": [
+          {
+            "x": 8,
+            "y": 727,
+            "w": 119.328125,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 135.328125,
+            "y": 727,
+            "w": 119.328125,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 262.65625,
+            "y": 727,
+            "w": 119.34375,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "390x844-dpr3: English default with Polish browser"
+    },
+    {
+      "status": "PASS",
+      "name": "390x844-dpr3: HUD, shop and arena fit viewport",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          390,
+          844
+        ],
+        "viewport": [
+          390,
+          844
+        ],
+        "canvas": [
+          390,
+          660
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          },
+          {
+            "id": "override",
+            "x": 260,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          }
+        ],
+        "shop": [
+          {
+            "x": 8,
+            "y": 727,
+            "w": 119.328125,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 135.328125,
+            "y": 727,
+            "w": 119.328125,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 262.65625,
+            "y": 727,
+            "w": 119.34375,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "390x844-dpr3: touch tap fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "390x844-dpr3: Space fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "375x812-dpr2: V6/V3 Canvas and DOM assets decoded",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          375,
+          812
+        ],
+        "viewport": [
+          375,
+          812
+        ],
+        "canvas": [
+          375,
+          628
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          },
+          {
+            "id": "override",
+            "x": 245,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          }
+        ],
+        "shop": [
+          {
+            "x": 8,
+            "y": 695,
+            "w": 114.328125,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 130.328125,
+            "y": 695,
+            "w": 114.328125,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 252.65625,
+            "y": 695,
+            "w": 114.34375,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "375x812-dpr2: English default with Polish browser"
+    },
+    {
+      "status": "PASS",
+      "name": "375x812-dpr2: HUD, shop and arena fit viewport",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          375,
+          812
+        ],
+        "viewport": [
+          375,
+          812
+        ],
+        "canvas": [
+          375,
+          628
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          },
+          {
+            "id": "override",
+            "x": 245,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          }
+        ],
+        "shop": [
+          {
+            "x": 8,
+            "y": 695,
+            "w": 114.328125,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 130.328125,
+            "y": 695,
+            "w": 114.328125,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 252.65625,
+            "y": 695,
+            "w": 114.34375,
+            "h": 107,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "375x812-dpr2: touch tap fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "375x812-dpr2: Space fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "844x390-dpr2: V6/V3 Canvas and DOM assets decoded",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          844,
+          390
+        ],
+        "viewport": [
+          844,
+          390
+        ],
+        "canvas": [
+          844,
+          272
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          },
+          {
+            "id": "override",
+            "x": 714,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          }
+        ],
+        "shop": [
+          {
+            "x": 8,
+            "y": 325,
+            "w": 270.65625,
+            "h": 61,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 286.65625,
+            "y": 325,
+            "w": 270.671875,
+            "h": 61,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 565.328125,
+            "y": 325,
+            "w": 270.65625,
+            "h": 61,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "844x390-dpr2: English default with Polish browser"
+    },
+    {
+      "status": "PASS",
+      "name": "844x390-dpr2: HUD, shop and arena fit viewport",
+      "detail": {
+        "lang": "en",
+        "htmlLang": "en",
+        "images": 90,
+        "loaded": true,
+        "assetErrors": [],
+        "domDecoded": true,
+        "scroll": [
+          844,
+          390
+        ],
+        "viewport": [
+          844,
+          390
+        ],
+        "canvas": [
+          844,
+          272
+        ],
+        "hud": [
+          {
+            "id": "progress",
+            "x": 10,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          },
+          {
+            "id": "override",
+            "x": 714,
+            "y": 10,
+            "w": 120,
+            "h": 22
+          }
+        ],
+        "shop": [
+          {
+            "x": 8,
+            "y": 325,
+            "w": 270.65625,
+            "h": 61,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 286.65625,
+            "y": 325,
+            "w": 270.671875,
+            "h": 61,
+            "visible": true,
+            "overflow": false
+          },
+          {
+            "x": 565.328125,
+            "y": 325,
+            "w": 270.65625,
+            "h": 61,
+            "visible": true,
+            "overflow": false
+          }
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "844x390-dpr2: touch tap fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "844x390-dpr2: Space fires a manual volley"
+    },
+    {
+      "status": "PASS",
+      "name": "firewall: genuine supply cut propagates offline",
+      "detail": {
+        "offline": 7,
+        "edges": 7
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "memory: genuine supply cut propagates offline",
+      "detail": {
+        "offline": 9,
+        "edges": 9
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "neural: genuine supply cut propagates offline",
+      "detail": {
+        "offline": 8,
+        "edges": 8
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "broken module alpha cannot hide live heart rim",
+      "detail": {
+        "heartAlpha": 1
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "real shield raises on live node"
+    },
+    {
+      "status": "PASS",
+      "name": "defense overlay preserves critical and isolated sprite states",
+      "detail": [
+        "modules/firewall_critical_256.png",
+        "modules/firewall_isolated_256.png"
+      ]
+    },
+    {
+      "status": "PASS",
+      "name": "real shield node destruction exposes core"
+    },
+    {
+      "status": "PASS",
+      "name": "sector 12 result continues to endless sector 13",
+      "detail": {
+        "level": 13,
+        "toasts": [
+          "AI CORE DESTROYED +$516",
+          "AI NEUTRALIZED"
+        ],
+        "victory": "AI NEUTRALIZED"
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "reload restart retains campaign v1 save"
+    },
+    {
+      "status": "PASS",
+      "name": "all 100 original PNGs decode through nested Pages path",
+      "detail": [
+        {
+          "path": "brand/symbol-128.png",
+          "w": 128,
+          "h": 128,
+          "ok": true
+        },
+        {
+          "path": "brand/symbol-256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "brand/symbol-512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "brand/wordmark-480.png",
+          "w": 480,
+          "h": 140,
+          "ok": true
+        },
+        {
+          "path": "bosses/firewall_intact_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/firewall_damaged_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/firewall_critical_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/firewall_shatter_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/firewall_captured_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/memory_intact_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/memory_damaged_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/memory_critical_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/memory_shatter_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/memory_captured_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/neural_intact_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/neural_damaged_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/neural_critical_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/neural_shatter_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "bosses/neural_captured_512.png",
+          "w": 512,
+          "h": 512,
+          "ok": true
+        },
+        {
+          "path": "modules/armor_intact_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/armor_damaged_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/armor_critical_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/armor_isolated_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/armor_broken_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/memory_intact_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/memory_damaged_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/memory_critical_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/memory_isolated_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/memory_broken_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/port_intact_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/port_damaged_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/port_critical_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/port_isolated_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/port_broken_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/relay_intact_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/relay_damaged_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/relay_critical_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/relay_isolated_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/relay_broken_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/firewall_intact_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/firewall_damaged_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/firewall_critical_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/firewall_isolated_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "modules/firewall_broken_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "drones/scout_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "drones/assault_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "drones/support_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "uplinks/idle_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "uplinks/charging_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "uplinks/ready_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "uplinks/firing_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/impact/frame_00_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/impact/frame_01_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/impact/frame_02_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/impact/frame_03_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/impact/frame_04_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/impact/frame_05_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/impact/frame_06_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/impact/frame_07_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/chain/frame_00_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/chain/frame_01_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/chain/frame_02_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/chain/frame_03_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/chain/frame_04_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/chain/frame_05_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/chain/frame_06_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/chain/frame_07_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/shield_break/frame_00_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/shield_break/frame_01_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/shield_break/frame_02_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/shield_break/frame_03_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/shield_break/frame_04_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/shield_break/frame_05_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/shield_break/frame_06_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/shield_break/frame_07_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/core_collapse/frame_00_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/core_collapse/frame_01_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/core_collapse/frame_02_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/core_collapse/frame_03_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/core_collapse/frame_04_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/core_collapse/frame_05_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/core_collapse/frame_06_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/core_collapse/frame_07_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/override/frame_00_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/override/frame_01_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/override/frame_02_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/override/frame_03_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/override/frame_04_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/override/frame_05_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/override/frame_06_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "fx/override/frame_07_256.png",
+          "w": 256,
+          "h": 256,
+          "ok": true
+        },
+        {
+          "path": "ui/drone_128.png",
+          "w": 128,
+          "h": 128,
+          "ok": true
+        },
+        {
+          "path": "ui/charge_128.png",
+          "w": 128,
+          "h": 128,
+          "ok": true
+        },
+        {
+          "path": "ui/power_128.png",
+          "w": 128,
+          "h": 128,
+          "ok": true
+        },
+        {
+          "path": "ui/network_128.png",
+          "w": 128,
+          "h": 128,
+          "ok": true
+        },
+        {
+          "path": "ui/shield_128.png",
+          "w": 128,
+          "h": 128,
+          "ok": true
+        },
+        {
+          "path": "environment/arena_floor_1024.png",
+          "w": 1024,
+          "h": 1024,
+          "ok": true
+        },
+        {
+          "path": "ui/hud_cyan_panel_512x128.png",
+          "w": 512,
+          "h": 128,
+          "ok": true
+        },
+        {
+          "path": "ui/hud_pink_panel_512x128.png",
+          "w": 512,
+          "h": 128,
+          "ok": true
+        },
+        {
+          "path": "ui/hud_amber_panel_512x128.png",
+          "w": 512,
+          "h": 128,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "status": "PASS",
+      "name": "before/after fixture preserves collision geometry"
+    },
+    {
+      "status": "PASS",
+      "name": "transparent margin blit preserves visible pixels and pivot",
+      "detail": [
+        {
+          "id": "drones/scout_256.png",
+          "scale": 1,
+          "size": 83.5,
+          "pivot": [
+            16,
+            16
+          ],
+          "extent": 84,
+          "maxDiff": 0,
+          "differingChannels": 0
+        },
+        {
+          "id": "drones/scout_256.png",
+          "scale": 2,
+          "size": 83.5,
+          "pivot": [
+            16,
+            16
+          ],
+          "extent": 83.5,
+          "maxDiff": 0,
+          "differingChannels": 0
+        },
+        {
+          "id": "drones/scout_256.png",
+          "scale": 3,
+          "size": 83.5,
+          "pivot": [
+            16,
+            16
+          ],
+          "extent": 83.66666666666667,
+          "maxDiff": 0,
+          "differingChannels": 0
+        },
+        {
+          "id": "bosses/neural_intact_512.png",
+          "scale": 1,
+          "size": 187,
+          "pivot": [
+            16,
+            16
+          ],
+          "extent": 187,
+          "maxDiff": 0,
+          "differingChannels": 0
+        },
+        {
+          "id": "bosses/neural_intact_512.png",
+          "scale": 2,
+          "size": 187,
+          "pivot": [
+            16,
+            16
+          ],
+          "extent": 187,
+          "maxDiff": 0,
+          "differingChannels": 0
+        },
+        {
+          "id": "bosses/neural_intact_512.png",
+          "scale": 3,
+          "size": 187,
+          "pivot": [
+            16,
+            16
+          ],
+          "extent": 187,
+          "maxDiff": 0,
+          "differingChannels": 0
+        }
+      ]
+    },
+    {
+      "status": "PASS",
+      "name": "15 boss rasters at 2048px respect 48 MiB FIFO cache budget",
+      "detail": {
+        "entries": 3,
+        "accountedPixels": 12582912,
+        "actualPixels": 12582912,
+        "budgetPixels": 12582912,
+        "rgbaBudgetMiB": 48
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "nested HTML5 iframe uses production V6 assets"
+    },
+    {
+      "status": "PASS",
+      "name": "reduced motion preserves production V6 assets"
+    },
+    {
+      "status": "PASS",
+      "name": "failed PNG displays English error without vector fallback"
+    },
+    {
+      "status": "PASS",
+      "name": "uszkodzony V6 ładuje V3 i zachowuje kierunek -Y"
+    },
+    {
+      "status": "PASS",
+      "name": "wszystkie poprawione V6 rysowane przez produkcyjny atlas",
+      "detail": {
+        "expected": 32,
+        "drawn": [
+          "assets/kernelfall-v6-runtime/modules/armor_intact_256.png",
+          "assets/kernelfall-v6-runtime/modules/port_intact_256.png",
+          "assets/kernelfall-v6-runtime/uplinks/charging_256.png",
+          "assets/kernelfall-v6-runtime/drones/scout_256.png",
+          "assets/kernelfall-v6-runtime/modules/armor_damaged_256.png",
+          "assets/kernelfall-v6-runtime/uplinks/ready_256.png",
+          "assets/kernelfall-v6-runtime/modules/armor_broken_256.png",
+          "assets/kernelfall-v6-runtime/modules/port_isolated_256.png",
+          "assets/kernelfall-v6-runtime/uplinks/firing_256.png",
+          "assets/kernelfall-v6-runtime/modules/memory_intact_256.png",
+          "assets/kernelfall-v6-runtime/modules/relay_intact_256.png",
+          "assets/kernelfall-v6-runtime/modules/port_damaged_256.png",
+          "assets/kernelfall-v6-runtime/modules/memory_damaged_256.png",
+          "assets/kernelfall-v6-runtime/modules/relay_damaged_256.png",
+          "assets/kernelfall-v6-runtime/modules/port_critical_256.png",
+          "assets/kernelfall-v6-runtime/modules/memory_critical_256.png",
+          "assets/kernelfall-v6-runtime/modules/armor_critical_256.png",
+          "assets/kernelfall-v6-runtime/modules/relay_critical_256.png",
+          "assets/kernelfall-v6-runtime/modules/memory_isolated_256.png",
+          "assets/kernelfall-v6-runtime/modules/port_broken_256.png",
+          "assets/kernelfall-v6-runtime/modules/relay_isolated_256.png",
+          "assets/kernelfall-v6-runtime/modules/armor_isolated_256.png",
+          "assets/kernelfall-v6-runtime/modules/firewall_intact_256.png",
+          "assets/kernelfall-v6-runtime/modules/firewall_damaged_256.png",
+          "assets/kernelfall-v6-runtime/modules/firewall_critical_256.png",
+          "assets/kernelfall-v6-runtime/modules/firewall_isolated_256.png",
+          "assets/kernelfall-v6-runtime/modules/memory_broken_256.png",
+          "assets/kernelfall-v6-runtime/modules/relay_broken_256.png",
+          "assets/kernelfall-v6-runtime/modules/firewall_broken_256.png",
+          "assets/kernelfall-v6-runtime/uplinks/idle_256.png",
+          "assets/kernelfall-v6-runtime/drones/assault_256.png",
+          "assets/kernelfall-v6-runtime/drones/support_256.png"
+        ]
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "all 90 Canvas asset roles draw in gameplay or labelled runtime fixtures",
+      "detail": {
+        "drawn": 90
+      }
+    },
+    {
+      "status": "PASS",
+      "name": "no critical console errors, missing resources or foreign hosts",
+      "detail": {
+        "consoleErrors": [],
+        "bad": [],
+        "external": []
+      }
+    },
+    {
+      "status": "NOT RUN",
+      "name": "physical iPhone",
+      "detail": "Only Chromium viewport/touch/DPR emulation is available; this is not a physical device PASS."
+    },
+    {
+      "status": "NOT VERIFIED",
+      "name": "owner acceptance of ART V6 visual fidelity",
+      "detail": "Real screenshots attached for GPT/owner review; automation cannot grant aesthetic acceptance."
+    }
+  ],
+  "counts": {
+    "PASS": 55,
+    "FAIL": 0,
+    "NOT RUN": 1,
+    "NOT VERIFIED": 1
+  },
+  "runtimeDrawnScope": "Actual Canvas draw calls across fresh gameplay and explicitly labelled runtime fixtures; not all represent natural progression in this run.",
+  "runtimeDrawn": [
+    "bosses/firewall_captured_512.png",
+    "bosses/firewall_critical_512.png",
+    "bosses/firewall_damaged_512.png",
+    "bosses/firewall_intact_512.png",
+    "bosses/firewall_shatter_512.png",
+    "bosses/memory_captured_512.png",
+    "bosses/memory_critical_512.png",
+    "bosses/memory_damaged_512.png",
+    "bosses/memory_intact_512.png",
+    "bosses/memory_shatter_512.png",
+    "bosses/neural_captured_512.png",
+    "bosses/neural_critical_512.png",
+    "bosses/neural_damaged_512.png",
+    "bosses/neural_intact_512.png",
+    "bosses/neural_shatter_512.png",
+    "drones/assault_256.png",
+    "drones/scout_256.png",
+    "drones/support_256.png",
+    "environment/arena_floor_1024.png",
+    "fx/chain/frame_00_256.png",
+    "fx/chain/frame_01_256.png",
+    "fx/chain/frame_02_256.png",
+    "fx/chain/frame_03_256.png",
+    "fx/chain/frame_04_256.png",
+    "fx/chain/frame_05_256.png",
+    "fx/chain/frame_06_256.png",
+    "fx/chain/frame_07_256.png",
+    "fx/core_collapse/frame_00_256.png",
+    "fx/core_collapse/frame_01_256.png",
+    "fx/core_collapse/frame_02_256.png",
+    "fx/core_collapse/frame_03_256.png",
+    "fx/core_collapse/frame_04_256.png",
+    "fx/core_collapse/frame_05_256.png",
+    "fx/core_collapse/frame_06_256.png",
+    "fx/core_collapse/frame_07_256.png",
+    "fx/impact/frame_00_256.png",
+    "fx/impact/frame_01_256.png",
+    "fx/impact/frame_02_256.png",
+    "fx/impact/frame_03_256.png",
+    "fx/impact/frame_04_256.png",
+    "fx/impact/frame_05_256.png",
+    "fx/impact/frame_06_256.png",
+    "fx/impact/frame_07_256.png",
+    "fx/override/frame_00_256.png",
+    "fx/override/frame_01_256.png",
+    "fx/override/frame_02_256.png",
+    "fx/override/frame_03_256.png",
+    "fx/override/frame_04_256.png",
+    "fx/override/frame_05_256.png",
+    "fx/override/frame_06_256.png",
+    "fx/override/frame_07_256.png",
+    "fx/shield_break/frame_00_256.png",
+    "fx/shield_break/frame_01_256.png",
+    "fx/shield_break/frame_02_256.png",
+    "fx/shield_break/frame_03_256.png",
+    "fx/shield_break/frame_04_256.png",
+    "fx/shield_break/frame_05_256.png",
+    "fx/shield_break/frame_06_256.png",
+    "fx/shield_break/frame_07_256.png",
+    "modules/armor_broken_256.png",
+    "modules/armor_critical_256.png",
+    "modules/armor_damaged_256.png",
+    "modules/armor_intact_256.png",
+    "modules/armor_isolated_256.png",
+    "modules/firewall_broken_256.png",
+    "modules/firewall_critical_256.png",
+    "modules/firewall_damaged_256.png",
+    "modules/firewall_intact_256.png",
+    "modules/firewall_isolated_256.png",
+    "modules/memory_broken_256.png",
+    "modules/memory_critical_256.png",
+    "modules/memory_damaged_256.png",
+    "modules/memory_intact_256.png",
+    "modules/memory_isolated_256.png",
+    "modules/port_broken_256.png",
+    "modules/port_critical_256.png",
+    "modules/port_damaged_256.png",
+    "modules/port_intact_256.png",
+    "modules/port_isolated_256.png",
+    "modules/relay_broken_256.png",
+    "modules/relay_critical_256.png",
+    "modules/relay_damaged_256.png",
+    "modules/relay_intact_256.png",
+    "modules/relay_isolated_256.png",
+    "ui/network_128.png",
+    "ui/shield_128.png",
+    "uplinks/charging_256.png",
+    "uplinks/firing_256.png",
+    "uplinks/idle_256.png",
+    "uplinks/ready_256.png"
+  ],
+  "runtimeDrawnSources": [
+    "assets/kernelfall-v3/bosses/firewall_captured_512.png",
+    "assets/kernelfall-v3/bosses/firewall_critical_512.png",
+    "assets/kernelfall-v3/bosses/firewall_damaged_512.png",
+    "assets/kernelfall-v3/bosses/firewall_intact_512.png",
+    "assets/kernelfall-v3/bosses/firewall_shatter_512.png",
+    "assets/kernelfall-v3/bosses/memory_captured_512.png",
+    "assets/kernelfall-v3/bosses/memory_critical_512.png",
+    "assets/kernelfall-v3/bosses/memory_damaged_512.png",
+    "assets/kernelfall-v3/bosses/memory_intact_512.png",
+    "assets/kernelfall-v3/bosses/memory_shatter_512.png",
+    "assets/kernelfall-v3/bosses/neural_captured_512.png",
+    "assets/kernelfall-v3/bosses/neural_critical_512.png",
+    "assets/kernelfall-v3/bosses/neural_damaged_512.png",
+    "assets/kernelfall-v3/bosses/neural_intact_512.png",
+    "assets/kernelfall-v3/bosses/neural_shatter_512.png",
+    "assets/kernelfall-v3/fx/chain/frame_00_256.png",
+    "assets/kernelfall-v3/fx/chain/frame_01_256.png",
+    "assets/kernelfall-v3/fx/chain/frame_02_256.png",
+    "assets/kernelfall-v3/fx/chain/frame_03_256.png",
+    "assets/kernelfall-v3/fx/chain/frame_04_256.png",
+    "assets/kernelfall-v3/fx/chain/frame_05_256.png",
+    "assets/kernelfall-v3/fx/chain/frame_06_256.png",
+    "assets/kernelfall-v3/fx/chain/frame_07_256.png",
+    "assets/kernelfall-v3/fx/core_collapse/frame_00_256.png",
+    "assets/kernelfall-v3/fx/core_collapse/frame_01_256.png",
+    "assets/kernelfall-v3/fx/core_collapse/frame_02_256.png",
+    "assets/kernelfall-v3/fx/core_collapse/frame_03_256.png",
+    "assets/kernelfall-v3/fx/core_collapse/frame_04_256.png",
+    "assets/kernelfall-v3/fx/core_collapse/frame_05_256.png",
+    "assets/kernelfall-v3/fx/core_collapse/frame_06_256.png",
+    "assets/kernelfall-v3/fx/core_collapse/frame_07_256.png",
+    "assets/kernelfall-v3/fx/impact/frame_00_256.png",
+    "assets/kernelfall-v3/fx/impact/frame_01_256.png",
+    "assets/kernelfall-v3/fx/impact/frame_02_256.png",
+    "assets/kernelfall-v3/fx/impact/frame_03_256.png",
+    "assets/kernelfall-v3/fx/impact/frame_04_256.png",
+    "assets/kernelfall-v3/fx/impact/frame_05_256.png",
+    "assets/kernelfall-v3/fx/impact/frame_06_256.png",
+    "assets/kernelfall-v3/fx/impact/frame_07_256.png",
+    "assets/kernelfall-v3/fx/override/frame_00_256.png",
+    "assets/kernelfall-v3/fx/override/frame_01_256.png",
+    "assets/kernelfall-v3/fx/override/frame_02_256.png",
+    "assets/kernelfall-v3/fx/override/frame_03_256.png",
+    "assets/kernelfall-v3/fx/override/frame_04_256.png",
+    "assets/kernelfall-v3/fx/override/frame_05_256.png",
+    "assets/kernelfall-v3/fx/override/frame_06_256.png",
+    "assets/kernelfall-v3/fx/override/frame_07_256.png",
+    "assets/kernelfall-v3/fx/shield_break/frame_00_256.png",
+    "assets/kernelfall-v3/fx/shield_break/frame_01_256.png",
+    "assets/kernelfall-v3/fx/shield_break/frame_02_256.png",
+    "assets/kernelfall-v3/fx/shield_break/frame_03_256.png",
+    "assets/kernelfall-v3/fx/shield_break/frame_04_256.png",
+    "assets/kernelfall-v3/fx/shield_break/frame_05_256.png",
+    "assets/kernelfall-v3/fx/shield_break/frame_06_256.png",
+    "assets/kernelfall-v3/fx/shield_break/frame_07_256.png",
+    "assets/kernelfall-v3/ui/network_128.png",
+    "assets/kernelfall-v3/ui/shield_128.png",
+    "assets/kernelfall-v6-runtime/drones/assault_256.png",
+    "assets/kernelfall-v6-runtime/drones/scout_256.png",
+    "assets/kernelfall-v6-runtime/drones/support_256.png",
+    "assets/kernelfall-v6-runtime/modules/armor_broken_256.png",
+    "assets/kernelfall-v6-runtime/modules/armor_critical_256.png",
+    "assets/kernelfall-v6-runtime/modules/armor_damaged_256.png",
+    "assets/kernelfall-v6-runtime/modules/armor_intact_256.png",
+    "assets/kernelfall-v6-runtime/modules/armor_isolated_256.png",
+    "assets/kernelfall-v6-runtime/modules/firewall_broken_256.png",
+    "assets/kernelfall-v6-runtime/modules/firewall_critical_256.png",
+    "assets/kernelfall-v6-runtime/modules/firewall_damaged_256.png",
+    "assets/kernelfall-v6-runtime/modules/firewall_intact_256.png",
+    "assets/kernelfall-v6-runtime/modules/firewall_isolated_256.png",
+    "assets/kernelfall-v6-runtime/modules/memory_broken_256.png",
+    "assets/kernelfall-v6-runtime/modules/memory_critical_256.png",
+    "assets/kernelfall-v6-runtime/modules/memory_damaged_256.png",
+    "assets/kernelfall-v6-runtime/modules/memory_intact_256.png",
+    "assets/kernelfall-v6-runtime/modules/memory_isolated_256.png",
+    "assets/kernelfall-v6-runtime/modules/port_broken_256.png",
+    "assets/kernelfall-v6-runtime/modules/port_critical_256.png",
+    "assets/kernelfall-v6-runtime/modules/port_damaged_256.png",
+    "assets/kernelfall-v6-runtime/modules/port_intact_256.png",
+    "assets/kernelfall-v6-runtime/modules/port_isolated_256.png",
+    "assets/kernelfall-v6-runtime/modules/relay_broken_256.png",
+    "assets/kernelfall-v6-runtime/modules/relay_critical_256.png",
+    "assets/kernelfall-v6-runtime/modules/relay_damaged_256.png",
+    "assets/kernelfall-v6-runtime/modules/relay_intact_256.png",
+    "assets/kernelfall-v6-runtime/modules/relay_isolated_256.png",
+    "assets/kernelfall-v6-runtime/uplinks/charging_256.png",
+    "assets/kernelfall-v6-runtime/uplinks/firing_256.png",
+    "assets/kernelfall-v6-runtime/uplinks/idle_256.png",
+    "assets/kernelfall-v6-runtime/uplinks/ready_256.png"
+  ],
+  "consoleErrors": [],
+  "missingResources": [],
+  "externalRequests": []
+}

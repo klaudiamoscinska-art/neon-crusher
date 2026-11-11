@@ -11,7 +11,9 @@ import { ROOT, Reporter, isMain, readText } from './lib.mjs';
 /** One release file set shared with the HTML5 packager. All V3 originals ship. */
 export const ART_ROOT = 'assets/kernelfall-v3/';
 export const ART_MANIFEST = JSON.parse(fs.readFileSync(path.join(ROOT, ART_ROOT, 'manifest.json'), 'utf8'));
-export const RUNTIME_FILES = ['index.html', 'style.css', 'game.js', `${ART_ROOT}manifest.json`, ...ART_MANIFEST.files.map(f => ART_ROOT + f.path)];
+export const V6_ROOT = 'assets/kernelfall-v6-runtime/';
+export const V6_MANIFEST = JSON.parse(fs.readFileSync(path.join(ROOT, V6_ROOT, 'manifest.json'), 'utf8'));
+export const RUNTIME_FILES = ['index.html', 'style.css', 'game.js', `${ART_ROOT}manifest.json`, ...ART_MANIFEST.files.map(f => ART_ROOT + f.path), `${V6_ROOT}manifest.json`, ...V6_MANIFEST.files.map(f => f.path)];
 
 function git(args) {
   return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -54,6 +56,13 @@ export function run({ base = null, noRuntimeChange = false } = {}) {
       || data.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' || data.readUInt32BE(16) !== f.width || data.readUInt32BE(20) !== f.height;
   });
   r.check('ART V3 original PNG signatures, dimensions, bytes and SHA-256 match the manifest', invalidArt.length === 0, invalidArt.map(f => f.path).join(', '));
+  const invalidV6 = V6_MANIFEST.files.filter(f => {
+    if (!fs.existsSync(path.join(ROOT, f.path))) return true;
+    const bytes = fs.readFileSync(path.join(ROOT, f.path));
+    return bytes.length !== f.bytes || crypto.createHash('sha256').update(bytes).digest('hex') !== f.sha256
+      || bytes.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' || bytes.readUInt32BE(16) !== 256 || bytes.readUInt32BE(20) !== 256;
+  });
+  r.check('poprawione PNG V6 mają prawidłowe rozmiary i SHA manifestu', invalidV6.length === 0, invalidV6.map(f => f.path).join(', '));
   const localRefs = [...html.matchAll(/(?:src|href)="([^"#]+)"/g)].map(m => m[1]);
   for (const m of readText('style.css').matchAll(/url\(\s*['"]?([^)'"\s]+)['"]?\s*\)/g)) localRefs.push(m[1]);
   r.check('HTML and CSS asset paths are local and included in the release', localRefs.every(f => !/^(\/|[a-z]+:)/i.test(f) && RUNTIME_FILES.includes(f)), localRefs.filter(f => !RUNTIME_FILES.includes(f)).join(', '));

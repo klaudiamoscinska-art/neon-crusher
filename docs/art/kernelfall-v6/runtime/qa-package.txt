@@ -1,0 +1,46 @@
+[
+  {
+    "name": "Paczka 1920×1080 DPR1: prawdziwe rysowanie V6, bez fallbacków i błędów",
+    "status": "PASS"
+  },
+  {
+    "name": "Paczka 390×844 DPR2: prawdziwe rysowanie V6, bez fallbacków i błędów",
+    "status": "PASS"
+  },
+  {
+    "name": "Nosy dronów +X obracają się zgodnie z prędkością w trzech kierunkach",
+    "status": "PASS"
+  },
+  {
+    "name": "Obrót telefonu zachowuje te same PNG bez przeładowania",
+    "status": "PASS"
+  },
+  {
+    "name": "Paczka 390×844 DPR3: prawdziwe rysowanie V6, bez fallbacków i błędów",
+    "status": "PASS"
+  },
+  {
+    "name": "Paczka 844×390 DPR2: prawdziwe rysowanie V6, bez fallbacków i błędów",
+    "status": "PASS"
+  },
+  {
+    "name": "PC i mobile DPR2/3: identyczne pliki materiałów",
+    "status": "PASS"
+  },
+  {
+    "name": "Lokalny iframe ładuje paczkę z relatywnymi ścieżkami",
+    "status": "PASS"
+  },
+  {
+    "name": "Paczka: brak błędów JS i brakujących odpowiedzi HTTP",
+    "status": "PASS"
+  },
+  {
+    "name": "Fizyczny iPhone / Safari",
+    "status": "NOT RUN"
+  },
+  {
+    "name": "Rzeczywisty iframe CrazyGames",
+    "status": "NOT RUN"
+  }
+]
