@@ -33,4 +33,4 @@ const zip=path.join(OUT,'kernelfall-art-v6.zip');if(fs.existsSync(zip))fs.unlink
 execFileSync('zip',['-q',zip,...files],{cwd:dir});
 execFileSync('unzip',['-t',zip],{stdio:'pipe'});
 fs.writeFileSync(path.join(OUT,'package-manifest.json'),JSON.stringify({files:manifest,totalBytes,zipBytes:fs.statSync(zip).size,zipSHA256:crypto.createHash('sha256').update(fs.readFileSync(zip)).digest('hex')},null,2));
-console.log('PASS relative HTML5 folder and ZIP validated',JSON.stringify({files:files.length,pngs:ART_MANIFEST.files.length,totalBytes,zipBytes:fs.statSync(zip).size,manifest:path.join(OUT,'package-manifest.json')}));
+console.log('PASS relative HTML5 folder and ZIP validated',JSON.stringify({files:files.length,pngs:ART_MANIFEST.files.length+V6_MANIFEST.files.length,totalBytes,zipBytes:fs.statSync(zip).size,manifest:path.join(OUT,'package-manifest.json')}));
