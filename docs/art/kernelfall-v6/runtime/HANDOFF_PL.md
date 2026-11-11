@@ -60,6 +60,7 @@ Status PASS dotyczy opisanej asercji, nie odbioru estetycznego. Surowe logi istn
 | Dotychczasowy `kernelfall-browser.mjs` | **10 PASS / 0 FAIL** | [wyniki](qa-kernelfall-browser.txt) |
 | Fizyczny iPhone/Safari, rzeczywiste safe areas urządzenia | **NOT RUN** | brak urządzenia |
 | Rzeczywisty portal / iframe CrazyGames | **NOT RUN** | sprawdzono lokalny HTTP iframe, bez sesji portalu |
+| GitHub Actions dla PR | **NOT VERIFIED** | po push brak zgłoszonych checks; nie zastępuje lokalnych testów |
 | Lokalny HTTPS | **NOT RUN** | test serwera lokalnego HTTP; paczka ma wyłącznie ścieżki relatywne |
 | Odbiór estetyczny właścicielki, całkowita pamięć procesu/GPU i wydajność fizycznego telefonu | **NOT VERIFIED** | nie są zastępowane testem Chromium |
 
